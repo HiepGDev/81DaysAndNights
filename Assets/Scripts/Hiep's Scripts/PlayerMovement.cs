@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
-
+using UnityEngine.UI;
 public class PlayerMovement : MonoBehaviour
 {
     public Transform playerCamera;
@@ -25,6 +25,24 @@ public class PlayerMovement : MonoBehaviour
     private Vector3 velocity;
     [HideInInspector]
     public bool isSprinting;
+
+    // stamina 
+    [SerializeField] private Image staminaBar;
+    [SerializeField] private float maxStamina = 5f;
+    [SerializeField] private float drainRate = 1f;
+    [SerializeField] private float regenRate = 0.5f;
+    [SerializeField] private float regenDelay = 2f;
+    private float currentStamina;
+    private float regenTimer = 0f;
+
+    // Headbob settings
+    [SerializeField] private float bobAmplitudeWalk = 0.08f;
+    [SerializeField] private float bobAmplitudeSprint = 0.12f;
+    [SerializeField] private float bobSpeedWalk = 8f;
+    [SerializeField] private float bobSpeedSprint = 12f;
+    private Vector3 originalCamPos;
+    private float bobTimer = 0f;
+
     private void Awake()
     {
         DisableCursor();
@@ -40,7 +58,8 @@ public class PlayerMovement : MonoBehaviour
     }
     void Start()
     {
-
+        currentStamina = maxStamina;
+        originalCamPos = playerCamera.localPosition;
     }
 
     void Update()
@@ -48,6 +67,8 @@ public class PlayerMovement : MonoBehaviour
         HandleMove();
         HandleLook();
         HandleJump();
+        HandleStamina();
+        HandleHeadbob();
     }
 
     void DisableCursor()
@@ -60,7 +81,7 @@ public class PlayerMovement : MonoBehaviour
         // get vector from input 
         Vector2 moveValue = moveAction.ReadValue<Vector2>();
         // sprint is held or not 
-        isSprinting = sprintAction.IsPressed() && moveValue.magnitude > 0.1f && moveValue.y > 0.1f;
+        isSprinting = sprintAction.IsPressed() && moveValue.magnitude > 0.1f && moveValue.y > 0.1f && currentStamina > 0f;
         // Convert input to to world-space directions, movement logic.
         float currentSpeed = isSprinting ? sprintSpeed : walkSpeed;
         Vector3 move = transform.right * moveValue.x + transform.forward * moveValue.y;
@@ -92,7 +113,7 @@ public class PlayerMovement : MonoBehaviour
     }
     void HandleJump()
     {
-     // If the jump button is pressed this frame, reset the jump buffer counter
+        // If the jump button is pressed this frame, reset the jump buffer counter
         if (jumpAction.triggered)
         {
             jumpBufferCounter = jumpBufferTime;
@@ -107,6 +128,56 @@ public class PlayerMovement : MonoBehaviour
         {
             velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
             jumpBufferCounter = 0f; // reset the buffer once the jump is triggered
+        }
+    }
+
+    void HandleStamina()
+    {
+        if (isSprinting)
+        {
+            //drain
+            currentStamina -= drainRate * Time.deltaTime;
+            currentStamina = Mathf.Max(currentStamina, 0f);
+            regenTimer = 0f; // reset regen delay
+        }
+        else
+        {
+            // count up until regenDelay
+            if (currentStamina < maxStamina)
+            {
+                regenTimer += Time.deltaTime;
+                if (regenTimer >= regenDelay)
+                {
+                    currentStamina += regenRate * Time.deltaTime;
+                    currentStamina = Mathf.Min(currentStamina, maxStamina);
+                }
+            }
+        }
+        UpdateStaminaUI();
+    }
+
+    private void UpdateStaminaUI()
+    {
+        if (staminaBar != null)
+            staminaBar.fillAmount = currentStamina / maxStamina;
+    }
+    void HandleHeadbob()
+    {
+        Vector2 moveValue = moveAction.ReadValue<Vector2>();
+        bool isMoving = moveValue.magnitude > 0.1f && playerController.isGrounded;
+
+        if (isMoving)
+        {
+            float amplitude = isSprinting ? bobAmplitudeSprint : bobAmplitudeWalk;
+            float bobSpeed = isSprinting ? bobSpeedSprint : bobSpeedWalk;
+            bobTimer += Time.deltaTime * bobSpeed;
+            float bobY = Mathf.Sin(bobTimer) * amplitude;
+            playerCamera.localPosition = originalCamPos + new Vector3(0, bobY, 0);
+        }
+        else
+        {
+            // Smoothly lerp back to original position when not moving
+            playerCamera.localPosition = Vector3.Lerp(playerCamera.localPosition, originalCamPos, Time.deltaTime * 10f);
         }
     }
 }
