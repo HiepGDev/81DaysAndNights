@@ -32,8 +32,8 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float drainRate = 1f;
     [SerializeField] private float regenRate = 0.5f;
     [SerializeField] private float regenDelay = 2f;
-    private float currentStamina;
-    private float regenTimer = 0f;
+    private float currentStamina; 
+    private float regenTimer = 0f; 
 
     // Headbob settings
     [SerializeField] private float bobAmplitudeWalk = 0.08f;
