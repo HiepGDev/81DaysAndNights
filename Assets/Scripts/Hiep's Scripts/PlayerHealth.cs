@@ -19,12 +19,14 @@ public class PlayerHealth : MonoBehaviour
     private CinemachineImpulseSource impulseSource; // yeh impulse also need get component 
     [SerializeField] GameObject gameOverCanvas; 
     private bool isDead = false;
-    private Collider playerCollider;
+    // private Collider playerCollider;
+    private Rigidbody playerRigidbody;
 
     [Header("Audio")] 
     private AudioSource audioSource;
     [SerializeField] AudioClip hitsfx;
     [SerializeField] private float pitchVariation = 0.1f;
+    [SerializeField] AudioClip deathSound;
     
     [Header("Damage Flash")]
     [SerializeField] Image damageFlashImage;
@@ -38,9 +40,14 @@ public class PlayerHealth : MonoBehaviour
         characterController = GetComponent<CharacterController>();
         impulseSource = GetComponent<CinemachineImpulseSource>();
         audioSource = GetComponent<AudioSource>();
-        playerCollider = GetComponentInChildren<Collider>();
+        // playerCollider = GetComponentInChildren<Collider>();
+        playerRigidbody = GetComponent<Rigidbody>();
         currentHealth = maxHealth;
-
+        if (playerRigidbody != null)
+        {
+            playerRigidbody.isKinematic = true;  // No physics until Die()
+            playerRigidbody.useGravity = true;
+        }
         // Setup damage flash Image (keep active, start alpha=0)
         if (damageFlashImage != null)
         {
@@ -59,8 +66,11 @@ public class PlayerHealth : MonoBehaviour
 
     void Update()
     {
-        if (!isDead) // no regen after death eyy
-        HealthRegen();
+        if (!isDead)
+        {
+            // no regen after death eyy
+            HealthRegen();
+        }    
     }
 
     void HealthRegen()
@@ -151,8 +161,20 @@ public class PlayerHealth : MonoBehaviour
             playerMovement.enabled = false;
         if (characterController != null)
             characterController.enabled = false;
-        if (playerCollider != null) playerCollider.enabled = false;
+        // if (playerCollider != null) playerCollider.enabled = false;
 
+        if (playerRigidbody != null)
+        {
+            playerRigidbody.isKinematic = false;  // Physics on
+
+            // Fall
+            playerRigidbody.linearVelocity = new Vector3(
+                Random.Range(-2f, 2f),  // Side velocity
+                Random.Range(-1f, 1f),  // Up/down kick
+                Random.Range(-2f, 2f)   // Forward/back
+            );
+        }
+        audioSource.PlayOneShot(deathSound);
         if (gameOverCanvas != null)
             gameOverCanvas.SetActive(true);
         Cursor.visible = true;
