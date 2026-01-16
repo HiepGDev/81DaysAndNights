@@ -1,6 +1,7 @@
 using UnityEngine.UI;
 using UnityEngine;
 using Unity.Cinemachine;
+using System.Collections;
 
 public class PlayerHealth : MonoBehaviour
 {
@@ -16,7 +17,20 @@ public class PlayerHealth : MonoBehaviour
     private PlayerMovement playerMovement;
     private CharacterController characterController;
     private CinemachineImpulseSource impulseSource; // yeh impulse also need get component 
+    [SerializeField] GameObject gameOverCanvas; 
+    private bool isDead = false;
+    private Collider playerCollider;
+
+    [Header("Audio")] 
     private AudioSource audioSource;
+    [SerializeField] AudioClip hitsfx;
+    [SerializeField] private float pitchVariation = 0.1f;
+    
+    [Header("Damage Flash")]
+    [SerializeField] Image damageFlashImage;
+    private Coroutine flashCoroutine;  // Track to stop overlapping flashes
+    [SerializeField] private float damageFlashDuration = 0.15f;
+    [SerializeField] private float maxFlashAlpha = 0.15f;
 
     private void Awake()
     {
@@ -24,16 +38,28 @@ public class PlayerHealth : MonoBehaviour
         characterController = GetComponent<CharacterController>();
         impulseSource = GetComponent<CinemachineImpulseSource>();
         audioSource = GetComponent<AudioSource>();
+        playerCollider = GetComponentInChildren<Collider>();
         currentHealth = maxHealth;
+
+        // Setup damage flash Image (keep active, start alpha=0)
+        if (damageFlashImage != null)
+        {
+            damageFlashImage.gameObject.SetActive(true);  // Always active for fade
+            Color flashColor = damageFlashImage.color;
+            damageFlashImage.color = new Color(flashColor.r, flashColor.g, flashColor.b, 0f);  // Alpha 0
+        }
     }
 
     void Start()
     {
+        if (gameOverCanvas != null)
+            gameOverCanvas.SetActive(false);
         UpdateHealthUI();
     }
 
     void Update()
     {
+        if (!isDead) // no regen after death eyy
         HealthRegen();
     }
 
@@ -68,7 +94,7 @@ public class PlayerHealth : MonoBehaviour
     public void TakeDamage(float damage)
     {
         //ignore invalid damage
-        if (damage <= 0f) return;
+        if (damage <= 0f || isDead) return;
 
         //Apply damage
         currentHealth -= damage;
@@ -79,6 +105,16 @@ public class PlayerHealth : MonoBehaviour
         }
         // reset regen timer 
         regenTimer = 0f;
+        // hit sfx
+        if (audioSource != null && hitsfx != null)
+        {
+            audioSource.pitch = 1f + Random.Range(-pitchVariation, pitchVariation);
+            audioSource.PlayOneShot(hitsfx);
+        }
+        // Damage Flash 
+            if (flashCoroutine != null)
+                StopCoroutine(flashCoroutine);
+        flashCoroutine = StartCoroutine(DamageFlash());
         // Immediate UI update
         UpdateHealthUI();
         // Check for death
@@ -87,12 +123,41 @@ public class PlayerHealth : MonoBehaviour
             Die();
         }
     }
+    private IEnumerator DamageFlash()
+    {
+        if (damageFlashImage == null) yield break;
+
+        Color origColor = damageFlashImage.color;
+        float timer = 0f;
+        // Fade in/out with sine wave (peaks at 50% time)
+        while (timer < damageFlashDuration)
+        {
+            timer += Time.deltaTime;
+            float normalizedTime = timer / damageFlashDuration;
+            float sineAlpha = Mathf.Sin(normalizedTime * Mathf.PI);  // 0->1->0 curve
+            float alpha = sineAlpha * maxFlashAlpha;
+            damageFlashImage.color = new Color(origColor.r, origColor.g, origColor.b, alpha);
+            yield return null;
+        }
+        // Ensure reset to alpha 0
+        damageFlashImage.color = new Color(origColor.r, origColor.g, origColor.b, 0f);
+    }
 
     private void Die()
     {
+        isDead = true;
+        // Disable movement/physics
         if (playerMovement != null)
-        playerMovement.enabled = false;
+            playerMovement.enabled = false;
         if (characterController != null)
-        characterController.enabled = false;
+            characterController.enabled = false;
+        if (playerCollider != null) playerCollider.enabled = false;
+
+        if (gameOverCanvas != null)
+            gameOverCanvas.SetActive(true);
+        Cursor.visible = true;
+        Cursor.lockState = CursorLockMode.None;
+
+        Debug.Log("Player die !");
     }
 } 

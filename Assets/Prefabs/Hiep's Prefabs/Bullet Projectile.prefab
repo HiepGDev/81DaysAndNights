@@ -11,8 +11,9 @@ GameObject:
   - component: {fileID: 5162182961020964698}
   - component: {fileID: 5966715507909749384}
   - component: {fileID: 7866792081182779159}
+  - component: {fileID: 4315990818537073107}
   m_Layer: 0
-  m_Name: Laser Particle
+  m_Name: Bullet Projectile
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -169,7 +170,7 @@ ParticleSystem:
     startSpeed:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 200
+      scalar: 300
       minScalar: 5
       maxCurve:
         serializedVersion: 2
@@ -287,7 +288,7 @@ ParticleSystem:
     startSize:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 2.23
+      scalar: 1
       minScalar: 1
       maxCurve:
         serializedVersion: 2
@@ -4837,3 +4838,16 @@ ParticleSystemRenderer:
   m_MeshWeighting1: 1
   m_MeshWeighting2: 1
   m_MeshWeighting3: 1
+--- !u!114 &4315990818537073107
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1362100356248084211}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8cf91dbfe0488eb469da262329cb4291, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BulletDamage
+  damageAmount: 2
