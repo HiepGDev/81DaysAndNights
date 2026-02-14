@@ -10,6 +10,7 @@ public class PlayerMovement : MonoBehaviour
     InputAction jumpAction;
     InputAction lookAction;
     InputAction sprintAction;
+    [Header("Movement setting")] 
     // Movement setting
     [SerializeField] float walkSpeed = 0f;
     [SerializeField] float sprintSpeed = 0f;
@@ -25,7 +26,8 @@ public class PlayerMovement : MonoBehaviour
     private Vector3 velocity;
     [HideInInspector]
     public bool isSprinting;
-
+    
+    [Header("Stamina Setting")]
     // stamina 
     [SerializeField] private Image staminaBar;
     [SerializeField] private float maxStamina = 5f;
@@ -33,8 +35,9 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float regenRate = 0.5f;
     [SerializeField] private float regenDelay = 2f;
     private float currentStamina; 
-    private float regenTimer = 0f; 
+    private float regenTimer = 0f;
 
+    [Header("Headbob Settings")]
     // Headbob settings
     [SerializeField] private float bobAmplitudeWalk = 0.08f;
     [SerializeField] private float bobAmplitudeSprint = 0.12f;

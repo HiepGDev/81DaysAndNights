@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
 using TMPro;
+using UnityEngine.SceneManagement;
 public class GameOverManager : MonoBehaviour
 {
     [Header("Quote Setting")]
@@ -18,6 +19,9 @@ public class GameOverManager : MonoBehaviour
     // Runtime
     private Color originalTextColor;
 
+    [Header("Respawn")]
+    [SerializeField] private float respawnDelay = 4;
+
     private void Awake()
     {
         if (quoteText == null)
@@ -30,14 +34,15 @@ public class GameOverManager : MonoBehaviour
         // Store original color for fade
         if (quoteText != null)
             originalTextColor = quoteText.color;
-            quoteText.autoSizeTextContainer = true;  
-            quoteText.horizontalAlignment = HorizontalAlignmentOptions.Center;  // Center each line
-            quoteText.verticalAlignment = VerticalAlignmentOptions.Middle; 
+        quoteText.autoSizeTextContainer = true;
+        quoteText.horizontalAlignment = HorizontalAlignmentOptions.Center;  // Center each line
+        quoteText.verticalAlignment = VerticalAlignmentOptions.Middle;
     }
     private void OnEnable()
     {
         // Trigger random quote + pop-up on every activation (death)
         ShowRandomQuote();
+        StartCoroutine(ReloadScene());
     }
     private void ShowRandomQuote()
     {
@@ -46,7 +51,7 @@ public class GameOverManager : MonoBehaviour
         // Random quote 
         string randomQuote = quotes[Random.Range(0, quotes.Length)];
         quoteText.text = $"\"{randomQuote}\""; // Add " " quotes around text
-        
+
 
         // Reset transform/color for animation
         // quoteText.transform.localScale = Vector3.zero;  
@@ -68,13 +73,19 @@ public class GameOverManager : MonoBehaviour
             // quoteText.transform.localScale = Vector3.one * scaleProgress;
 
             // Fade alpha in
-           quoteText.color = Color.Lerp(transparentColor, originalTextColor, timer / fadeInDuration);
+            quoteText.color = Color.Lerp(transparentColor, originalTextColor, timer / fadeInDuration);
             yield return null;
         }
 
         // Final full size/opaque
         // quoteText.transform.localScale = Vector3.one;
         quoteText.color = originalTextColor;
+    }
+
+    private IEnumerator ReloadScene()
+    {
+        yield return new WaitForSeconds(respawnDelay);
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex); // Reload current scene
     }
 }
 
