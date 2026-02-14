@@ -727,6 +727,7 @@ GameObject:
   - component: {fileID: 6250797799218565508}
   - component: {fileID: 1765831518481145411}
   - component: {fileID: 7247469446385132764}
+  - component: {fileID: 7992567303050177770}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -922,6 +923,7 @@ MonoBehaviour:
   gameOverCanvas: {fileID: 0}
   hitsfx: {fileID: 8300000, guid: aa272b6788c6d4e42995a283d9511276, type: 3}
   pitchVariation: 0.1
+  deathSound: {fileID: 8300000, guid: 084d54b4212f0e14e82cd39a78f98725, type: 3}
   damageFlashImage: {fileID: 0}
   damageFlashDuration: 0.2
   maxFlashAlpha: 0.15
@@ -978,6 +980,33 @@ MonoBehaviour:
     DissipationDistance: 100
     PropagationSpeed: 343
   DefaultVelocity: {x: 0.2, y: 0.13, z: 0}
+--- !u!54 &7992567303050177770
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7060386071944206689}
+  serializedVersion: 5
+  m_Mass: 1
+  m_LinearDamping: 0
+  m_AngularDamping: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 1
+  m_IsKinematic: 0
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
 --- !u!1 &8036915755859188209
 GameObject:
   m_ObjectHideFlags: 0
