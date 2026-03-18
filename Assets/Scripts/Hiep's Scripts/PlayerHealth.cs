@@ -15,6 +15,7 @@ public class PlayerHealth : MonoBehaviour
     // Runtime vars
     private float regenTimer = 0f;
     private PlayerMovement playerMovement;
+    private PlayerFootstep playerFootstep;
     private CharacterController characterController;
     private CinemachineImpulseSource impulseSource; // yeh impulse also need get component 
     [SerializeField] GameObject gameOverCanvas; 
@@ -28,7 +29,7 @@ public class PlayerHealth : MonoBehaviour
     [SerializeField] private float pitchVariation = 0.1f;
     [SerializeField] AudioClip deathSound;
     
-    [Header("Damage Flash")]
+    [Header("Damage Flash")] 
     [SerializeField] Image damageFlashImage;
     private Coroutine flashCoroutine;  // Track to stop overlapping flashes
     [SerializeField] private float damageFlashDuration = 0.15f;
@@ -37,6 +38,7 @@ public class PlayerHealth : MonoBehaviour
     private void Awake()
     {
         playerMovement = GetComponent<PlayerMovement>();
+        playerFootstep = GetComponent<PlayerFootstep>();
         characterController = GetComponent<CharacterController>();
         impulseSource = GetComponent<CinemachineImpulseSource>();
         audioSource = GetComponent<AudioSource>();
@@ -161,19 +163,20 @@ public class PlayerHealth : MonoBehaviour
             playerMovement.enabled = false;
         if (characterController != null)
             characterController.enabled = false;
+        if (playerFootstep != null) playerFootstep.enabled = false;
         // if (playerCollider != null) playerCollider.enabled = false;
 
-        if (playerRigidbody != null)
-        {
-            playerRigidbody.isKinematic = false;  // Physics on
+            if (playerRigidbody != null)
+            {
+                playerRigidbody.isKinematic = false;  // Physics on
 
-            // Fall
-            playerRigidbody.linearVelocity = new Vector3(
-                Random.Range(-2f, 2f),  // Side velocity
-                Random.Range(-1f, 1f),  // Up/down kick
-                Random.Range(-2f, 2f)   // Forward/back
-            );
-        }
+                // Fall
+                playerRigidbody.linearVelocity = new Vector3(
+                    Random.Range(-2f, 2f),  // Side velocity
+                    Random.Range(-1f, 1f),  // Up/down kick
+                    Random.Range(-2f, 2f)   // Forward/back
+                );
+            }
         audioSource.PlayOneShot(deathSound);
         if (gameOverCanvas != null)
             gameOverCanvas.SetActive(true);

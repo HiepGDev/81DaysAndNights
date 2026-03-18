@@ -4,14 +4,14 @@ using UnityEngine.InputSystem;
 using UnityEngine.UI;
 public class PlayerMovement : MonoBehaviour
 {
-    public Transform playerCamera;
-    private CharacterController playerController;
-    InputAction moveAction;
-    InputAction jumpAction;
-    InputAction lookAction;
-    InputAction sprintAction;
-    [Header("Movement setting")] 
-    // Movement setting
+    public Transform playerCamera; 
+    private CharacterController playerController; 
+    InputAction moveAction; 
+    InputAction jumpAction; 
+    InputAction lookAction; 
+    InputAction sprintAction; 
+    private InputAction crouchAction; 
+    [Header("Movement setting")]
     [SerializeField] float walkSpeed = 0f;
     [SerializeField] float sprintSpeed = 0f;
     [SerializeField] float jumpHeight = 0f;
@@ -19,33 +19,22 @@ public class PlayerMovement : MonoBehaviour
     // Mouse setiing 
     [SerializeField] float lookSensitivity = 0f;
     private float xRotation = 0f;
-    // JumpBuffer settings
+    // JumpBuffer settings 
     public float jumpBufferTime = 0.2f;  // How long to remember a jump input (in seconds)
     private float jumpBufferCounter = 0f;
     // Gravity 
     private Vector3 velocity;
     [HideInInspector]
+    private PlayerStamina staminaSystem;
     public bool isSprinting;
-    
-    [Header("Stamina Setting")]
-    // stamina 
-    [SerializeField] private Image staminaBar;
-    [SerializeField] private float maxStamina = 5f;
-    [SerializeField] private float drainRate = 1f;
-    [SerializeField] private float regenRate = 0.5f;
-    [SerializeField] private float regenDelay = 2f;
-    private float currentStamina; 
-    private float regenTimer = 0f;
-
-    [Header("Headbob Settings")]
-    // Headbob settings
-    [SerializeField] private float bobAmplitudeWalk = 0.08f;
-    [SerializeField] private float bobAmplitudeSprint = 0.12f;
-    [SerializeField] private float bobSpeedWalk = 8f;
-    [SerializeField] private float bobSpeedSprint = 12f;
-    private Vector3 originalCamPos;
-    private float bobTimer = 0f;
-
+    [Header("Crouch Settings")] 
+    [SerializeField] private float crouchHeight = 1.0f;
+    [SerializeField] private float standingHeight = 2.0f; 
+    [SerializeField] private float crouchSpeed = 2.0f; 
+    [SerializeField] private float crouchTransitionSpeed = 8f; 
+    public bool isCrouching = false;
+    private Vector3 originalCamPos; 
+    // center lerping to stop sinking/stutter
     private void Awake()
     {
         DisableCursor();
@@ -54,14 +43,16 @@ public class PlayerMovement : MonoBehaviour
         lookAction = InputSystem.actions.FindAction("Look");
         jumpAction = InputSystem.actions.FindAction("Jump");
         sprintAction = InputSystem.actions.FindAction("Sprint");
+        crouchAction = InputSystem.actions.FindAction("Crouch");
         moveAction.Enable();
         lookAction.Enable();
         jumpAction.Enable();
         sprintAction.Enable();
+        crouchAction.Enable();
     }
     void Start()
     {
-        currentStamina = maxStamina;
+        staminaSystem = GetComponent<PlayerStamina>();
         originalCamPos = playerCamera.localPosition;
     }
 
@@ -70,8 +61,12 @@ public class PlayerMovement : MonoBehaviour
         HandleMove();
         HandleLook();
         HandleJump();
-        HandleStamina();
-        HandleHeadbob();
+        HandleCrouch();
+        if (staminaSystem != null)
+        {
+            staminaSystem.HandleStamina(isSprinting);
+        }
+        
     }
 
     void DisableCursor()
@@ -83,10 +78,17 @@ public class PlayerMovement : MonoBehaviour
     {
         // get vector from input 
         Vector2 moveValue = moveAction.ReadValue<Vector2>();
+        // Check the stamina system to see if we are allowed to sprint
+        bool hasEnergy = staminaSystem != null && staminaSystem.HasStamina();
         // sprint is held or not 
-        isSprinting = sprintAction.IsPressed() && moveValue.magnitude > 0.1f && moveValue.y > 0.1f && currentStamina > 0f;
-        // Convert input to to world-space directions, movement logic.
-        float currentSpeed = isSprinting ? sprintSpeed : walkSpeed;
+        if (sprintAction.IsPressed() && isCrouching)
+        {
+            isCrouching = false;
+        }
+        isSprinting = sprintAction.IsPressed() && moveValue.magnitude > 0.1f && moveValue.y > 0.1f && hasEnergy && !isCrouching;
+        // Speed selection
+        float currentSpeed = isCrouching ? crouchSpeed : (isSprinting ? sprintSpeed : walkSpeed);
+
         Vector3 move = transform.right * moveValue.x + transform.forward * moveValue.y;
         playerController.Move(move * currentSpeed * Time.deltaTime);
 
@@ -119,6 +121,13 @@ public class PlayerMovement : MonoBehaviour
         // If the jump button is pressed this frame, reset the jump buffer counter
         if (jumpAction.triggered)
         {
+            if (isCrouching)
+            {
+                isCrouching = false;
+                jumpBufferCounter = 0f; // Clear the buffer so they don't jump immediately
+                return; // Stop here; the player just stood up
+
+            }
             jumpBufferCounter = jumpBufferTime;
         }
         else
@@ -127,60 +136,24 @@ public class PlayerMovement : MonoBehaviour
         }
 
         // If grounded and a jump was buffered, perform the jump
-        if (playerController.isGrounded && jumpBufferCounter > 0f)
+        if (playerController.isGrounded && jumpBufferCounter > 0f && !isCrouching)
         {
             velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
             jumpBufferCounter = 0f; // reset the buffer once the jump is triggered
         }
     }
-
-    void HandleStamina()
+    private void HandleCrouch()
     {
-        if (isSprinting)
+        if (crouchAction.triggered)
         {
-            //drain
-            currentStamina -= drainRate * Time.deltaTime;
-            currentStamina = Mathf.Max(currentStamina, 0f);
-            regenTimer = 0f; // reset regen delay
-        }
-        else
-        {
-            // count up until regenDelay
-            if (currentStamina < maxStamina)
-            {
-                regenTimer += Time.deltaTime;
-                if (regenTimer >= regenDelay)
-                {
-                    currentStamina += regenRate * Time.deltaTime;
-                    currentStamina = Mathf.Min(currentStamina, maxStamina);
-                }
-            }
-        }
-        UpdateStaminaUI();
-    }
+            isCrouching = !isCrouching;
+        } 
+        // Smoothly adjust CharacterController height
+        float targetHeight = isCrouching ? crouchHeight : standingHeight;
+        playerController.height = Mathf.Lerp(playerController.height, targetHeight, Time.deltaTime * crouchTransitionSpeed);
 
-    private void UpdateStaminaUI()
-    {
-        if (staminaBar != null)
-            staminaBar.fillAmount = currentStamina / maxStamina;
-    }
-    void HandleHeadbob()
-    {
-        Vector2 moveValue = moveAction.ReadValue<Vector2>();
-        bool isMoving = moveValue.magnitude > 0.1f && playerController.isGrounded;
-
-        if (isMoving)
-        {
-            float amplitude = isSprinting ? bobAmplitudeSprint : bobAmplitudeWalk;
-            float bobSpeed = isSprinting ? bobSpeedSprint : bobSpeedWalk;
-            bobTimer += Time.deltaTime * bobSpeed;
-            float bobY = Mathf.Sin(bobTimer) * amplitude;
-            playerCamera.localPosition = originalCamPos + new Vector3(0, bobY, 0);
-        }
-        else
-        {
-            // Smoothly lerp back to original position when not moving
-            playerCamera.localPosition = Vector3.Lerp(playerCamera.localPosition, originalCamPos, Time.deltaTime * 10f);
-        }
+        // Adjust camera position relative to crouch
+        Vector3 targetCamPos = isCrouching ? new Vector3(originalCamPos.x, originalCamPos.y - 0.5f, originalCamPos.z) : originalCamPos;
+        playerCamera.localPosition = Vector3.Lerp(playerCamera.localPosition, targetCamPos, Time.deltaTime * crouchTransitionSpeed);
     }
 }

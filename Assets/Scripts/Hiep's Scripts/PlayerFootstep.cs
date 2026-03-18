@@ -7,9 +7,11 @@ public class PlayerFootstep : MonoBehaviour
     [SerializeField] private AudioClip[] footstepSound;
     [SerializeField] private float walkStepInterval = 0.5f; // Time between steps when walking
     [SerializeField] private float sprintStepInterval = 0.3f; // Time between steps when sprinting (shorter = faster)
+    [SerializeField] private float crouchStepInterval = 0.7f;
     [SerializeField] private float pitchMin = 0.9f;
     [SerializeField] private float pitchMax = 1.1f;
     private float stepTimer = 0f;
+    private float lastStepTime = 0f;
     private CharacterController controller;
     private PlayerMovement movement;
     private InputAction moveAction;
@@ -34,18 +36,24 @@ public class PlayerFootstep : MonoBehaviour
 
         if (isMoving)
         {
-            float stepInterval = movement.isSprinting ? sprintStepInterval : walkStepInterval;
+            float interval;
+            if (movement.isSprinting) interval = sprintStepInterval;
+            else if (movement.isCrouching) interval = crouchStepInterval;
+            else interval = walkStepInterval;
             stepTimer -= Time.deltaTime;
             if (stepTimer <= 0f)
             {
-                PlayFootstep();
-                stepTimer = stepInterval; // Reset timer
+                if (Time.time > lastStepTime + 0.2f)
+                {
+                    PlayFootstep();
+                    lastStepTime = Time.time; // Reset timer
+                }
+                stepTimer = interval;
             }
         }
         else
         {
-            stepTimer = 0f; // Reset when not moving
-            Debug.Log("PlayerFootstep: Not triggering footsteps (not moving or not grounded)");
+            stepTimer = 0.1f; // Reset when not moving
         }
     }
 
