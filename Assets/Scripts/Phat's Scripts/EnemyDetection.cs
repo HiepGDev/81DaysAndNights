@@ -8,6 +8,7 @@ public class EnemyDetection : MonoBehaviour
     [SerializeField] private LayerMask detectionLayer;
 
     public bool IsTargetDetected { get; private set; }
+    public Transform CurrentTarget { get; private set; }
 
     private void Update()
     {
@@ -17,6 +18,7 @@ public class EnemyDetection : MonoBehaviour
     private void DetectTargets()
     {
         IsTargetDetected = false;
+        CurrentTarget = null;
         Collider[] targets = Physics.OverlapSphere(transform.position, detectionRadius, detectionLayer);
 
         foreach (var target in targets)
@@ -31,13 +33,13 @@ public class EnemyDetection : MonoBehaviour
                     if (target.CompareTag(targetTag))
                     {
                         IsTargetDetected = true;
+                        CurrentTarget = target.transform;
                         return; // Found at least one target (OR logic), so we can stop looking
                     }
                 }
                 catch (System.Exception)
                 {
                     // This catches the "Tag not defined" error so your game keeps running
-                    // It's better to add the tag in Unity, but this keeps it safe
                 }
             }
         }

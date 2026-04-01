@@ -44,9 +44,11 @@ public class EnemyBehaviorAgent : MonoBehaviour
 
     private void Start()
     {
-        // Force all children to center
+        // Force children to center, but SKIP functional objects like FirePoint
         foreach (Transform child in transform)
         {
+            if (child.name.Contains("Fire") || child.name.Contains("Point")) continue;
+
             child.localPosition = Vector3.zero;
             child.localRotation = Quaternion.identity;
         }
@@ -73,6 +75,18 @@ public class EnemyBehaviorAgent : MonoBehaviour
         if (detection != null && detection.IsTargetDetected)
         {
             StopAgent();
+            
+            // Aim at target
+            if (detection.CurrentTarget != null)
+            {
+                Vector3 lookPos = detection.CurrentTarget.position - transform.position;
+                lookPos.y = 0;
+                if (lookPos != Vector3.zero)
+                {
+                    Quaternion targetRot = Quaternion.LookRotation(lookPos);
+                    transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, Time.deltaTime * 5f);
+                }
+            }
             return;
         }
 
