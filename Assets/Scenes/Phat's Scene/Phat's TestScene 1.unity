@@ -1069,6 +1069,37 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 7364163981240290654, guid: f281bc33191a33d48aaa6b157ebaa913, type: 3}
   m_PrefabInstance: {fileID: 1316667251}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1608003257
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1608003258}
+  m_Layer: 0
+  m_Name: FirePoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1608003258
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1608003257}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0.000000033262037, y: -0.00000007776543, z: 0.00000001817517, w: -1}
+  m_LocalPosition: {x: 0.33, y: 1.3100001, z: 0.3055601}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2053163869369761564}
+  m_LocalEulerAnglesHint: {x: 0, y: 180, z: 0}
 --- !u!1 &1762482970
 GameObject:
   m_ObjectHideFlags: 0
@@ -7207,6 +7238,7 @@ Transform:
   - {fileID: 5226682807746095136}
   - {fileID: 5690656386163488276}
   - {fileID: 6851456692577614562}
+  - {fileID: 1608003258}
   m_Father: {fileID: 2294932906115012625}
   m_LocalEulerAnglesHint: {x: 0, y: -180, z: 0}
 --- !u!1 &2134328409441103270
@@ -21856,6 +21888,7 @@ GameObject:
   - component: {fileID: 8270135901323117732}
   - component: {fileID: 8270135901323117736}
   - component: {fileID: 8270135901323117735}
+  - component: {fileID: 8270135901323117737}
   m_Layer: 0
   m_Name: Enemy Test
   m_TagString: Enemy
@@ -21918,6 +21951,22 @@ NavMeshAgent:
   m_BaseOffset: 0
   m_WalkableMask: 4294967295
   m_ObstacleAvoidanceType: 4
+--- !u!114 &8270135901323117737
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8270135901323117730}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c4232bf22af459043b2481e074357c46, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyShooting
+  bulletPrefab: {fileID: 1362100356248084211, guid: 91149d0af11b2294cb97cb0777f7bc69, type: 3}
+  firePoint: {fileID: 1608003258}
+  fireRate: 1
+  fireDistance: 15
 --- !u!4 &8279688076356498328
 Transform:
   m_ObjectHideFlags: 0
