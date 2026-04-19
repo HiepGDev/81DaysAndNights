@@ -28,6 +28,7 @@ public class PlayerMovement : MonoBehaviour
     [HideInInspector]
     private PlayerStamina staminaSystem;
     public bool isSprinting;
+    public bool canSprint = true;
     [Header("Crouch Settings")] 
     [SerializeField] private float crouchHeight = 1.0f;
     [SerializeField] private float standingHeight = 2.0f; 
@@ -87,7 +88,8 @@ public class PlayerMovement : MonoBehaviour
         {
             isCrouching = false;
         }
-        isSprinting = sprintAction.IsPressed() && moveValue.magnitude > 0.1f && moveValue.y > 0.1f && hasEnergy && !isCrouching;
+        isSprinting = sprintAction.IsPressed() && moveValue.magnitude > 0.1f && moveValue.y > 0.1f 
+        && hasEnergy && !isCrouching && canSprint; 
         // Speed selection
         float currentSpeed = isCrouching ? crouchSpeed : (isSprinting ? sprintSpeed : walkSpeed);
 
