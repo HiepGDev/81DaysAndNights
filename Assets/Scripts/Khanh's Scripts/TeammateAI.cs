@@ -23,6 +23,7 @@ public class TeammateAI : MonoBehaviour
 
     private Vector3 lastDestination;
     private const float DESTINATION_THRESHOLD = 0.5f;
+    private float lastLoggedSpeed = -1f;
 
     private void Awake()
     {
@@ -49,6 +50,8 @@ public class TeammateAI : MonoBehaviour
         // Force all children to center
         foreach (Transform child in transform)
         {
+            if (child.name.Contains("Fire") || child.name.Contains("Point")) continue;
+
             child.localPosition = Vector3.zero;
             child.localRotation = Quaternion.identity;
         }
@@ -190,12 +193,42 @@ public class TeammateAI : MonoBehaviour
     {
         if (animator == null) return;
 
-        if (HasAnimParam("Speed"))
+        if (HasParameter("Speed", animator))
         {
             float currentMoveSpeed = agent.desiredVelocity.magnitude;
             animator.SetFloat("Speed", currentMoveSpeed);
-        }
 
+            // LOGIC DEBUG THÔNG MINH: Chỉ in ra Console nếu tốc độ thay đổi đáng kể
+            // (vượt ngưỡng 0.1f để tránh spam khi NavMesh nhích từng chút một)
+            if (Mathf.Abs(currentMoveSpeed - lastLoggedSpeed) > 0.1f)
+            {
+                if (currentMoveSpeed > 0.1f)
+                {
+                    Debug.Log($"[TeammateAI - Animation] Đang di chuyển! Speed = {currentMoveSpeed:F2}");
+                }
+                else if (currentMoveSpeed <= 0.1f && lastLoggedSpeed > 0.1f)
+                {
+                    Debug.Log($"[TeammateAI - Animation] Đã dừng lại! Speed = {currentMoveSpeed:F2}");
+                }
+
+                // Lưu lại tốc độ hiện tại để so sánh cho khung hình sau
+                lastLoggedSpeed = currentMoveSpeed;
+            }
+        }
+        else
+        {
+            // Cảnh báo nếu Animator không có biến "Speed" (chống lỗi)
+            Debug.LogWarning("[TeammateAI - Animation] CẢNH BÁO: Không tìm thấy Parameter tên là 'Speed' trong Animator!");
+        }
+    }
+
+    private bool HasParameter(string paramName, Animator anim)
+    {
+        foreach (AnimatorControllerParameter param in anim.parameters)
+        {
+            if (param.name == paramName) return true;
+        }
+        return false;
     }
 
     private bool HasAnimParam(string paramName)
