@@ -6,55 +6,65 @@ public class EnemyBehaviorAgent : MonoBehaviour
 {
     private NavMeshAgent agent;
     private EnemyDetection detection;
+    private EnemyShooting shooting;
+    private EnemyCover cover;
     private Animator animator;
 
     [Header("Behavior Settings")]
-    [SerializeField] private float wanderRadius = 10f;
+    [SerializeField] private float wanderRadius = 15f;
     [SerializeField] private float idleTime = 2f;
     
     private Vector3 spawnPoint;
     private float idleTimer;
     private bool isIdle = false;
-    private Vector3 currentTarget;
+    private bool isInCover = false;
+    private Vector3 currentTarget; 
+    private EnemyCover.CoverPoint activeCover;
 
     private void Awake()
     {
         agent = GetComponent<NavMeshAgent>();
         detection = GetComponent<EnemyDetection>();
-
-        // Find the animator on this object or its children
-        animator = GetComponent<Animator>();
-        if (animator == null) animator = GetComponentInChildren<Animator>();
+        shooting = GetComponent<EnemyShooting>();
+        cover = GetComponent<EnemyCover>();
+        
+        // Find animator on model (check children first)
+        animator = GetComponentInChildren<Animator>();
+        if (animator == null) animator = GetComponent<Animator>();
 
         if (animator != null)
         {
             animator.applyRootMotion = false;
+            animator.cullingMode = AnimatorCullingMode.AlwaysAnimate;
         }
 
         // Configure Agent
         agent.updatePosition = false; 
         agent.updateRotation = true;
-        agent.acceleration = 20f; 
-        agent.angularSpeed = 450f; 
+        agent.acceleration = 30f; 
+        agent.angularSpeed = 600f; 
         agent.stoppingDistance = 0.5f;
 
         Rigidbody rb = GetComponent<Rigidbody>();
-        if (rb != null) { rb.isKinematic = true; }
+        if (rb != null) rb.isKinematic = true;
     }
 
     private void Start()
     {
-        // Force children to center, but SKIP functional objects like FirePoint
+        // RESTORED: Force children to center, but SKIP functional objects
         foreach (Transform child in transform)
         {
-            if (child.name.Contains("Fire") || child.name.Contains("Point")) continue;
+            // Do not reset the M4 or the FirePoint
+            if (child.name.Contains("Fire") || child.name.Contains("Point") || 
+                child.name.Contains("M4") || child.name.Contains("Gun")) 
+                continue;
 
             child.localPosition = Vector3.zero;
             child.localRotation = Quaternion.identity;
         }
 
         spawnPoint = transform.position;
-        agent.Warp(transform.position);
+        if (agent.isOnNavMesh) agent.Warp(transform.position);
         StartIdle();
     }
 
@@ -62,76 +72,160 @@ public class EnemyBehaviorAgent : MonoBehaviour
     {
         if (!agent.isOnNavMesh) return;
 
-        // Sync Position
+        // Force object to follow Agent simulation (Fusion Fix)
         transform.position = agent.nextPosition;
 
-        // Update Animation Speed
-        if (animator != null && HasParameter("Speed", animator))
+        // 1. UPDATE ANIMATION (Speed)
+        if (animator != null)
         {
-            float currentMoveSpeed = agent.desiredVelocity.magnitude;
-            animator.SetFloat("Speed", currentMoveSpeed);
+            float speed = agent.desiredVelocity.magnitude;
+            if (HasParameter("Speed", animator))
+                animator.SetFloat("Speed", speed);
         }
 
-        if (detection != null && detection.IsTargetDetected)
+        // 2. CHECK FOR COVER NEED (Out of Ammo)
+        if (shooting != null && shooting.IsOutOfAmmo && !isInCover && !shooting.IsReloading)
         {
-            StopAgent();
-            
-            // Aim at target
-            if (detection.CurrentTarget != null)
-            {
-                Vector3 lookPos = detection.CurrentTarget.position - transform.position;
-                lookPos.y = 0;
-                if (lookPos != Vector3.zero)
-                {
-                    Quaternion targetRot = Quaternion.LookRotation(lookPos);
-                    transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, Time.deltaTime * 5f);
-                }
-            }
+            FindAndGoToCover();
             return;
         }
 
+        // 3. HANDLE COVER STATE
+        if (isInCover)
+        {
+            HandleCoverLogic();
+            return;
+        }
+
+        // 4. DETECTION LOGIC
+        if (detection != null && detection.IsTargetDetected)
+        {
+            StopAgent();
+            FaceTarget();
+            return;
+        }
+
+        // 5. PATROL LOGIC
         if (isIdle) HandleIdle();
         else HandleWandering();
     }
 
-    private bool HasParameter(string paramName, Animator anim)
+    public bool IsMovingToCover => isInCover && agent.hasPath && agent.remainingDistance > agent.stoppingDistance;
+
+    private void FindAndGoToCover()
     {
-        foreach (AnimatorControllerParameter param in anim.parameters)
+        if (cover == null || detection.CurrentTarget == null) 
         {
-            if (param.name == paramName) return true;
+            shooting.TriggerReload();
+            return;
         }
-        return false;
+
+        activeCover = cover.FindNearestCover(detection.CurrentTarget.position);
+        
+        if (activeCover.found)
+        {
+            isInCover = true;
+            isIdle = false;
+            agent.isStopped = false;
+            agent.SetDestination(activeCover.position);
+            Debug.Log("[Agent] Moving to cover...");
+        }
+        else
+        {
+            Debug.Log("[Agent] No cover found, reloading in place.");
+            shooting.TriggerReload();
+        }
     }
 
-    private void HandleWandering()
+    private void HandleCoverLogic()
     {
-        if (!agent.pathPending && agent.hasPath)
+        if (!agent.pathPending && agent.remainingDistance <= agent.stoppingDistance)
         {
-            if (agent.remainingDistance <= agent.stoppingDistance)
+            StopAgent();
+            
+            // Aim out from cover
+            transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(activeCover.lookDirection), Time.deltaTime * 10f);
+
+            if (animator != null)
             {
-                StartIdle();
+                animator.SetBool("isCovering", true);
+                animator.SetBool("isCoverRight", activeCover.isRightSide);
+                
+                if (!animator.GetCurrentAnimatorStateInfo(0).IsName("Cover_Crouching"))
+                {
+                    animator.CrossFade("Cover_Crouching", 0.1f);
+                }
+            }
+
+            if (!shooting.IsReloading && shooting.IsOutOfAmmo)
+            {
+                shooting.TriggerReload();
+            }
+
+            if (!shooting.IsReloading && !shooting.IsOutOfAmmo)
+            {
+                ExitCover();
             }
         }
     }
 
-    private void HandleIdle()
+    private void ExitCover()
     {
-        idleTimer -= Time.deltaTime;
-        if (idleTimer <= 0)
+        isInCover = false;
+        if (animator != null) animator.SetBool("isCovering", false);
+        
+        if (detection.IsTargetDetected)
+        {
+            StopAgent();
+            FaceTarget();
+        }
+        else
         {
             PickNewWanderPoint();
         }
     }
 
+    private void FaceTarget()
+    {
+        if (detection.CurrentTarget != null)
+        {
+            Vector3 lookPos = detection.CurrentTarget.position - transform.position;
+            lookPos.y = 0;
+            if (lookPos != Vector3.zero)
+            {
+                Quaternion targetRot = Quaternion.LookRotation(lookPos);
+                transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, Time.deltaTime * 5f);
+            }
+        }
+    }
+
+    private bool HasParameter(string paramName, Animator anim)
+    {
+        foreach (AnimatorControllerParameter param in anim.parameters)
+            if (param.name == paramName) return true;
+        return false;
+    }
+
+    private void HandleWandering()
+    {
+        if (!agent.pathPending && agent.hasPath && agent.remainingDistance <= agent.stoppingDistance)
+            StartIdle();
+    }
+
+    private void HandleIdle()
+    {
+        idleTimer -= Time.deltaTime;
+        if (idleTimer <= 0) PickNewWanderPoint();
+    }
+
     private void PickNewWanderPoint()
     {
         if (!agent.isOnNavMesh) return;
-
-        for (int i = 0; i < 20; i++)
+        for (int i = 0; i < 15; i++)
         {
             Vector3 randomPos = spawnPoint + Random.insideUnitSphere * wanderRadius;
             NavMeshHit hit;
-            if (NavMesh.SamplePosition(randomPos, out hit, 4.0f, NavMesh.AllAreas))
+            if (NavMesh.SamplePosition(randomPos, out hit, 5.0f, NavMesh.AllAreas))
             {
                 NavMeshPath path = new NavMeshPath();
                 agent.CalculatePath(hit.position, path);
