@@ -20,7 +20,7 @@ public class WeaponSO : ScriptableObject
     [Header("Asset References")]
     public AudioClip GunSound; 
     public AudioClip reloadSound;
-    public GameObject MuzzleFlashPrefab;   // Prefab 
-    // public GameObject HitVfxPrefab;     // Prefab 
+    // public GameObject MuzzleFlashPrefab;   // Prefab 
+    public GameObject HitVfxPrefab;     // Prefab 
     
 }

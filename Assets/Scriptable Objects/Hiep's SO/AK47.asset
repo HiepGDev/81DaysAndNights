@@ -14,16 +14,16 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WeaponSO
   Damage: 30
   MaxDistance: 100
-  currentAmmo: 99
-  reserveAmmo: 966
+  currentAmmo: 83
+  reserveAmmo: 982
   maxReserveAmmo: 999
   magazineSize: 99
   fireRate: 0.2
   reloadTime: 2.3
   reloading: 0
   isAutomatic: 1
-  canZoom: 0
-  zoomAmount: 0
+  canZoom: 1
+  zoomAmount: 45
   GunSound: {fileID: 8300000, guid: e8776a34720384a43aab1f3bcf8dcba8, type: 3}
   reloadSound: {fileID: 8300000, guid: 9dc6b4d7a4602854c8f5f733ff764596, type: 3}
-  MuzzleFlashPrefab: {fileID: 0}
+  HitVfxPrefab: {fileID: 438055697701900440, guid: ba630e5d2c7bfe24592a226f86580d38, type: 3}
