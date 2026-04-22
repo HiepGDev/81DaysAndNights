@@ -4,6 +4,7 @@ using UnityEngine.InputSystem;
 using UnityEngine.UI;
 public class PlayerMovement : MonoBehaviour
 {
+    [SerializeField] private Animator animator;
     public Transform playerCamera; 
     private CharacterController playerController; 
     InputAction moveAction; 
@@ -27,11 +28,13 @@ public class PlayerMovement : MonoBehaviour
     [HideInInspector]
     private PlayerStamina staminaSystem;
     public bool isSprinting;
+    public bool canSprint = true;
     [Header("Crouch Settings")] 
     [SerializeField] private float crouchHeight = 1.0f;
     [SerializeField] private float standingHeight = 2.0f; 
     [SerializeField] private float crouchSpeed = 2.0f; 
     [SerializeField] private float crouchTransitionSpeed = 8f; 
+    
     public bool isCrouching = false;
     private Vector3 originalCamPos; 
     // center lerping to stop sinking/stutter
@@ -85,7 +88,8 @@ public class PlayerMovement : MonoBehaviour
         {
             isCrouching = false;
         }
-        isSprinting = sprintAction.IsPressed() && moveValue.magnitude > 0.1f && moveValue.y > 0.1f && hasEnergy && !isCrouching;
+        isSprinting = sprintAction.IsPressed() && moveValue.magnitude > 0.1f && moveValue.y > 0.1f 
+        && hasEnergy && !isCrouching && canSprint; 
         // Speed selection
         float currentSpeed = isCrouching ? crouchSpeed : (isSprinting ? sprintSpeed : walkSpeed);
 
@@ -101,7 +105,13 @@ public class PlayerMovement : MonoBehaviour
         {
             velocity.y = -2f;
         }
+        bool isMoving = moveValue.magnitude > 0.1f;
+        bool isWalking = isMoving && !isSprinting;
+        bool isRunning = isMoving && isSprinting;
+        animator.SetBool("isWalk", isWalking);
+        animator.SetBool("isRun", isRunning);
     }
+    
     void HandleLook()
     {
         // Read the mouse delta
@@ -150,10 +160,14 @@ public class PlayerMovement : MonoBehaviour
         } 
         // Smoothly adjust CharacterController height
         float targetHeight = isCrouching ? crouchHeight : standingHeight;
-        playerController.height = Mathf.Lerp(playerController.height, targetHeight, Time.deltaTime * crouchTransitionSpeed);
+        float newHeight = Mathf.Lerp(playerController.height, targetHeight, Time.deltaTime * crouchTransitionSpeed);
+        playerController.height = newHeight;
+
+        playerController.center = new Vector3(0, newHeight / 2f, 0);
+        float heightDifference = standingHeight - newHeight;
 
         // Adjust camera position relative to crouch
-        Vector3 targetCamPos = isCrouching ? new Vector3(originalCamPos.x, originalCamPos.y - 0.5f, originalCamPos.z) : originalCamPos;
+        Vector3 targetCamPos = new Vector3(originalCamPos.x, originalCamPos.y - heightDifference, originalCamPos.z);
         playerCamera.localPosition = Vector3.Lerp(playerCamera.localPosition, targetCamPos, Time.deltaTime * crouchTransitionSpeed);
     }
 }
