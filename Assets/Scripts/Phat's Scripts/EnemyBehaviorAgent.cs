@@ -27,18 +27,13 @@ public class EnemyBehaviorAgent : MonoBehaviour
         detection = GetComponent<EnemyDetection>();
         shooting = GetComponent<EnemyShooting>();
         cover = GetComponent<EnemyCover>();
-        
-        // Find animator on model (check children first)
         animator = GetComponentInChildren<Animator>();
-        if (animator == null) animator = GetComponent<Animator>();
 
-        if (animator != null)
-        {
+        if (animator != null) {
             animator.applyRootMotion = false;
             animator.cullingMode = AnimatorCullingMode.AlwaysAnimate;
         }
 
-        // Configure Agent
         agent.updatePosition = false; 
         agent.updateRotation = true;
         agent.acceleration = 30f; 
@@ -51,18 +46,14 @@ public class EnemyBehaviorAgent : MonoBehaviour
 
     private void Start()
     {
-        // RESTORED: Force children to center, but SKIP functional objects
         foreach (Transform child in transform)
         {
-            // Do not reset the M4 or the FirePoint
             if (child.name.Contains("Fire") || child.name.Contains("Point") || 
                 child.name.Contains("M4") || child.name.Contains("Gun")) 
                 continue;
-
             child.localPosition = Vector3.zero;
             child.localRotation = Quaternion.identity;
         }
-
         spawnPoint = transform.position;
         if (agent.isOnNavMesh) agent.Warp(transform.position);
         StartIdle();
@@ -71,11 +62,8 @@ public class EnemyBehaviorAgent : MonoBehaviour
     private void Update()
     {
         if (!agent.isOnNavMesh) return;
-
-        // Force object to follow Agent simulation (Fusion Fix)
         transform.position = agent.nextPosition;
 
-        // 1. UPDATE ANIMATION (Speed)
         if (animator != null)
         {
             float speed = agent.desiredVelocity.magnitude;
@@ -83,34 +71,33 @@ public class EnemyBehaviorAgent : MonoBehaviour
                 animator.SetFloat("Speed", speed);
         }
 
-        // 2. CHECK FOR COVER NEED (Out of Ammo)
         if (shooting != null && shooting.IsOutOfAmmo && !isInCover && !shooting.IsReloading)
         {
             FindAndGoToCover();
             return;
         }
 
-        // 3. HANDLE COVER STATE
         if (isInCover)
         {
             HandleCoverLogic();
             return;
         }
 
-        // 4. DETECTION LOGIC
         if (detection != null && detection.IsTargetDetected)
         {
+            if (shooting != null) shooting.enabled = true;
             StopAgent();
             FaceTarget();
             return;
         }
 
-        // 5. PATROL LOGIC
         if (isIdle) HandleIdle();
         else HandleWandering();
     }
 
     public bool IsMovingToCover => isInCover && agent.hasPath && agent.remainingDistance > agent.stoppingDistance;
+    public bool IsInCover => isInCover;
+    public EnemyCover.CoverPoint ActiveCover => activeCover;
 
     private void FindAndGoToCover()
     {
@@ -128,43 +115,36 @@ public class EnemyBehaviorAgent : MonoBehaviour
             isIdle = false;
             agent.isStopped = false;
             agent.SetDestination(activeCover.position);
-            Debug.Log("[Agent] Moving to cover...");
         }
         else
         {
-            Debug.Log("[Agent] No cover found, reloading in place.");
             shooting.TriggerReload();
         }
     }
 
     private void HandleCoverLogic()
     {
-        if (!agent.pathPending && agent.remainingDistance <= agent.stoppingDistance)
+        float distToCover = Vector3.Distance(transform.position, activeCover.position);
+        if (distToCover <= 1.0f || (!agent.pathPending && agent.remainingDistance <= agent.stoppingDistance))
         {
-            StopAgent();
-            
-            // Aim out from cover
-            transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(activeCover.lookDirection), Time.deltaTime * 10f);
-
-            if (animator != null)
+            if (shooting != null && shooting.IsOutOfAmmo)
             {
-                animator.SetBool("isCovering", true);
-                animator.SetBool("isCoverRight", activeCover.isRightSide);
-                
-                if (!animator.GetCurrentAnimatorStateInfo(0).IsName("Cover_Crouching"))
+                StopAgent();
+                transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(activeCover.lookDirection), Time.deltaTime * 10f);
+
+                if (animator != null)
                 {
-                    animator.CrossFade("Cover_Crouching", 0.1f);
+                    animator.SetBool("isCovering", true);
+                    if (!animator.GetCurrentAnimatorStateInfo(0).IsName("Cover_Crouching"))
+                        animator.CrossFade("Cover_Crouching", 0.1f);
                 }
-            }
 
-            if (!shooting.IsReloading && shooting.IsOutOfAmmo)
-            {
-                shooting.TriggerReload();
+                if (!shooting.IsReloading) shooting.TriggerReload();
             }
-
-            if (!shooting.IsReloading && !shooting.IsOutOfAmmo)
+            else
             {
-                ExitCover();
+                if (animator != null) animator.SetBool("isCovering", false);
+                FaceTarget();
             }
         }
     }
@@ -185,7 +165,7 @@ public class EnemyBehaviorAgent : MonoBehaviour
         }
     }
 
-    private void FaceTarget()
+    public void FaceTarget()
     {
         if (detection.CurrentTarget != null)
         {
@@ -199,9 +179,9 @@ public class EnemyBehaviorAgent : MonoBehaviour
         }
     }
 
-    private bool HasParameter(string paramName, Animator anim)
+    private bool HasParameter(string paramName, Animator animator)
     {
-        foreach (AnimatorControllerParameter param in anim.parameters)
+        foreach (AnimatorControllerParameter param in animator.parameters)
             if (param.name == paramName) return true;
         return false;
     }

@@ -879,6 +879,7 @@ GameObject:
   m_Component:
   - component: {fileID: 793573173}
   - component: {fileID: 793573172}
+  - component: {fileID: 793573174}
   m_Layer: 7
   m_Name: Tuong
   m_TagString: Untagged
@@ -924,6 +925,22 @@ Transform:
   - {fileID: 5687685553200301048}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!208 &793573174
+NavMeshObstacle:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 793573171}
+  m_Enabled: 0
+  serializedVersion: 3
+  m_Shape: 1
+  m_Extents: {x: 6.005, y: 4.305, z: 0.145}
+  m_MoveThreshold: 0.1
+  m_Carve: 0
+  m_CarveOnlyStationary: 1
+  m_Center: {x: 1.74, y: 0, z: 0}
+  m_TimeToStationary: 0.5
 --- !u!1 &832575517
 GameObject:
   m_ObjectHideFlags: 0
@@ -10088,7 +10105,7 @@ GameObject:
   - component: {fileID: 5687685553200301048}
   - component: {fileID: 8737384001954581597}
   - component: {fileID: 6820027896694831255}
-  m_Layer: 7
+  m_Layer: 0
   m_Name: tuong 1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -21759,6 +21776,8 @@ GameObject:
   - component: {fileID: 6456605589027945903}
   - component: {fileID: 2839695735360521227}
   - component: {fileID: 7703049310098801620}
+  - component: {fileID: 7703049310098801621}
+  - component: {fileID: 7703049310098801622}
   m_Layer: 0
   m_Name: Enemy Test 2
   m_TagString: Untagged
@@ -21782,8 +21801,43 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 128
   searchRadius: 1000
-  coverOffset: 0.5
-  edgeBuffer: 0.4
+  hugDistance: 0.2
+--- !u!64 &7703049310098801621
+MeshCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7703049310098801619}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 5
+  m_Convex: 0
+  m_CookingOptions: 30
+  m_Mesh: {fileID: 2959467708922500008, guid: c5049f1dcdc60fc469ba2947f8ed8899, type: 3}
+--- !u!114 &7703049310098801622
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7703049310098801619}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1b22ec319f5018f4ebdb02edf07da7f5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyTacticalPeek
+  peekDistance: 1.2
+  arrivalThreshold: 0.4
 --- !u!4 &7711406267325021223
 Transform:
   m_ObjectHideFlags: 0

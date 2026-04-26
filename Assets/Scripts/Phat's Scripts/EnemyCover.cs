@@ -1,80 +1,81 @@
 using UnityEngine;
+using UnityEngine.AI;
 
 public class EnemyCover : MonoBehaviour
 {
-    public struct CoverPoint
-    {
-        public Vector3 position;
-        public Vector3 lookDirection;
-        public bool isRightSide;
-        public bool found;
-    }
+    public struct CoverPoint { public Vector3 position; public Vector3 lookDirection; public bool isRightSide; public bool found; }
 
-    [Header("Cover Detection")]
+    [Header("Cover Settings")]
     [SerializeField] private LayerMask coverLayer;
-    [SerializeField] private float searchRadius = 15f;
-    [SerializeField] private float coverOffset = 0.6f; 
-    [SerializeField] private float edgeBuffer = 0.4f;  
+    [SerializeField] private float searchRadius = 25f;
+    [SerializeField] private float hugDistance = 0.2f; 
+
+    private NavMeshAgent agent;
+
+    private void Awake() { agent = GetComponent<NavMeshAgent>(); }
 
     public CoverPoint FindNearestCover(Vector3 playerPos)
     {
         CoverPoint cp = new CoverPoint { found = false };
-        
         Collider[] potentialCovers = Physics.OverlapSphere(transform.position, searchRadius, coverLayer);
-        Collider bestCollider = null;
+        Collider bestCol = null;
         float closestDist = float.MaxValue;
 
         foreach (var col in potentialCovers)
         {
-            float dist = Vector3.Distance(transform.position, col.transform.position);
-            if (dist < closestDist) { closestDist = dist; bestCollider = col; }
+            float d = Vector3.Distance(transform.position, col.transform.position);
+            if (d < closestDist) { closestDist = d; bestCol = col; }
         }
 
-        if (bestCollider == null) return cp;
+        if (bestCol == null) return cp;
 
-        // 1. Get the wall surface normal
-        Vector3 dirToWall = (bestCollider.bounds.center - transform.position).normalized;
-        RaycastHit hit;
-        if (Physics.Raycast(transform.position, dirToWall, out hit, searchRadius, coverLayer))
+        Renderer rend = bestCol.GetComponentInChildren<Renderer>();
+        Bounds visualBounds = (rend != null) ? rend.bounds : bestCol.bounds;
+
+        Vector3 wallHitPoint = visualBounds.ClosestPoint(playerPos);
+        Vector3 dirFromPlayer = (wallHitPoint - playerPos).normalized;
+        dirFromPlayer.y = 0;
+
+        Vector3 wallTangent = Vector3.Cross(Vector3.up, dirFromPlayer).normalized;
+
+        Vector3 edgeR = ProbeForVisualEdge(wallHitPoint, wallTangent, visualBounds);
+        Vector3 edgeL = ProbeForVisualEdge(wallHitPoint, -wallTangent, visualBounds);
+
+        float dR = Vector3.Distance(transform.position, edgeR);
+        float dL = Vector3.Distance(transform.position, edgeL);
+        bool useRight = dR < dL;
+        
+        Vector3 chosenCorner = useRight ? edgeR : edgeL;
+        Vector3 edgeDir = useRight ? wallTangent : -wallTangent;
+
+        // Shadow Positioning logic
+        Vector3 pushBehindWallDir = (chosenCorner - playerPos).normalized;
+        pushBehindWallDir.y = 0;
+        float radius = (agent != null ? agent.radius : 0.5f);
+        
+        Vector3 safePos = chosenCorner + (pushBehindWallDir * (radius + hugDistance)) - (edgeDir * 0.4f);
+        safePos.y = transform.position.y;
+
+        NavMeshHit navHit;
+        if (NavMesh.SamplePosition(safePos, out navHit, 2.0f, NavMesh.AllAreas))
         {
-            Vector3 wallNormal = hit.normal;
-            Vector3 wallTangent = Vector3.Cross(wallNormal, Vector3.up).normalized;
-
-            // 2. Scan for edges
-            Vector3 edgeR = ScanForEdge(hit.point, wallTangent, bestCollider);
-            Vector3 edgeL = ScanForEdge(hit.point, -wallTangent, bestCollider);
-
-            float dR = Vector3.Distance(transform.position, edgeR);
-            float dL = Vector3.Distance(transform.position, edgeL);
-
-            bool useRight = dR < dL;
-            Vector3 bestEdge = useRight ? edgeR : edgeL;
-            Vector3 sideDir = useRight ? wallTangent : -wallTangent;
-
-            // 3. Final Position & Direction
-            // Step back from normal, and slightly back from the edge to hide
-            cp.position = bestEdge + (wallNormal * coverOffset) - (sideDir * edgeBuffer);
-            cp.position.y = transform.position.y;
-            
-            // Facing "outwards" towards the edge
-            cp.lookDirection = sideDir;
+            cp.position = navHit.position;
+            cp.lookDirection = edgeDir; 
             cp.isRightSide = useRight;
             cp.found = true;
-            
-            Debug.Log($"[Cover] Found {(useRight ? "Right" : "Left")} edge of {bestCollider.gameObject.name}");
         }
-
+        
         return cp;
     }
 
-    private Vector3 ScanForEdge(Vector3 start, Vector3 dir, Collider wall)
+    private Vector3 ProbeForVisualEdge(Vector3 start, Vector3 moveDir, Bounds bounds)
     {
         Vector3 current = start;
-        for (int i = 0; i < 40; i++)
+        for (int i = 0; i < 400; i++)
         {
-            Vector3 next = current + (dir * 0.25f);
-            // If the next step is outside the wall bounds, we found the edge
-            if (!wall.bounds.Contains(next)) return current;
+            Vector3 next = current + (moveDir * 0.1f);
+            if (next.x < bounds.min.x || next.x > bounds.max.x || next.z < bounds.min.z || next.z > bounds.max.z)
+                return current; 
             current = next;
         }
         return current;
