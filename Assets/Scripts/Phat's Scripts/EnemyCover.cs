@@ -32,14 +32,35 @@ public class EnemyCover : MonoBehaviour
         Renderer rend = bestCol.GetComponentInChildren<Renderer>();
         Bounds visualBounds = (rend != null) ? rend.bounds : bestCol.bounds;
 
+        // 1. Find the point on the wall surface closest to the player
+        // THE FIX: Use visualBounds to support non-convex Mesh Colliders
         Vector3 wallHitPoint = visualBounds.ClosestPoint(playerPos);
-        Vector3 dirFromPlayer = (wallHitPoint - playerPos).normalized;
-        dirFromPlayer.y = 0;
+        
+        // 2. Get the actual Face Normal using a Raycast
+        RaycastHit faceHit;
+        Vector3 rayDir = (wallHitPoint - playerPos).normalized;
+        if (rayDir == Vector3.zero) rayDir = transform.forward; // Safety
+        
+        Vector3 faceNormal = rayDir; // Fallback
+        
+        if (Physics.Raycast(playerPos, rayDir, out faceHit, Vector3.Distance(playerPos, wallHitPoint) + 5f, coverLayer))
+        {
+            faceNormal = faceHit.normal;
+        }
+        faceNormal.y = 0;
+        if (faceNormal == Vector3.zero) faceNormal = rayDir;
+        faceNormal.Normalize();
 
-        Vector3 wallTangent = Vector3.Cross(Vector3.up, dirFromPlayer).normalized;
+        // 3. DEPTH is always AGAINST the normal
+        Vector3 depthDir = -faceNormal;
+        
+        // 4. TANGENT is along the wall face
+        Vector3 wallTangent = Vector3.Cross(Vector3.up, faceNormal).normalized;
+        if (wallTangent == Vector3.zero) wallTangent = transform.right; // Safety for zero vector
 
-        Vector3 edgeR = ProbeForVisualEdge(wallHitPoint, wallTangent, visualBounds);
-        Vector3 edgeL = ProbeForVisualEdge(wallHitPoint, -wallTangent, visualBounds);
+        // 4. PROBE: Find the actual physical corners (Raycast walk along the surface)
+        Vector3 edgeR = ProbeForPhysicalEdge(wallHitPoint, wallTangent, faceNormal);
+        Vector3 edgeL = ProbeForPhysicalEdge(wallHitPoint, -wallTangent, faceNormal);
 
         float dR = Vector3.Distance(transform.position, edgeR);
         float dL = Vector3.Distance(transform.position, edgeL);
@@ -48,18 +69,29 @@ public class EnemyCover : MonoBehaviour
         Vector3 chosenCorner = useRight ? edgeR : edgeL;
         Vector3 edgeDir = useRight ? wallTangent : -wallTangent;
 
-        // Shadow Positioning logic
-        Vector3 pushBehindWallDir = (chosenCorner - playerPos).normalized;
-        pushBehindWallDir.y = 0;
-        float radius = (agent != null ? agent.radius : 0.5f);
+        // 5. CALCULATE POSITION (Shadow Projection)
+        float agentRadius = (agent != null ? agent.radius : 0.5f);
         
-        Vector3 safePos = chosenCorner + (pushBehindWallDir * (radius + hugDistance)) - (edgeDir * 0.4f);
+        // A. Shadow Direction: The straight line from player to the corner
+        Vector3 shadowDir = (chosenCorner - playerPos).normalized;
+        shadowDir.y = 0;
+
+        // B. Depth: Push into the shadow (Radius + 0.4m buffer)
+        // This ensures the back and shoulders are well behind the line of sight
+        Vector3 depthOffset = shadowDir * (agentRadius + 0.4f);
+        
+        // C. Tuck: Move slightly back along the wall to be extra safe
+        Vector3 tuckOffset = -edgeDir * 0.3f; 
+
+        Vector3 safePos = chosenCorner + depthOffset + tuckOffset;
         safePos.y = transform.position.y;
 
+        // 6. SNAP TO NAVMESH
         NavMeshHit navHit;
-        if (NavMesh.SamplePosition(safePos, out navHit, 2.0f, NavMesh.AllAreas))
+        if (NavMesh.SamplePosition(safePos, out navHit, 3.0f, NavMesh.AllAreas))
         {
             cp.position = navHit.position;
+            // Face along the wall towards the peek side
             cp.lookDirection = edgeDir; 
             cp.isRightSide = useRight;
             cp.found = true;
@@ -68,14 +100,22 @@ public class EnemyCover : MonoBehaviour
         return cp;
     }
 
-    private Vector3 ProbeForVisualEdge(Vector3 start, Vector3 moveDir, Bounds bounds)
+    private Vector3 ProbeForPhysicalEdge(Vector3 start, Vector3 moveDir, Vector3 faceNormal)
     {
         Vector3 current = start;
+        // Step 10cm at a time along the wall face
         for (int i = 0; i < 400; i++)
         {
             Vector3 next = current + (moveDir * 0.1f);
-            if (next.x < bounds.min.x || next.x > bounds.max.x || next.z < bounds.min.z || next.z > bounds.max.z)
+            
+            // THE FIX: Instead of ClosestPoint, fire a ray from "outside" the wall back into it.
+            // If the ray misses, we've gone past the corner.
+            Vector3 rayOrigin = next + (faceNormal * 0.5f);
+            if (!Physics.Raycast(rayOrigin, -faceNormal, 1.0f, coverLayer))
+            {
                 return current; 
+            }
+
             current = next;
         }
         return current;

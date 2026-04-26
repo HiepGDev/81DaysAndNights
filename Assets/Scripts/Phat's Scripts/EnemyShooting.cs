@@ -33,6 +33,7 @@ public class EnemyShooting : MonoBehaviour
 
     public bool IsOutOfAmmo => currentAmmo <= 0;
     public bool IsReloading => isReloading;
+    public float FireDistance => fireDistance;
 
     private void Awake()
     {

@@ -9,7 +9,7 @@ public class EnemyTacticalPeek : MonoBehaviour
     private EnemyBehaviorAgent behaviorAgent;
     
     [Header("Peek Settings")]
-    [SerializeField] private float peekDistance = 1.2f; 
+    [SerializeField] private float peekDistance = 0.7f; 
     [SerializeField] private float arrivalThreshold = 0.4f;
 
     private Vector3 originalCoverPos;
@@ -60,11 +60,11 @@ public class EnemyTacticalPeek : MonoBehaviour
 
     private void StartPeek()
     {
-        originalCoverPos = transform.position;
-        
-        // Use the LookDirection from the cover calculation (points along the wall)
+        // Use the master safe position from the behavior agent
+        Vector3 safeHome = behaviorAgent.ActiveCover.position;
         Vector3 edgeDirection = behaviorAgent.ActiveCover.lookDirection;
-        peekPos = originalCoverPos + (edgeDirection * peekDistance);
+        
+        peekPos = safeHome + (edgeDirection * peekDistance);
 
         NavMeshHit hit;
         if (NavMesh.SamplePosition(peekPos, out hit, 2.0f, NavMesh.AllAreas))
@@ -73,7 +73,7 @@ public class EnemyTacticalPeek : MonoBehaviour
             isCurrentlyPeeking = true;
             agent.isStopped = false;
             agent.SetDestination(peekPos);
-            Debug.Log("[Tactical] Peeking out towards wall edge.");
+            Debug.Log("[Tactical] Peeking out...");
         }
     }
 
@@ -83,8 +83,9 @@ public class EnemyTacticalPeek : MonoBehaviour
         if (agent.isOnNavMesh)
         {
             agent.isStopped = false;
-            agent.SetDestination(originalCoverPos);
-            Debug.Log("[Tactical] Pulling back into cover.");
+            // Always return to the EXACT master safe spot
+            agent.SetDestination(behaviorAgent.ActiveCover.position);
+            Debug.Log("[Tactical] Pulling back to master safe spot.");
         }
     }
 }

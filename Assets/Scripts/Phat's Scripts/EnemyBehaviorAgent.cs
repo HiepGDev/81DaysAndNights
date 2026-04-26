@@ -21,6 +21,11 @@ public class EnemyBehaviorAgent : MonoBehaviour
     private Vector3 currentTarget; 
     private EnemyCover.CoverPoint activeCover;
 
+    // --- State Tracking ---
+    private bool wasTargetInShootingRangeLastFrame = false;
+    private bool isChasing = false;
+    private bool isHidingFromRange = false; // NEW: Track safety hiding
+
     private void Awake()
     {
         agent = GetComponent<NavMeshAgent>();
@@ -71,26 +76,91 @@ public class EnemyBehaviorAgent : MonoBehaviour
                 animator.SetFloat("Speed", speed);
         }
 
-        if (shooting != null && shooting.IsOutOfAmmo && !isInCover && !shooting.IsReloading)
+        // 1. DETECTION & RANGE CHECK (Primary priority to allow breaking cover)
+        bool isDetected = (detection != null && detection.IsTargetDetected);
+        bool inShootingRange = false;
+        if (isDetected && shooting != null)
         {
-            FindAndGoToCover();
+            float dist = Vector3.Distance(transform.position, detection.CurrentTarget.position);
+            inShootingRange = dist <= shooting.FireDistance;
+        }
+
+        // 2. THE 50/50 "OUT OF RANGE" TRIGGER
+        if (wasTargetInShootingRangeLastFrame && !inShootingRange)
+        {
+            if (Random.value > 0.5f)
+            {
+                // CHASE: Break out of cover and run!
+                isChasing = true;
+                isInCover = false; 
+                isHidingFromRange = false;
+                if (animator != null) animator.SetBool("isCovering", false);
+                
+                agent.isStopped = false;
+                Vector3 targetPos = isDetected ? detection.CurrentTarget.position : detection.LastKnownPosition;
+                agent.SetDestination(targetPos);
+                Debug.Log("[Agent] Target lost: Breaking cover to CHASE!");
+                
+                wasTargetInShootingRangeLastFrame = inShootingRange;
+                return; 
+            }
+            else
+            {
+                // SEEK COVER
+                isChasing = false;
+                isHidingFromRange = true; 
+                if (!isInCover) FindAndGoToCover();
+                Debug.Log("[Agent] Target lost: Seeking/Staying in cover.");
+            }
+        }
+
+        // 3. OUT OF AMMO logic
+        if (shooting != null && shooting.IsOutOfAmmo && !shooting.IsReloading)
+        {
+            if (!isInCover) FindAndGoToCover();
+            else HandleCoverLogic();
+            wasTargetInShootingRangeLastFrame = inShootingRange;
             return;
         }
 
+        // 4. ACTIVE COVER logic
         if (isInCover)
         {
             HandleCoverLogic();
+            wasTargetInShootingRangeLastFrame = inShootingRange;
             return;
         }
 
-        if (detection != null && detection.IsTargetDetected)
+        // 5. Handle Chasing
+        if (isChasing)
+        {
+            if (inShootingRange) 
+            {
+                isChasing = false; 
+            }
+            else if (!agent.pathPending && agent.remainingDistance <= agent.stoppingDistance)
+            {
+                isChasing = false;
+                Debug.Log("[Agent] Chase ended. Resuming patrol.");
+            }
+            else
+            {
+                wasTargetInShootingRangeLastFrame = inShootingRange;
+                return;
+            }
+        }
+
+        // 6. NORMAL COMBAT / IDLE / PATROL
+        if (inShootingRange)
         {
             if (shooting != null) shooting.enabled = true;
             StopAgent();
+            wasTargetInShootingRangeLastFrame = true;
             FaceTarget();
             return;
         }
 
+        wasTargetInShootingRangeLastFrame = inShootingRange;
         if (isIdle) HandleIdle();
         else HandleWandering();
     }
@@ -101,13 +171,15 @@ public class EnemyBehaviorAgent : MonoBehaviour
 
     private void FindAndGoToCover()
     {
-        if (cover == null || detection.CurrentTarget == null) 
+        if (cover == null || detection.CurrentTarget == null && !isChasing) 
         {
             shooting.TriggerReload();
             return;
         }
 
-        activeCover = cover.FindNearestCover(detection.CurrentTarget.position);
+        // If we lost them, use last known pos to find cover
+        Vector3 targetPosForCover = (detection.CurrentTarget != null) ? detection.CurrentTarget.position : detection.LastKnownPosition;
+        activeCover = cover.FindNearestCover(targetPosForCover);
         
         if (activeCover.found)
         {
@@ -125,9 +197,14 @@ public class EnemyBehaviorAgent : MonoBehaviour
     private void HandleCoverLogic()
     {
         float distToCover = Vector3.Distance(transform.position, activeCover.position);
-        if (distToCover <= 1.0f || (!agent.pathPending && agent.remainingDistance <= agent.stoppingDistance))
+        
+        // THE PRECISION FIX: 
+        // We reduced this from 1.0f to 0.2f so he actually reaches the HIDDEN spot
+        // before the master script tells him to stop.
+        if (distToCover <= 0.2f || (!agent.pathPending && agent.remainingDistance <= agent.stoppingDistance))
         {
-            if (shooting != null && shooting.IsOutOfAmmo)
+            // Stop and face wall if we are empty OR if we are specifically hiding for safety
+            if (shooting != null && (shooting.IsOutOfAmmo || isHidingFromRange))
             {
                 StopAgent();
                 transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(activeCover.lookDirection), Time.deltaTime * 10f);
@@ -138,13 +215,31 @@ public class EnemyBehaviorAgent : MonoBehaviour
                     if (!animator.GetCurrentAnimatorStateInfo(0).IsName("Cover_Crouching"))
                         animator.CrossFade("Cover_Crouching", 0.1f);
                 }
-
-                if (!shooting.IsReloading) shooting.TriggerReload();
             }
             else
             {
+                // WE HAVE AMMO - Stand up and let the Peek script move us!
                 if (animator != null) animator.SetBool("isCovering", false);
                 FaceTarget();
+            }
+
+            // RELOAD logic (Only if actually empty)
+            if (shooting != null && shooting.IsOutOfAmmo && !shooting.IsReloading)
+            {
+                shooting.TriggerReload();
+            }
+
+            // EXIT logic
+            if (!shooting.IsReloading)
+            {
+                if (isHidingFromRange)
+                {
+                    idleTimer -= Time.deltaTime;
+                    if (idleTimer <= 0)
+                    {
+                        ExitCover();
+                    }
+                }
             }
         }
     }
@@ -152,6 +247,7 @@ public class EnemyBehaviorAgent : MonoBehaviour
     private void ExitCover()
     {
         isInCover = false;
+        isHidingFromRange = false; // Reset the flag
         if (animator != null) animator.SetBool("isCovering", false);
         
         if (detection.IsTargetDetected)
@@ -181,6 +277,7 @@ public class EnemyBehaviorAgent : MonoBehaviour
 
     private bool HasParameter(string paramName, Animator animator)
     {
+        if (animator == null) return false;
         foreach (AnimatorControllerParameter param in animator.parameters)
             if (param.name == paramName) return true;
         return false;
