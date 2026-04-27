@@ -1,42 +1,30 @@
 using UnityEngine;
-using UnityEngine.AI;
 
 public class EnemyHealth : MonoBehaviour
 {
-    [Header("Health Settings")]
-    [SerializeField] private float maxHealth = 100f;
-    [SerializeField] private float currentHealth;
+    [SerializeField] private int health = 100;
     
+    private Rigidbody[] ragdollRigidbodies;
+    private Collider[] ragdollColliders;
     private bool isDead = false;
-    private NavMeshAgent agent;
-    private EnemyBehaviorAgent behavior;
-    private EnemyShooting shooting;
-    private Rigidbody rb;
 
     private void Awake()
     {
-        currentHealth = maxHealth;
-        agent = GetComponent<NavMeshAgent>();
-        behavior = GetComponent<EnemyBehaviorAgent>();
-        shooting = GetComponent<EnemyShooting>();
-        rb = GetComponent<Rigidbody>();
-
-        // Ensure Rigidbody is kinematic during life
-        if (rb != null)
-        {
-            rb.isKinematic = true;
-            rb.useGravity = false;
-        }
+        // Gather all bone physics components
+        ragdollRigidbodies = GetComponentsInChildren<Rigidbody>();
+        ragdollColliders = GetComponentsInChildren<Collider>();
+        
+        SetRagdollState(false);
     }
 
-    public void TakeDamage(float damage)
+    public void TakeDamage(int damageAmount)
     {
         if (isDead) return;
 
-        currentHealth -= damage;
-        Debug.Log($"[EnemyHealth] Hit! Remaining: {currentHealth}");
-
-        if (currentHealth <= 0)
+        health -= damageAmount;
+        Debug.Log($"{gameObject.name} took {damageAmount} damage! Current health: {health}");
+        
+        if (health <= 0)
         {
             Die();
         }
@@ -44,31 +32,71 @@ public class EnemyHealth : MonoBehaviour
 
     private void Die()
     {
+        if (isDead) return;
         isDead = true;
-        Debug.Log("[EnemyHealth] Enemy Died.");
+        
+        Debug.Log($"{gameObject.name} triggering physical death.");
+        gameObject.tag = "Untagged"; 
 
-        // 1. Disable AI and Shooting
+        // 1. Disable Main AI Components
+        UnityEngine.AI.NavMeshAgent agent = GetComponent<UnityEngine.AI.NavMeshAgent>();
         if (agent != null) agent.enabled = false;
-        if (behavior != null) behavior.enabled = false;
-        if (shooting != null) shooting.enabled = false;
 
-        // 2. Disable CharacterController if exists
-        CharacterController cc = GetComponent<CharacterController>();
-        if (cc != null) cc.enabled = false;
-
-        // 3. Enable Physics for the death fall
-        if (rb != null)
-        {
-            rb.isKinematic = false;
-            rb.useGravity = true;
-            
-            // Add a small random push so they fall over
-            rb.AddForce(new Vector3(Random.Range(-1, 1), 2, Random.Range(-1, 1)), ForceMode.Impulse);
-            rb.AddTorque(new Vector3(Random.Range(-5, 5), 0, Random.Range(-5, 5)), ForceMode.Impulse);
-        }
-
-        // 4. Stop Animator
+        // 2. Disable Animator 
         Animator anim = GetComponentInChildren<Animator>();
         if (anim != null) anim.enabled = false;
+
+        // 3. Disable all AI Logic scripts
+        MonoBehaviour[] scripts = GetComponents<MonoBehaviour>();
+        foreach (var s in scripts)
+        {
+            // Only disable other scripts, not this one
+            if (s != null && s != this) s.enabled = false;
+        }
+
+        // 4. Enable Physics
+        SetRagdollState(true);
+
+        // 5. Disable root collider
+        Collider rootCol = GetComponent<Collider>();
+        if (rootCol != null) rootCol.enabled = false;
+
+        // 6. Physics Kick: Wake up every single bone and push it
+        foreach (var rb in ragdollRigidbodies)
+        {
+            if (rb != null)
+            {
+                rb.isKinematic = false;
+                rb.useGravity = true;
+                rb.WakeUp();
+                // Random nudge to break the animation pose
+                rb.AddForce(Random.insideUnitSphere * 5f, ForceMode.Impulse);
+            }
+        }
+
+        // 7. Cleanup
+        Destroy(gameObject, 20f); 
+    }
+
+    private void SetRagdollState(bool active)
+    {
+        if (ragdollRigidbodies == null) return;
+
+        foreach (var rb in ragdollRigidbodies)
+        {
+            if (rb != null)
+            {
+                rb.isKinematic = !active;
+                rb.useGravity = active;
+            }
+        }
+
+        foreach (var col in ragdollColliders)
+        {
+            if (col != null && col.gameObject != gameObject) 
+            {
+                col.enabled = true; 
+            }
+        }
     }
 }

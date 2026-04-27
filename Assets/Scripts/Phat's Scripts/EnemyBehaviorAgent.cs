@@ -51,13 +51,17 @@ public class EnemyBehaviorAgent : MonoBehaviour
 
     private void Start()
     {
+        // THE SKELETON PROTECTOR:
+        // We only reset the main functional points, but we MUST NOT 
+        // reset the Hips or any bones, otherwise hit detection and ragdolls break.
         foreach (Transform child in transform)
         {
-            if (child.name.Contains("Fire") || child.name.Contains("Point") || 
-                child.name.Contains("M4") || child.name.Contains("Gun")) 
-                continue;
-            child.localPosition = Vector3.zero;
-            child.localRotation = Quaternion.identity;
+            // Only reset top-level containers that aren't part of the actual character skeleton
+            if (child.name.ToLower().Contains("weapon") || child.name.ToLower().Contains("target")) 
+            {
+                child.localPosition = Vector3.zero;
+                child.localRotation = Quaternion.identity;
+            }
         }
         spawnPoint = transform.position;
         if (agent.isOnNavMesh) agent.Warp(transform.position);
