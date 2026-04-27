@@ -9,6 +9,7 @@ public class EnemyDetection : MonoBehaviour
 
     public bool IsTargetDetected { get; private set; }
     public Transform CurrentTarget { get; private set; }
+    public Vector3 LastKnownPosition { get; private set; }
 
     private void Update()
     {
@@ -18,7 +19,6 @@ public class EnemyDetection : MonoBehaviour
     private void DetectTargets()
     {
         IsTargetDetected = false;
-        CurrentTarget = null;
         Collider[] targets = Physics.OverlapSphere(transform.position, detectionRadius, detectionLayer);
 
         foreach (var target in targets)
@@ -34,6 +34,7 @@ public class EnemyDetection : MonoBehaviour
                     {
                         IsTargetDetected = true;
                         CurrentTarget = target.transform;
+                        LastKnownPosition = CurrentTarget.position; // Record position while visible
                         return; // Found at least one target (OR logic), so we can stop looking
                     }
                 }
@@ -43,6 +44,9 @@ public class EnemyDetection : MonoBehaviour
                 }
             }
         }
+        
+        // If we reach here, no target was found this frame
+        CurrentTarget = null;
     }
 
     private void OnDrawGizmosSelected()
