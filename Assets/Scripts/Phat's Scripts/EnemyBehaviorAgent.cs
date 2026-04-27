@@ -224,7 +224,12 @@ public class EnemyBehaviorAgent : MonoBehaviour
             {
                 // WE HAVE AMMO - Stand up and let the Peek script move us!
                 if (animator != null) animator.SetBool("isCovering", false);
-                FaceTarget();
+
+                // THE ROTATION FIX: Only face target if we aren't actively walking/peeking
+                if (!agent.hasPath || agent.velocity.magnitude < 0.1f)
+                {
+                    FaceTarget();
+                }
             }
 
             // RELOAD logic (Only if actually empty)

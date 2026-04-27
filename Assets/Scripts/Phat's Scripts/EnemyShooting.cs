@@ -31,6 +31,9 @@ public class EnemyShooting : MonoBehaviour
     private bool isReloading = false;
     private bool isCrouched = false;
 
+    // THE 1-BULLET FIX: Allow external control (Peek script)
+    [HideInInspector] public bool allowFiring = true;
+
     public bool IsOutOfAmmo => currentAmmo <= 0;
     public bool IsReloading => isReloading;
     public float FireDistance => fireDistance;
@@ -74,7 +77,7 @@ public class EnemyShooting : MonoBehaviour
         if (!isShootingInProgress) StartShooting();
         AimAtTarget();
 
-        if (Time.time >= nextFireTime && currentAmmo > 0)
+        if (Time.time >= nextFireTime && currentAmmo > 0 && allowFiring)
         {
             Shoot();
             nextFireTime = Time.time + fireRate;

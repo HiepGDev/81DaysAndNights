@@ -22,6 +22,9 @@ public class EnemyTacticalPeek : MonoBehaviour
         shooting = GetComponent<EnemyShooting>();
         detection = GetComponent<EnemyDetection>();
         behaviorAgent = GetComponent<EnemyBehaviorAgent>();
+
+        // THE TRIGGER FIX: Allow agent to get closer than the shooting threshold
+        if (agent != null) agent.stoppingDistance = 0.1f;
     }
 
     private void Update()
@@ -50,11 +53,21 @@ public class EnemyTacticalPeek : MonoBehaviour
             ReturnToCover();
         }
 
-        // SHOOT LOCK: Only fire when arrived
+        // 3. SHOOT CONTROL: 
         if (isCurrentlyPeeking)
         {
-            float distToPeek = Vector3.Distance(transform.position, peekPos);
-            shooting.enabled = (distToPeek < arrivalThreshold);
+            // THE FIX: Use flat distance (ignore Y) so ground height doesn't break the trigger
+            Vector3 flatSelf = new Vector3(transform.position.x, 0, transform.position.z);
+            Vector3 flatTarget = new Vector3(peekPos.x, 0, peekPos.z);
+            float distToPeek = Vector3.Distance(flatSelf, flatTarget);
+
+            // Allow firing if we are roughly at the peek spot (Loosened to 0.6m)
+            shooting.allowFiring = (distToPeek <= 0.6f);
+        }
+        else
+        {
+            // ALWAYS pause while sitting behind the wall
+            shooting.allowFiring = false;
         }
     }
 
