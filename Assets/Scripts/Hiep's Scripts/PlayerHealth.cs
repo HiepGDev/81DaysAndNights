@@ -16,6 +16,7 @@ public class PlayerHealth : MonoBehaviour
     private float regenTimer = 0f;
     private PlayerMovement playerMovement;
     private PlayerFootstep playerFootstep;
+    private PlayerGun playerGun;
     private CharacterController characterController;
     private CinemachineImpulseSource impulseSource; // yeh impulse also need get component 
     [SerializeField] GameObject gameOverCanvas; 
@@ -35,16 +36,24 @@ public class PlayerHealth : MonoBehaviour
     [SerializeField] private float damageFlashDuration = 0.15f;
     [SerializeField] private float maxFlashAlpha = 0.15f;
 
+    [Header("Injured Effect")] 
+    [SerializeField] private Image injuredOverlay;   
+    // [SerializeField] private AudioClip breathingSound;   
+    [SerializeField] private float injuredThreshold = 40f;
+    [SerializeField] private float maxInjuredAlpha = 0.35f;
+    [SerializeField] private float effectTransitionSpeed = 1.5f;
     private void Awake()
     {
         playerMovement = GetComponent<PlayerMovement>();
         playerFootstep = GetComponent<PlayerFootstep>();
+        playerGun = GetComponentInChildren<PlayerGun>();
         characterController = GetComponent<CharacterController>();
         impulseSource = GetComponent<CinemachineImpulseSource>();
         audioSource = GetComponent<AudioSource>();
         // playerCollider = GetComponentInChildren<Collider>();
         playerRigidbody = GetComponent<Rigidbody>();
         currentHealth = maxHealth;
+
         if (playerRigidbody != null)
         {
             playerRigidbody.isKinematic = true;  // No physics until Die()
@@ -56,6 +65,12 @@ public class PlayerHealth : MonoBehaviour
             damageFlashImage.gameObject.SetActive(true);  // Always active for fade
             Color flashColor = damageFlashImage.color;
             damageFlashImage.color = new Color(flashColor.r, flashColor.g, flashColor.b, 0f);  // Alpha 0
+        }
+
+        if (injuredOverlay != null)
+        {
+            Color c = injuredOverlay.color;
+            injuredOverlay.color = new Color(c.r, c.g, c.b, 0f);
         }
     }
 
@@ -72,7 +87,8 @@ public class PlayerHealth : MonoBehaviour
         {
             // no regen after death eyy
             HealthRegen();
-        }    
+            HandleInjuredEffect();
+        }
     }
 
     void HealthRegen()
@@ -95,6 +111,23 @@ public class PlayerHealth : MonoBehaviour
                 }
             }
         }
+    }
+    void HandleInjuredEffect()
+    {
+        if (injuredOverlay == null) return;
+
+        float targetIntensity = 0f;
+        if (currentHealth < injuredThreshold)
+        {
+            // This math makes 40HP = 0 intensity and 0HP = 1 intensity
+            targetIntensity = 1f - (currentHealth / injuredThreshold);
+        }
+
+        //  Smoothly lerp the Alpha of the red screen
+        float currentAlpha = injuredOverlay.color.a;
+        float targetAlpha = targetIntensity * maxInjuredAlpha;
+        float newAlpha = Mathf.Lerp(currentAlpha, targetAlpha, Time.deltaTime * effectTransitionSpeed);
+        injuredOverlay.color = new Color(injuredOverlay.color.r, injuredOverlay.color.g, injuredOverlay.color.b, newAlpha);
     }
 
     void UpdateHealthUI()
@@ -158,11 +191,10 @@ public class PlayerHealth : MonoBehaviour
     private void Die()
     {
         isDead = true;
+        if (playerGun != null) playerGun.enabled = false;
         // Disable movement/physics
-        if (playerMovement != null)
-            playerMovement.enabled = false;
-        if (characterController != null)
-            characterController.enabled = false;
+        if (playerMovement != null) playerMovement.enabled = false;
+        if (characterController != null) characterController.enabled = false;
         if (playerFootstep != null) playerFootstep.enabled = false;
         // if (playerCollider != null) playerCollider.enabled = false;
 
