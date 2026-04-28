@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5be51871efa6c3e4eae1703925c8f5ac, type: 3}
+  m_Name: Menu Labels
+  m_EditorClassIdentifier: Unity.Localization.Editor::UnityEditor.Localization.StringTableCollection
+  m_SharedTableData: {fileID: 11400000, guid: a9f742071c58a4042a95c3cc6d7606a2, type: 2}
+  m_Tables:
+  - {fileID: 11400000, guid: 64906c136f4f02a4a851dfbe07a3069c, type: 2}
+  - {fileID: 11400000, guid: cf20a09820397a84c8bdc87973f372ca, type: 2}
+  - {fileID: 11400000, guid: b2a92175d1061e14eb7cca700db6fbce, type: 2}
+  - {fileID: 11400000, guid: 4cf0b9fe26e1a9245b2e40cdd4a7a423, type: 2}
+  - {fileID: 11400000, guid: 520e8be9b1ad3e148ae18baa67798311, type: 2}
+  m_Extensions: []
+  m_Group: String Table
+  references:
+    version: 2
+    RefIds: []

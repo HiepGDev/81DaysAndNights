@@ -5,6 +5,7 @@ public class SettingsMenu : MonoBehaviour
     [SerializeField] private GameObject videoPanel;
     [SerializeField] private GameObject audioPanel;
     [SerializeField] private GameObject controlPanel;
+    [SerializeField] private GameObject graphicsPanel;
 
     [Header("Audio Reference")]
     AudioSource audioSource;
@@ -25,6 +26,7 @@ public class SettingsMenu : MonoBehaviour
         videoPanel.SetActive(true);
         audioPanel.SetActive(false);
         controlPanel.SetActive(false);
+        graphicsPanel.SetActive(false);
     }
 
     public void OpenAudio()
@@ -33,6 +35,7 @@ public class SettingsMenu : MonoBehaviour
         videoPanel.SetActive(false);
         audioPanel.SetActive(true);
         controlPanel.SetActive(false);
+        graphicsPanel.SetActive(false);
     }
 
     public void OpenControl()
@@ -41,6 +44,15 @@ public class SettingsMenu : MonoBehaviour
         videoPanel.SetActive(false);
         audioPanel.SetActive(false);
         controlPanel.SetActive(true);
+        graphicsPanel.SetActive(false);
+    }
+    public void OpenGraphics()
+    {
+        PlaySound();
+        videoPanel.SetActive(false);
+        audioPanel.SetActive(false);
+        controlPanel.SetActive(false);
+        graphicsPanel.SetActive(true);
     }
 
     private void PlaySound()
