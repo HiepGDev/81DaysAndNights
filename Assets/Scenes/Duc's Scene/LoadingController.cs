@@ -109,7 +109,7 @@ public class LoadingController : MonoBehaviour
 
     IEnumerator AnimateLoadingText()
     {
-        string baseText = "Entering the operation";
+        string baseText = "Entering the battlefield";
         int dotCount = 0;
 
         while (true)
