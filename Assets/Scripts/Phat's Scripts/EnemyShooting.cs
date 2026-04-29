@@ -136,6 +136,7 @@ public class EnemyShooting : MonoBehaviour
 
         EnemyBehaviorAgent behavior = GetComponent<EnemyBehaviorAgent>();
         bool inCover = (behavior != null && behavior.IsInCover);
+        bool shouldCrouchReload = isCrouched || inCover;
 
         if (animator != null)
         {
@@ -143,16 +144,16 @@ public class EnemyShooting : MonoBehaviour
             if (HasParameter("isCrouching", animator)) animator.SetBool("isCrouching", false);
             if (HasParameter("isReloading", animator)) animator.SetBool("isReloading", true);
 
-            if (inCover)
+            if (shouldCrouchReload)
             {
                 // Play active crouching reload
                 animator.CrossFade("crouching_reload", 0.1f);
                 
                 // Wait for the animation to play (Adjusted for your 24-frame clip @ 0.25 speed)
-                float animDuration = 1.6f; 
+                float animDuration = 3.2f; 
                 yield return new WaitForSeconds(animDuration);
 
-                if (isReloading)
+                if (isReloading && inCover)
                 {
                     // Transition to the silent hiding pose
                     animator.CrossFade("Cover_Crouching", 0.2f);
