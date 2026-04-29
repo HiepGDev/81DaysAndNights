@@ -131,22 +131,47 @@ public class EnemyShooting : MonoBehaviour
     private IEnumerator ReloadRoutine()
     {
         isReloading = true;
+        isShootingInProgress = false; 
         recoilIndex = 0;
-        Debug.Log($"[Enemy Weapon] Reloading...");
+
+        EnemyBehaviorAgent behavior = GetComponent<EnemyBehaviorAgent>();
+        bool inCover = (behavior != null && behavior.IsInCover);
+        bool shouldCrouchReload = isCrouched || inCover;
 
         if (animator != null)
         {
             if (HasParameter("isShooting", animator)) animator.SetBool("isShooting", false);
             if (HasParameter("isCrouching", animator)) animator.SetBool("isCrouching", false);
-            
-            if (HasParameter("isReloading", animator)) 
+            if (HasParameter("isReloading", animator)) animator.SetBool("isReloading", true);
+
+            if (shouldCrouchReload)
             {
-                animator.SetBool("isReloading", true);
-                animator.CrossFade("Enemy_Reload", 0.1f);
+                // Play active crouching reload
+                animator.CrossFade("crouching_reload", 0.1f);
+                
+                // Wait for the animation to play (Adjusted for your 24-frame clip @ 0.25 speed)
+                float animDuration = 3.2f; 
+                yield return new WaitForSeconds(animDuration);
+
+                if (isReloading && inCover)
+                {
+                    // Transition to the silent hiding pose
+                    animator.CrossFade("Cover_Crouching", 0.2f);
+                }
+                
+                float remaining = Mathf.Max(0, reloadTime - animDuration);
+                if (remaining > 0) yield return new WaitForSeconds(remaining);
+            }
+            else
+            {
+                animator.CrossFade("reload_standing", 0.1f);
+                yield return new WaitForSeconds(reloadTime);
             }
         }
-
-        yield return new WaitForSeconds(reloadTime);
+        else
+        {
+            yield return new WaitForSeconds(reloadTime);
+        }
 
         currentAmmo = magazineSize;
         isReloading = false;

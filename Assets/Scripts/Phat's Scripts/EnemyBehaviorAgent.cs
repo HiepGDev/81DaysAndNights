@@ -75,9 +75,23 @@ public class EnemyBehaviorAgent : MonoBehaviour
 
         if (animator != null)
         {
-            float speed = agent.desiredVelocity.magnitude;
-            if (HasParameter("Speed", animator))
-                animator.SetFloat("Speed", speed);
+            // THE RELOAD PROTECTION FIX:
+            // If the AI is reloading, we MUST NOT update the 'Speed' parameter,
+            // otherwise the Walk animation will instantly cancel the Reload animation.
+            bool isActuallyReloading = (shooting != null && shooting.IsReloading);
+            
+            if (!isActuallyReloading)
+            {
+                float speed = agent.desiredVelocity.magnitude;
+                if (HasParameter("Speed", animator))
+                    animator.SetFloat("Speed", speed);
+            }
+            else
+            {
+                // Force speed to 0 so he stays in the reload pose
+                if (HasParameter("Speed", animator))
+                    animator.SetFloat("Speed", 0f);
+            }
         }
 
         // 1. DETECTION & RANGE CHECK (Primary priority to allow breaking cover)
@@ -202,44 +216,48 @@ public class EnemyBehaviorAgent : MonoBehaviour
     {
         float distToCover = Vector3.Distance(transform.position, activeCover.position);
         
-        // THE PRECISION FIX: 
-        // We reduced this from 1.0f to 0.2f so he actually reaches the HIDDEN spot
-        // before the master script tells him to stop.
         if (distToCover <= 0.2f || (!agent.pathPending && agent.remainingDistance <= agent.stoppingDistance))
         {
-            // Stop and face wall if we are empty OR if we are specifically hiding for safety
-            if (shooting != null && (shooting.IsOutOfAmmo || isHidingFromRange))
+            bool isActuallyReloading = (shooting != null && shooting.IsReloading);
+            bool shouldCrouch = (shooting != null && (shooting.IsOutOfAmmo || isHidingFromRange));
+
+            // THE ROTATION FIX: Always allow him to face the wall, even if reloading
+            if (shouldCrouch)
             {
                 StopAgent();
                 transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(activeCover.lookDirection), Time.deltaTime * 10f);
-
-                if (animator != null)
-                {
-                    animator.SetBool("isCovering", true);
-                    if (!animator.GetCurrentAnimatorStateInfo(0).IsName("Cover_Crouching"))
-                        animator.CrossFade("Cover_Crouching", 0.1f);
-                }
             }
-            else
-            {
-                // WE HAVE AMMO - Stand up and let the Peek script move us!
-                if (animator != null) animator.SetBool("isCovering", false);
 
-                // THE ROTATION FIX: Only face target if we aren't actively walking/peeking
-                if (!agent.hasPath || agent.velocity.magnitude < 0.1f)
+            // THE ANIMATION LOCK: Only touch animator params if NOT reloading
+            if (!isActuallyReloading)
+            {
+                if (shouldCrouch)
                 {
+                    if (animator != null && HasParameter("isCovering", animator))
+                    {
+                        animator.SetBool("isCovering", true);
+                        if (!animator.GetCurrentAnimatorStateInfo(0).IsName("Cover_Crouching"))
+                            animator.CrossFade("Cover_Crouching", 0.1f);
+                    }
+                }
+                else
+                {
+                    if (animator != null && HasParameter("isCovering", animator)) 
+                        animator.SetBool("isCovering", false);
+                    
+                    if (agent.isStopped) agent.isStopped = false;
                     FaceTarget();
                 }
             }
 
-            // RELOAD logic (Only if actually empty)
-            if (shooting != null && shooting.IsOutOfAmmo && !shooting.IsReloading)
+            // RELOAD logic (Check remains active to allow TriggerReload to start)
+            if (shooting != null && shooting.IsOutOfAmmo && !isActuallyReloading)
             {
                 shooting.TriggerReload();
             }
 
             // EXIT logic
-            if (!shooting.IsReloading)
+            if (!isActuallyReloading)
             {
                 if (isHidingFromRange)
                 {
