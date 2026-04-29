@@ -75,9 +75,23 @@ public class EnemyBehaviorAgent : MonoBehaviour
 
         if (animator != null)
         {
-            float speed = agent.desiredVelocity.magnitude;
-            if (HasParameter("Speed", animator))
-                animator.SetFloat("Speed", speed);
+            // THE RELOAD PROTECTION FIX:
+            // If the AI is reloading, we MUST NOT update the 'Speed' parameter,
+            // otherwise the Walk animation will instantly cancel the Reload animation.
+            bool isActuallyReloading = (shooting != null && shooting.IsReloading);
+            
+            if (!isActuallyReloading)
+            {
+                float speed = agent.desiredVelocity.magnitude;
+                if (HasParameter("Speed", animator))
+                    animator.SetFloat("Speed", speed);
+            }
+            else
+            {
+                // Force speed to 0 so he stays in the reload pose
+                if (HasParameter("Speed", animator))
+                    animator.SetFloat("Speed", 0f);
+            }
         }
 
         // 1. DETECTION & RANGE CHECK (Primary priority to allow breaking cover)
@@ -213,11 +227,16 @@ public class EnemyBehaviorAgent : MonoBehaviour
                 StopAgent();
                 transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(activeCover.lookDirection), Time.deltaTime * 10f);
 
-                if (animator != null)
+                if (animator != null && HasParameter("isCovering", animator))
                 {
                     animator.SetBool("isCovering", true);
-                    if (!animator.GetCurrentAnimatorStateInfo(0).IsName("Cover_Crouching"))
+                    
+                    // THE RELOAD FIX: Don't force "Cover_Crouching" if we are in the middle of a reload animation
+                    bool isActuallyReloading = (shooting != null && shooting.IsReloading);
+                    if (!isActuallyReloading && !animator.GetCurrentAnimatorStateInfo(0).IsName("Cover_Crouching"))
+                    {
                         animator.CrossFade("Cover_Crouching", 0.1f);
+                    }
                 }
             }
             else
