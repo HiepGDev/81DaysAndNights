@@ -1,76 +1,68 @@
 ﻿using UnityEngine;
-using System.Collections; // Bắt buộc phải có thư viện này để dùng Coroutine (nạp đạn)
+using System.Collections;
+using static TeammateAI;
 
 [RequireComponent(typeof(TeammateDetection))]
 public class TeammateShooting : MonoBehaviour
 {
+    public enum FireMode { Auto, SemiAuto }
+
     private TeammateDetection detection;
     private Animator animator;
 
-    [Header("Weapon Stats")]
+    [Header("Weapon Stats")]    
+    [SerializeField] private FireMode currentFireMode = FireMode.SemiAuto;
     [SerializeField] private GameObject bulletPrefab;
     [SerializeField] private Transform firePoint;
-    [SerializeField] private float fireRate = 0.12f; // Tốc độ xả đạn nhanh hơn
+    [SerializeField] private float autoFireRate = 0.12f;
+    [SerializeField] private float semiFireRateMin = 0.3f;
+    [SerializeField] private float semiFireRateMax = 0.6f;
     [SerializeField] private float fireDistance = 20.0f;
 
     [Header("CS:GO Style Spray Pattern")]
-    [Tooltip("X = Lệch ngang, Y = Lệch dọc. Đạn sẽ bay theo thứ tự này.")]
     [SerializeField]
     private Vector2[] sprayPattern = new Vector2[]
     {
-        new Vector2(0, 0),       // Viên 1: Chuẩn xác
-        new Vector2(0, 0.2f),    // Viên 2: Hơi giật lên
-        new Vector2(0, 0.5f),    // Viên 3
-        new Vector2(-0.2f, 0.8f),// Viên 4: Lệch trái
-        new Vector2(-0.4f, 1.0f),// Viên 5
-        new Vector2(0.2f, 1.2f), // Viên 6: Giật mạnh sang phải
-        new Vector2(0.5f, 1.3f), // Viên 7
-        new Vector2(0.3f, 1.1f), // Viên 8
-        new Vector2(-0.1f, 0.9f),// Viên 9
-        new Vector2(-0.3f, 1.0f) // Viên 10
+        new Vector2(0, 0), new Vector2(0, 0.2f), new Vector2(0, 0.5f),
+        new Vector2(-0.2f, 0.8f), new Vector2(-0.4f, 1.0f), new Vector2(0.2f, 1.2f)
     };
-    [SerializeField] private float patternScale = 0.5f; // Hệ số nhân độ giật
+    [SerializeField] private float patternScale = 0.5f;
 
     [Header("Ammo Settings")]
-    [SerializeField] private int magazineSize = 30; // Băng đạn 30 viên
-    [SerializeField] private float reloadTime = 2.5f; // Thời gian thay đạn
+    [SerializeField] private int magazineSize = 30;
+    [SerializeField] private float reloadTime = 2.5f;
 
-    [Header("Crouch Settings")]
-    [SerializeField] private float crouchChance = 0.5f; // 50% tỷ lệ ngồi bắn
-
+    [Header("Audio Settings")]
+    [SerializeField] private AudioSource audioSource;
+    [SerializeField] private AudioClip shootSound;
+    [SerializeField][Range(0f, 1f)] private float shootVolume = 0.8f;
 
     private int currentAmmo;
     private int recoilIndex = 0;
     private float nextFireTime;
-
     private bool isShootingInProgress = false;
     private bool isReloading = false;
     private bool isCrouched = false;
 
+    public bool IsOutOfAmmo => currentAmmo <= 0;
+    public bool IsReloading => isReloading;
+
     private void Awake()
     {
         detection = GetComponent<TeammateDetection>();
-        currentAmmo = magazineSize; // Nạp đầy đạn khi mới sinh ra
+        currentAmmo = magazineSize;
+        if (audioSource == null) audioSource = GetComponent<AudioSource>();
     }
 
     private void Start()
     {
         animator = GetComponent<Animator>();
         if (animator == null) animator = GetComponentInChildren<Animator>();
-
-        // Giữ lại các dòng check lỗi rất tốt của bạn
-        if (bulletPrefab == null)
-            Debug.LogError($"[TeammateShooting] '{gameObject.name}': bulletPrefab chưa được gán!", this);
-        if (firePoint == null)
-            Debug.LogError($"[TeammateShooting] '{gameObject.name}': firePoint chưa được gán!", this);
-        if (detection == null)
-            Debug.LogError($"[TeammateShooting] '{gameObject.name}': Không tìm thấy TeammateDetection!", this);
     }
 
     private void Update()
     {
-        // Đang nạp đạn thì không làm gì cả
-        if (isReloading) return;
+        if (isReloading || currentAmmo <= 0) return;
 
         if (detection == null || detection.CurrentTarget == null)
         {
@@ -79,73 +71,71 @@ public class TeammateShooting : MonoBehaviour
         }
 
         float distanceToTarget = Vector3.Distance(transform.position, detection.CurrentTarget.position);
-
         if (distanceToTarget > fireDistance)
         {
             if (isShootingInProgress) EndShooting();
             return;
         }
 
-        // Kích hoạt trạng thái bắn
         if (!isShootingInProgress) StartShooting();
 
-
-        // Xả đạn
         if (Time.time >= nextFireTime)
         {
-            if (currentAmmo > 0)
-            {
-                AimAtTarget();
-                Shoot();
-                nextFireTime = Time.time + fireRate;
-            }
+            AimAtTarget();
+            Shoot();
+
+            if (currentFireMode == FireMode.Auto)
+                nextFireTime = Time.time + autoFireRate;
             else
             {
-                StartCoroutine(Reload()); // Hết đạn thì nạp
+                nextFireTime = Time.time + Random.Range(semiFireRateMin, semiFireRateMax);
+                recoilIndex = 0;
             }
         }
     }
 
-    //private void LateUpdate()
-    //{
-    //    if (isReloading) return;
-    //    if (detection == null || detection.CurrentTarget == null) return;
-    //    if (!isShootingInProgress) return;
-
-    //    AimAtTarget();
-    //}
-
     private void AimAtTarget()
     {
-        if (firePoint == null) return;
+        if (firePoint == null || detection.CurrentTarget == null) return;
 
-        // Cúi thì bắn thấp, đứng thì bắn cao
-        float aimHeight = isCrouched ? 1f : 1.4f;
-        Vector3 targetPos = detection.CurrentTarget.position + Vector3.up * aimHeight;
-        firePoint.LookAt(targetPos);
+        Vector3 targetPos;
+        Collider targetCollider = detection.CurrentTarget.GetComponent<Collider>();
+
+        if (targetCollider != null)
+            targetPos = targetCollider.bounds.center;
+        else
+            targetPos = detection.CurrentTarget.position + Vector3.up * 1.4f;
+
+        Vector3 direction = (targetPos - firePoint.position).normalized;
+        firePoint.rotation = Quaternion.LookRotation(direction);
     }
 
     private void Shoot()
     {
         if (bulletPrefab == null || firePoint == null) return;
+        currentAmmo--;
 
-        currentAmmo--; // Trừ đạn
+        if (audioSource != null && shootSound != null)
+            audioSource.PlayOneShot(shootSound, shootVolume);
 
-        // 1. Tính toán độ giật dựa trên mảng sprayPattern
-        Vector2 patternOffset = Vector2.zero;
+        Vector3 shootDirection = firePoint.forward;
+
         if (sprayPattern != null && sprayPattern.Length > 0)
         {
-            patternOffset = sprayPattern[recoilIndex % sprayPattern.Length] * patternScale;
+            Vector2 patternOffset = sprayPattern[recoilIndex % sprayPattern.Length] * patternScale;
+            shootDirection = Quaternion.AngleAxis(-patternOffset.y, firePoint.right)
+                           * Quaternion.AngleAxis(patternOffset.x, firePoint.up)
+                           * shootDirection;
         }
 
-        // 2. Bẻ cong hướng nòng súng (Tạo độ giật giả)
-        Quaternion recoilRotation = Quaternion.Euler(-patternOffset.y, patternOffset.x, 0);
-        Quaternion finalRotation = firePoint.rotation * recoilRotation;
+        Quaternion finalRotation = Quaternion.LookRotation(shootDirection);
 
         GameObject bullet = Instantiate(bulletPrefab, firePoint.position, finalRotation);
 
         BulletDamage bulletDamage = bullet.GetComponentInChildren<BulletDamage>();
         if (bulletDamage != null) bulletDamage.isTeammateBullet = true;
+
+        bullet.AddComponent<TeammateBulletCollision>();
 
         ParticleSystem ps = bullet.GetComponentInChildren<ParticleSystem>();
         if (ps != null)
@@ -155,68 +145,112 @@ public class TeammateShooting : MonoBehaviour
             ps.Play();
         }
 
-        recoilIndex++; // Tăng chỉ số giật cho viên tiếp theo
+        recoilIndex++;
         Destroy(bullet, 2.0f);
+
+        if (currentAmmo <= 0) EndShooting();
     }
 
     private void StartShooting()
     {
         isShootingInProgress = true;
-        recoilIndex = 0; // Reset độ giật súng về 0 khi bắt đầu loạt đạn mới
-        isCrouched = Random.value > (1 - crouchChance);
+        recoilIndex = 0;
+        nextFireTime = Time.time + 0.25f;
+
+        // Xóa Random Crouch đi, Teammate chỉ ngồi khi nạp đạn hoặc núp Cover
+        isCrouched = false;
 
         if (animator != null)
         {
-            animator.SetBool("isShooting", false);
-            animator.SetBool("isCrouching", false);
+            if (HasParameter("isCrouching", animator)) animator.SetBool("isCrouching", false);
+            if (HasParameter("isShooting", animator)) animator.SetBool("isShooting", true);
+            animator.CrossFade("Enemy_Shooting", 0.1f);
+        }
+    }
 
-            if (isCrouched)
+    public void EndShooting()
+    {
+        isShootingInProgress = false;
+        recoilIndex = 0;
+        if (animator != null)
+        {
+            if (HasParameter("isShooting", animator)) animator.SetBool("isShooting", false);
+            animator.CrossFade("Enemy_Idle", 0.2f);
+        }
+    }
+
+    public void TriggerReload()
+    {
+        if (!isReloading) StartCoroutine(ReloadRoutine());
+    }
+
+
+    private IEnumerator ReloadRoutine()
+    {
+        isReloading = true;
+        isShootingInProgress = false;
+        recoilIndex = 0;
+
+        TeammateAI behavior = GetComponent<TeammateAI>();
+        bool inCover = (behavior != null && behavior.CurrentState == TeammateAI.TeammateState.SeekingCover);
+
+        bool shouldCrouchReload = isCrouched || inCover;
+
+        if (animator != null)
+        {
+            if (HasParameter("isShooting", animator)) animator.SetBool("isShooting", false);
+            if (HasParameter("isCrouching", animator)) animator.SetBool("isCrouching", false);
+            if (HasParameter("isReloading", animator)) animator.SetBool("isReloading", true);
+
+            if (shouldCrouchReload)
             {
-                animator.SetBool("isCrouching", true);
-                animator.CrossFade("Enemy_CrouchShooting", 0.1f);
+                animator.CrossFade("crouching_reload", 0.1f);
+
+                float animDuration = 3.2f;
+                yield return new WaitForSeconds(animDuration);
+
+                if (isReloading && inCover)
+                {
+                    animator.CrossFade("Cover_Crouching", 0.2f);
+                }
+
+                float remaining = Mathf.Max(0, reloadTime - animDuration);
+                if (remaining > 0) yield return new WaitForSeconds(remaining);
             }
             else
             {
-                animator.SetBool("isShooting", true);
-                animator.CrossFade("Enemy_Shooting", 0.1f);
+                animator.CrossFade("reload_standing", 0.1f);
+                yield return new WaitForSeconds(reloadTime);
             }
         }
-    }
-
-    private void EndShooting()
-    {
-        isShootingInProgress = false;
-        recoilIndex = 0; // Reset độ giật
-
-        if (animator != null)
+        else
         {
-            animator.SetBool("isShooting", false);
-            animator.SetBool("isCrouching", false);
-            animator.CrossFade("Enemy_Idle", 0.2f); // Chuyển về Idle mượt mà
-        }
-    }
-
-    private IEnumerator Reload()
-    {
-        isReloading = true;
-        recoilIndex = 0; // Thay đạn xong súng hết giật
-
-        isShootingInProgress = false;
-
-        if (animator != null)
-        {
-            animator.SetBool("isShooting", false);
-            animator.SetBool("isCrouching", false);
-            animator.SetBool("isReloading", true);
-            animator.CrossFade("Enemy_Reload", 0.1f);
+            yield return new WaitForSeconds(reloadTime);
         }
 
-        yield return new WaitForSeconds(reloadTime); // Chờ 2.5 giây
-
-        currentAmmo = magazineSize; // Nạp đầy
+        currentAmmo = magazineSize;
         isReloading = false;
 
-        if (animator != null) animator.SetBool("isReloading", false);
-        animator.CrossFade("Enemy_Idle", 0.1f);
+        if (animator != null)
+        {
+            if (HasParameter("isReloading", animator)) animator.SetBool("isReloading", false);
+
+            // Nếu KHÔNG ở trong cover thì đứng lên. Nếu ở trong cover thì tiếp tục ngồi núp.
+            if (!inCover)
+            {
+                if (HasParameter("isCrouching", animator)) animator.SetBool("isCrouching", false);
+                animator.CrossFade("Enemy_Idle", 0.1f);
+            }
+        }
+
+        Debug.Log("[Teammate Weapon] Reload Complete.");
+    }
+
+
+    private bool HasParameter(string paramName, Animator anim)
+    {
+        foreach (AnimatorControllerParameter param in anim.parameters)
+            if (param.name == paramName) return true;
+        return false;
     }
 }

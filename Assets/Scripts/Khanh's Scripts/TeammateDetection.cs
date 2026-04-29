@@ -56,6 +56,15 @@ public class TeammateDetection : MonoBehaviour
         if (previousTarget != CurrentTarget)
         {
             teammateAI.SetEnemyTarget(CurrentTarget);
+
+            if (CurrentTarget != null)
+            {
+                Debug.Log($"<color=orange>[TeammateDetection]</color> Đã phát hiện mục tiêu: <b>{CurrentTarget.name}</b>");
+            }
+            else if (previousTarget != null)
+            {
+                Debug.Log($"<color=orange>[TeammateDetection]</color> Đã tiêu diệt hoặc mất dấu mục tiêu.");
+            }
         }
     }
 
