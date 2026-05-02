@@ -19,11 +19,21 @@ public class BombSpawner : MonoBehaviour
     {
         float timer = 0f;
 
-        while (timer < 20f) // 20 giây
+        while (timer < 20f) // 20 giây pháo kích
         {
-            SpawnExplosion();
+            // Mỗi đợt 2 đến 5 quả liên tiếp
+            int burstCount = Random.Range(2, 6);
 
-            float waitTime = Random.Range(0.5f, 1.5f);
+            for (int i = 0; i < burstCount; i++)
+            {
+                SpawnExplosion();
+
+                // giữa từng quả rất ngắn
+                yield return new WaitForSeconds(Random.Range(0.05f, 0.15f));
+            }
+
+            // nghỉ rất ngắn rồi tiếp tục
+            float waitTime = Random.Range(0.12f, 0.35f);
             yield return new WaitForSeconds(waitTime);
 
             timer += waitTime;
