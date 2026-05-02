@@ -119,7 +119,7 @@ public class PlayerGun : MonoBehaviour
         RaycastHit hit;
         if (Physics.Raycast(Camera.main.transform.position, Camera.main.transform.forward, out hit, gunData.MaxDistance, interactionLayers, QueryTriggerInteraction.Ignore))
         {
-            // 1. Calculate Multiplier based on Body Part
+            // Calculate Multiplier based on Body Part
             float finalDamage = gunData.Damage;
             var bodyPart = hit.collider.GetComponent<EnemyBodyPart>();
             if (bodyPart != null)
@@ -128,14 +128,13 @@ public class PlayerGun : MonoBehaviour
                 Debug.Log($"Hit {bodyPart.partName}! Damage Multiplier: {bodyPart.damageMultiplier}");
             }
 
-            // 2. Apply Damage to Health
+            //  Apply Damage to Health
             var enemy = hit.collider.GetComponentInParent<EnemyHealth>();
             if (enemy != null)
             {
                 enemy.TakeDamage((int)finalDamage);
             }
 
-            // THE SAFETY FIX: Don't parent the VFX to the enemy. Spawn it in the world.
             if (gunData.HitVfxPrefab != null)
             {
                 Instantiate(gunData.HitVfxPrefab, hit.point, Quaternion.LookRotation(hit.normal));

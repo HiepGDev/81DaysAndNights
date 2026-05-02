@@ -27,6 +27,7 @@ public class PlayerMovement : MonoBehaviour
     private Vector3 velocity;
     [HideInInspector]
     private PlayerStamina staminaSystem;
+    private PlayerGun playerGun;
     public bool isSprinting;
     public bool canSprint = true;
     [Header("Crouch Settings")] 
@@ -56,7 +57,9 @@ public class PlayerMovement : MonoBehaviour
     void Start()
     {
         staminaSystem = GetComponent<PlayerStamina>();
+        playerGun = GetComponentInChildren<PlayerGun>();
         originalCamPos = playerCamera.localPosition;
+        lookSensitivity = PlayerPrefs.GetFloat("MouseSensitivity", 10f);
     }
 
     void Update()
@@ -108,8 +111,13 @@ public class PlayerMovement : MonoBehaviour
         bool isMoving = moveValue.magnitude > 0.1f;
         bool isWalking = isMoving && !isSprinting;
         bool isRunning = isMoving && isSprinting;
-        animator.SetBool("isWalk", isWalking);
-        animator.SetBool("isRun", isRunning);
+
+        // only set walk/run to true if NOT aiming.
+        // if aiming, the animator will naturally fall back to "Idle".
+        bool Walk = isWalking && (playerGun == null || !playerGun.isAiming);
+        bool Run = isRunning && (playerGun == null || !playerGun.isAiming);
+        animator.SetBool("isWalk", Walk);
+        animator.SetBool("isRun", Run);
     }
     
     void HandleLook()
@@ -170,4 +178,9 @@ public class PlayerMovement : MonoBehaviour
         Vector3 targetCamPos = new Vector3(originalCamPos.x, originalCamPos.y - heightDifference, originalCamPos.z);
         playerCamera.localPosition = Vector3.Lerp(playerCamera.localPosition, targetCamPos, Time.deltaTime * crouchTransitionSpeed);
     }
+    public void UpdateSensitivity(float newSensitivity)
+    {
+        lookSensitivity = newSensitivity;
+    }
+    
 }
