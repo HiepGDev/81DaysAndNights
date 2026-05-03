@@ -31,6 +31,38 @@ MonoBehaviour:
     m_Key: mainMenu.Quit
     m_Metadata:
       m_Items: []
+  - m_Id: 1751399103725568
+    m_Key: settingMenu.Video
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1755940540907520
+    m_Key: settingMenu.Graphics
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1756543535022080
+    m_Key: settingMenu.Audio
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1756784732667904
+    m_Key: settingMenu.Control
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1775860536311808
+    m_Key: Video.Resolution
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1776103499759616
+    m_Key: Video.screenMode
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1776636662906880
+    m_Key: Video.Language
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2092014748303360
+    m_Key: Video.Brightness
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:
