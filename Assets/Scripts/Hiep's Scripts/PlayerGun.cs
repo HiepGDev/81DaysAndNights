@@ -205,4 +205,9 @@ public class PlayerGun : MonoBehaviour
     {
         ammoText.text = $"{gunData.currentAmmo:D2} / {gunData.reserveAmmo:D3}";
     }
+    public void UpdateDefaultFOV(float newFOV)
+    {
+        defaultFOV = newFOV;
+    }
 }
+

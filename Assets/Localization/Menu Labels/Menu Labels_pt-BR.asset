@@ -66,6 +66,102 @@ MonoBehaviour:
     m_Localized: Brilho
     m_Metadata:
       m_Items: []
+  - m_Id: 2448684498288640
+    m_Localized: "Campo de Vis\xE3o"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2450380515442688
+    m_Localized: "Escala de Renderiza\xE7\xE3o"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2450542084227072
+    m_Localized: Qualidade das Sombras
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2450709764112384
+    m_Localized: Anti-Aliasing
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2451265974960128
+    m_Localized: Limite de Quadros
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2804112168058880
+    m_Localized: "Oclus\xE3o Ambiental"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2805022013259776
+    m_Localized: Volume Geral
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2805096512487424
+    m_Localized: "Volume da M\xFAsica"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2805124559798272
+    m_Localized: Volume de SFX
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2808698203275264
+    m_Localized: "Sensibilidade de Vis\xE3o"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2809134293450752
+    m_Localized: Atalhos de Teclado
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2809270058876928
+    m_Localized: Mover para frente
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2809473570701312
+    m_Localized: "Mover para tr\xE1s"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2809614566424576
+    m_Localized: Mover para esquerda
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2810319335325696
+    m_Localized: Mover para direita
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2810792498954240
+    m_Localized: Pular
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2810824912535552
+    m_Localized: Correr
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2810846152491008
+    m_Localized: Agachar
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2810937017892864
+    m_Localized: Atirar
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2812110986805248
+    m_Localized: Mirar
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2812175784607744
+    m_Localized: Recarregar
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2821561290588160
+    m_Localized: Jogo Pausado
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2821714294603776
+    m_Localized: Continuar
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2821832842412032
+    m_Localized: Sair para o menu principal
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

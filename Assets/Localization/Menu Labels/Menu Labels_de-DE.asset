@@ -66,6 +66,102 @@ MonoBehaviour:
     m_Localized: Helligkeit
     m_Metadata:
       m_Items: []
+  - m_Id: 2448684498288640
+    m_Localized: Sichtfeld
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2450380515442688
+    m_Localized: Render-Skalierung
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2450542084227072
+    m_Localized: "Schattenqualit\xE4t"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2450709764112384
+    m_Localized: Anti-Aliasing
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2451265974960128
+    m_Localized: Framerate-Limit
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2804112168058880
+    m_Localized: Umgebungsverdeckung
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2805022013259776
+    m_Localized: "Gesamtlautst\xE4rke"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2805096512487424
+    m_Localized: "Musiklautst\xE4rke"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2805124559798272
+    m_Localized: "Effektlautst\xE4rke"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2808698203275264
+    m_Localized: Blickempfindlichkeit
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2809134293450752
+    m_Localized: Tastenbelegung
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2809270058876928
+    m_Localized: "Vorw\xE4rts bewegen"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2809473570701312
+    m_Localized: "R\xFCckw\xE4rts bewegen"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2809614566424576
+    m_Localized: Nach links bewegen
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2810319335325696
+    m_Localized: Nach rechts bewegen
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2810792498954240
+    m_Localized: Springen
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2810824912535552
+    m_Localized: Sprinten
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2810846152491008
+    m_Localized: Ducken
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2810937017892864
+    m_Localized: "Schie\xDFen"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2812110986805248
+    m_Localized: Zielen
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2812175784607744
+    m_Localized: Nachladen
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2821561290588160
+    m_Localized: Spiel pausiert
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2821714294603776
+    m_Localized: Fortsetzen
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2821832842412032
+    m_Localized: "Zur\xFCck zum Hauptmen\xFC"
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

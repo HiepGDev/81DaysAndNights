@@ -63,6 +63,102 @@ MonoBehaviour:
     m_Key: Video.Brightness
     m_Metadata:
       m_Items: []
+  - m_Id: 2448684498288640
+    m_Key: Video.FieldofView
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2450380515442688
+    m_Key: Graphics.renderScale
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2450542084227072
+    m_Key: Graphics.shadowQuality
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2450709764112384
+    m_Key: Graphics.anti-Aliasing
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2451265974960128
+    m_Key: Graphics.capFramerate
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2804112168058880
+    m_Key: Graphics.SSAO
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2805022013259776
+    m_Key: Audio.Master
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2805096512487424
+    m_Key: Audio.Music
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2805124559798272
+    m_Key: Audio.SFX
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2808698203275264
+    m_Key: Control.lookSen
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2809134293450752
+    m_Key: Control.keyBind
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2809270058876928
+    m_Key: Control.Forward
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2809473570701312
+    m_Key: Control.Backward
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2809614566424576
+    m_Key: Control.Left
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2810319335325696
+    m_Key: Control.Right
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2810792498954240
+    m_Key: Control.Jump
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2810824912535552
+    m_Key: Control.Sprint
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2810846152491008
+    m_Key: Control.Crouch
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2810937017892864
+    m_Key: Control.Shoot
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2812110986805248
+    m_Key: Control.Aim
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2812175784607744
+    m_Key: Control.Reload
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2821561290588160
+    m_Key: Pause.Paused
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2821714294603776
+    m_Key: Pause.Resume
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2821832842412032
+    m_Key: Pause.Quit
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:
