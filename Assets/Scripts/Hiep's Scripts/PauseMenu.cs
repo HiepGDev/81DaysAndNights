@@ -1,0 +1,66 @@
+using UnityEngine;
+using UnityEngine.SceneManagement;
+
+public class PauseMenu : MonoBehaviour
+{
+    [SerializeField] GameObject pauseCanvas;
+    [SerializeField] AudioClip selectSound;
+    AudioSource audioSource;
+    // private AudioSource musicAudioSource; 
+    bool isPause;
+    void Start()
+    {
+        pauseCanvas.SetActive(false);
+        audioSource = GetComponent<AudioSource>();
+        // Music musicScript = FindFirstObjectByType<Music>();
+        // if (musicScript != null)
+        // {
+        //     musicAudioSource = musicScript.GetComponent<AudioSource>();
+        // }
+        
+        // if (musicAudioSource == null)
+        // {
+        //     Debug.LogWarning("PauseMenu could not find the Music's AudioSource!");
+        // }
+    }
+    void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.Escape))
+        { 
+            if (isPause)
+            {
+                Resume();
+            }
+            else
+            {
+                Pause();
+            }
+        }
+    }
+    
+    public void Pause()
+    {
+        pauseCanvas.SetActive(true);
+        Time.timeScale = 0f;
+        // musicAudioSource.Pause();
+        isPause = true;
+        Cursor.visible = true;
+        Cursor.lockState = CursorLockMode.None;
+    }
+    public void Resume()
+    {
+       pauseCanvas.SetActive(false);
+       Time.timeScale = 1f;
+       // musicAudioSource.UnPause();
+       isPause = false;
+       audioSource.PlayOneShot(selectSound);
+       Cursor.visible = false;
+       Cursor.lockState = CursorLockMode.Locked;
+    }
+    public void QuitToMenu()
+    {
+     audioSource.PlayOneShot(selectSound);
+     Time.timeScale = 1f;
+     SceneManager.LoadScene("MainMenu");
+    }
+}

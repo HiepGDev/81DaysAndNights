@@ -1,0 +1,167 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e9620f8c34305754d8cc9a7e49e852d9, type: 3}
+  m_Name: Menu Labels_en
+  m_EditorClassIdentifier: Unity.Localization::UnityEngine.Localization.Tables.StringTable
+  m_LocaleId:
+    m_Code: en
+  m_SharedData: {fileID: 11400000, guid: a9f742071c58a4042a95c3cc6d7606a2, type: 2}
+  m_Metadata:
+    m_Items: []
+  m_TableData:
+  - m_Id: 8433696768
+    m_Localized: New Game
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10887364608
+    m_Localized: Settings
+    m_Metadata:
+      m_Items: []
+  - m_Id: 13978566656
+    m_Localized: Mission Select
+    m_Metadata:
+      m_Items: []
+  - m_Id: 16927162368
+    m_Localized: Quit
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1751399103725568
+    m_Localized: Video
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1755940540907520
+    m_Localized: Graphics
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1756543535022080
+    m_Localized: Audio
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1756784732667904
+    m_Localized: Controls
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1775860536311808
+    m_Localized: Video Resolution
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1776103499759616
+    m_Localized: Screen Mode
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1776636662906880
+    m_Localized: Language
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2092014748303360
+    m_Localized: Brightness
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2448684498288640
+    m_Localized: Field of View
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2450380515442688
+    m_Localized: Render Scale
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2450542084227072
+    m_Localized: Shadow Quality
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2450709764112384
+    m_Localized: Anti-Aliasing
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2451265974960128
+    m_Localized: Cap Framerate
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2804112168058880
+    m_Localized: Ambient Occlusion
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2805022013259776
+    m_Localized: Master Volume
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2805096512487424
+    m_Localized: Music Volume
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2805124559798272
+    m_Localized: SFX Volume
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2808698203275264
+    m_Localized: Look Sensitivity
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2809134293450752
+    m_Localized: Keybind
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2809270058876928
+    m_Localized: Move forward
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2809473570701312
+    m_Localized: Move backward
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2809614566424576
+    m_Localized: Move left
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2810319335325696
+    m_Localized: Move right
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2810792498954240
+    m_Localized: Jump
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2810824912535552
+    m_Localized: Sprint
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2810846152491008
+    m_Localized: Crouch
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2810937017892864
+    m_Localized: Shoot/Fire
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2812110986805248
+    m_Localized: Aiming
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2812175784607744
+    m_Localized: Reload
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2821561290588160
+    m_Localized: Game Paused
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2821714294603776
+    m_Localized: Resume
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2821832842412032
+    m_Localized: Quit to main menu
+    m_Metadata:
+      m_Items: []
+  references:
+    version: 2
+    RefIds: []
