@@ -3,23 +3,16 @@
 --- !u!78 &1
 TagManager:
   serializedVersion: 3
-  tags:
-  - FxTemporaire
-  - Enemy
-  - Teammate
+  tags: []
   layers:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - 
+  - Player
   - Water
   - UI
-  - Weapon
-<<<<<<< HEAD
-  - Ground
-=======
-  - Cover
->>>>>>> e81b1b39cc2ca084f4b993a25c52685241541b77
+  - 
+  - 
   - 
   - 
   - 
@@ -50,10 +43,3 @@ TagManager:
     locked: 0
   m_RenderingLayers:
   - Default
-  - Light Layer 1
-  - Light Layer 2
-  - Light Layer 3
-  - Light Layer 4
-  - Light Layer 5
-  - Light Layer 6
-  - Light Layer 7

@@ -500,7 +500,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9cb858c4807e1684f8239b8d6e1e6f8e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerMovement
-  animator: {fileID: 482955773999974567}
+  animator: {fileID: 2352464091218344279, guid: ba4ad7ea0d312b141ada6cdb0fa36df3, type: 3}
   playerCamera: {fileID: 8953099945999244710}
   walkSpeed: 4
   sprintSpeed: 6
@@ -654,7 +654,7 @@ MonoBehaviour:
   regenRate: 10
   regenDelay: 2
   healthBar: {fileID: 0}
-  gameOverCanvas: {fileID: 0}
+  gameOverCanvas: {fileID: 7820579933318383363, guid: 6a7c0da316f1c9c4ba51678e3d10911d, type: 3}
   hitsfx: {fileID: 8300000, guid: aa272b6788c6d4e42995a283d9511276, type: 3}
   pitchVariation: 0.1
   deathSound: {fileID: 8300000, guid: 084d54b4212f0e14e82cd39a78f98725, type: 3}
@@ -1102,11 +1102,6 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 3538067657429038979}
   m_SourcePrefab: {fileID: 100100000, guid: ba4ad7ea0d312b141ada6cdb0fa36df3, type: 3}
---- !u!95 &482955773999974567 stripped
-Animator:
-  m_CorrespondingSourceObject: {fileID: 2352464091218344279, guid: ba4ad7ea0d312b141ada6cdb0fa36df3, type: 3}
-  m_PrefabInstance: {fileID: 2744499869783716336}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &670163996151624617 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 3412192008621507161, guid: ba4ad7ea0d312b141ada6cdb0fa36df3, type: 3}
