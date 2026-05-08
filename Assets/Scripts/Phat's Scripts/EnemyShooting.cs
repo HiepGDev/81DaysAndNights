@@ -9,9 +9,12 @@ public class EnemyShooting : MonoBehaviour
     [Header("Weapon Stats")]
     [SerializeField] private GameObject impactVfxPrefab; 
     [SerializeField] private GameObject tracerPrefab;   
+    [SerializeField] private AudioSource audioSource;
+    [SerializeField] private AudioClip shootSound;
+    [Range(0, 1)] [SerializeField] private float shootVolume = 0.4f;
     [SerializeField] private Transform firePoint;
     [SerializeField] private float fireRate = 0.1f;
-    [SerializeField] private float fireDistance = 50.0f;
+    [SerializeField] private float fireDistance = 25.0f; // Reduced from 50.0f
     [SerializeField] private int damagePerShot = 5;
 
     [Header("Hitscan Settings")]
@@ -56,20 +59,44 @@ public class EnemyShooting : MonoBehaviour
     {
         if (isReloading) return;
 
-        EnemyBehaviorAgent agent = GetComponent<EnemyBehaviorAgent>();
-        if (agent != null && agent.IsMovingToCover)
+        // THE AMBUSH BYPASS: If in Ambush mode, we don't need the detection script!
+        EnemyBehaviorAgent behaviorAgent = GetComponent<EnemyBehaviorAgent>();
+        bool isAmbushing = (behaviorAgent != null && behaviorAgent.currentMode == EnemyBehaviorAgent.EnemyMode.Ambush);
+
+        // 1. Ammo Check (Always priority)
+        if (currentAmmo <= 0)
+        {
+            TriggerReload();
+            return;
+        }
+
+        if (behaviorAgent != null && behaviorAgent.IsMovingToCover)
         {
             if (isShootingInProgress) EndShooting();
             return;
         }
 
-        if (detection == null || !detection.IsTargetDetected || detection.CurrentTarget == null)
+        // 2. TARGET SELECTION: Use detection OR Ambush Target
+        Transform target = null;
+        if (isAmbushing)
+        {
+            // Find player directly (Cheating for Ambush Mode)
+            GameObject p = GameObject.FindGameObjectWithTag("Player");
+            if (p != null) target = p.transform;
+        }
+        else if (detection != null && detection.IsTargetDetected)
+        {
+            target = detection.CurrentTarget;
+        }
+
+        if (target == null)
         {
             if (isShootingInProgress) EndShooting();
             return;
         }
 
-        float distanceToTarget = Vector3.Distance(transform.position, detection.CurrentTarget.position);
+        // 3. RANGE CHECK
+        float distanceToTarget = Vector3.Distance(transform.position, target.position);
         if (distanceToTarget > fireDistance)
         {
             if (isShootingInProgress) EndShooting();
@@ -77,46 +104,52 @@ public class EnemyShooting : MonoBehaviour
         }
 
         if (!isShootingInProgress) StartShooting();
-        AimAtTarget();
+        
+        // Face and Aim
+        AimAtTargetManual(target);
 
         if (Time.time >= nextFireTime && currentAmmo > 0 && allowFiring)
         {
-            Shoot();
+            ShootManual(target);
             nextFireTime = Time.time + fireRate;
-        }
-        else if (currentAmmo <= 0 && !isReloading)
-        {
-            if (isShootingInProgress) EndShooting();
         }
     }
 
-    private void Shoot()
+    private void AimAtTargetManual(Transform target)
     {
-        if (firePoint == null || detection.CurrentTarget == null) return;
+        if (firePoint == null || target == null) return;
+        Vector3 targetPos = target.position + Vector3.up * 0.5f;
+        firePoint.LookAt(targetPos);
+    }
 
-        currentAmmo--;
+    private void ShootManual(Transform target)
+    {
+        if (firePoint == null || target == null) return;
         
-        // 1. Calculate Bloom (Spread grows as he fires)
+        currentAmmo--;
+
+        // THE SOUND FIX: Play gunshot sound with volume control
+        if (audioSource != null && shootSound != null)
+        {
+            audioSource.PlayOneShot(shootSound, shootVolume);
+        }
+        
         float totalSpread = minSpread + currentBloom;
         float spreadX = Random.Range(-totalSpread, totalSpread);
         float spreadY = Random.Range(-totalSpread, totalSpread);
 
-        // Target stomach height (0.5m)
-        Vector3 targetPoint = detection.CurrentTarget.position + Vector3.up * 0.5f;
+        Vector3 targetPoint = target.position + Vector3.up * 0.5f;
         Vector3 baseDir = (targetPoint - firePoint.position).normalized;
 
-        // Apply Bloom rotation
         Quaternion bloomRot = Quaternion.Euler(spreadY * 20f, spreadX * 20f, 0);
         Vector3 shootDir = (Quaternion.LookRotation(baseDir) * bloomRot) * Vector3.forward;
 
-        // 2. HITSCAN DETECTION
         RaycastHit hit;
         Vector3 endPoint = firePoint.position + (shootDir * fireDistance);
 
         if (Physics.Raycast(firePoint.position, shootDir, out hit, fireDistance, hitLayers))
         {
             endPoint = hit.point;
-
             var player = hit.collider.GetComponentInParent<PlayerHealth>();
             if (player != null) player.TakeDamage(damagePerShot);
             
@@ -129,13 +162,11 @@ public class EnemyShooting : MonoBehaviour
             }
         }
 
-        // 3. VISUAL TRACER (Moving Trail)
         if (tracerPrefab != null)
         {
             StartCoroutine(SpawnMovingTracer(firePoint.position, endPoint));
         }
 
-        // Increment bloom (capped at max)
         currentBloom = Mathf.Min(currentBloom + bloomIncrease, maxSpread);
     }
 
