@@ -7,31 +7,33 @@ public class EnemyShooting : MonoBehaviour
     private Animator animator;
 
     [Header("Weapon Stats")]
-    [SerializeField] private GameObject bulletPrefab;
+    [SerializeField] private GameObject impactVfxPrefab; 
+    [SerializeField] private GameObject tracerPrefab;   
     [SerializeField] private Transform firePoint;
     [SerializeField] private float fireRate = 0.1f;
-    [SerializeField] private float fireDistance = 25.0f;
+    [SerializeField] private float fireDistance = 50.0f;
+    [SerializeField] private int damagePerShot = 5;
 
-    [Header("CS:GO Style Spray Pattern")]
-    [SerializeField] private Vector2[] sprayPattern = new Vector2[] 
-    {
-        new Vector2(0, 0), new Vector2(0, 0.2f), new Vector2(0, 0.5f), 
-        new Vector2(-0.2f, 0.8f), new Vector2(-0.4f, 1.0f), new Vector2(0.2f, 1.2f)
-    };
-    [SerializeField] private float patternScale = 0.5f;
+    [Header("Hitscan Settings")]
+    [SerializeField] private LayerMask hitLayers;
+    [SerializeField] private float tracerDuration = 0.05f;
+    
+    [Header("Bloom (Recoil) Settings")]
+    [SerializeField] private float minSpread = 0.01f;      // Precision of first shot
+    [SerializeField] private float maxSpread = 0.08f;      // Max inaccuracy
+    [SerializeField] private float bloomIncrease = 0.01f;  // Growth per bullet
+    private float currentBloom = 0f;
 
     [Header("Ammo Settings")]
     [SerializeField] private int magazineSize = 30;
-    [SerializeField] private float reloadTime = 2.5f;
+    [SerializeField] private float reloadTime = 3.0f;
     
     private int currentAmmo;
-    private int recoilIndex = 0; 
     private float nextFireTime;
     private bool isShootingInProgress = false;
     private bool isReloading = false;
     private bool isCrouched = false;
 
-    // THE 1-BULLET FIX: Allow external control (Peek script)
     [HideInInspector] public bool allowFiring = true;
 
     public bool IsOutOfAmmo => currentAmmo <= 0;
@@ -90,37 +92,86 @@ public class EnemyShooting : MonoBehaviour
 
     private void Shoot()
     {
-        if (bulletPrefab == null || firePoint == null) return;
+        if (firePoint == null || detection.CurrentTarget == null) return;
 
         currentAmmo--;
-        Debug.Log($"[Enemy Weapon] Shot Fired! Ammo: {currentAmmo}/{magazineSize}");
+        
+        // 1. Calculate Bloom (Spread grows as he fires)
+        float totalSpread = minSpread + currentBloom;
+        float spreadX = Random.Range(-totalSpread, totalSpread);
+        float spreadY = Random.Range(-totalSpread, totalSpread);
 
-        Vector2 patternOffset = Vector2.zero;
-        if (sprayPattern != null && sprayPattern.Length > 0)
+        // Target stomach height (0.5m)
+        Vector3 targetPoint = detection.CurrentTarget.position + Vector3.up * 0.5f;
+        Vector3 baseDir = (targetPoint - firePoint.position).normalized;
+
+        // Apply Bloom rotation
+        Quaternion bloomRot = Quaternion.Euler(spreadY * 20f, spreadX * 20f, 0);
+        Vector3 shootDir = (Quaternion.LookRotation(baseDir) * bloomRot) * Vector3.forward;
+
+        // 2. HITSCAN DETECTION
+        RaycastHit hit;
+        Vector3 endPoint = firePoint.position + (shootDir * fireDistance);
+
+        if (Physics.Raycast(firePoint.position, shootDir, out hit, fireDistance, hitLayers))
         {
-            patternOffset = sprayPattern[recoilIndex % sprayPattern.Length] * patternScale;
+            endPoint = hit.point;
+
+            var player = hit.collider.GetComponentInParent<PlayerHealth>();
+            if (player != null) player.TakeDamage(damagePerShot);
+            
+            var enemy = hit.collider.GetComponentInParent<EnemyHealth>();
+            if (enemy != null && enemy.gameObject != gameObject) enemy.TakeDamage(damagePerShot);
+
+            if (impactVfxPrefab != null)
+            {
+                Instantiate(impactVfxPrefab, hit.point, Quaternion.LookRotation(hit.normal));
+            }
         }
 
-        Quaternion recoilRotation = Quaternion.Euler(-patternOffset.y, patternOffset.x, 0);
-        Quaternion finalRotation = firePoint.rotation * recoilRotation;
-
-        GameObject bullet = Instantiate(bulletPrefab, firePoint.position, finalRotation);
-        
-        ParticleSystem ps = bullet.GetComponent<ParticleSystem>();
-        if (ps == null) ps = bullet.GetComponentInChildren<ParticleSystem>();
-        
-        if (ps != null)
+        // 3. VISUAL TRACER (Moving Trail)
+        if (tracerPrefab != null)
         {
-            var main = ps.main;
-            main.simulationSpace = ParticleSystemSimulationSpace.World;
-            var emission = ps.emission;
-            emission.rateOverTime = 0;
-            emission.SetBursts(new ParticleSystem.Burst[] { });
-            ps.Emit(1);
+            StartCoroutine(SpawnMovingTracer(firePoint.position, endPoint));
         }
 
-        recoilIndex++;
-        Destroy(bullet, 2.0f);
+        // Increment bloom (capped at max)
+        currentBloom = Mathf.Min(currentBloom + bloomIncrease, maxSpread);
+    }
+
+    private IEnumerator SpawnMovingTracer(Vector3 start, Vector3 end)
+    {
+        GameObject tracerObj = Instantiate(tracerPrefab, start, Quaternion.identity);
+        LineRenderer line = tracerObj.GetComponent<LineRenderer>();
+        if (line != null)
+        {
+            line.useWorldSpace = true;
+            line.SetPosition(0, start);
+            line.SetPosition(1, end);
+            line.startWidth = 0.05f;
+            line.endWidth = 0.01f;
+            line.startColor = Color.yellow;
+            line.endColor = new Color(1f, 1f, 0f, 0f);
+        }
+        
+        float travelSpeed = 400f; 
+        float distance = Vector3.Distance(start, end);
+        float remainingDistance = distance;
+
+        while (remainingDistance > 1.0f)
+        {
+            if (tracerObj == null) yield break;
+            float moveStep = travelSpeed * Time.deltaTime;
+            tracerObj.transform.position = Vector3.MoveTowards(tracerObj.transform.position, end, moveStep);
+            remainingDistance -= moveStep;
+            yield return null;
+        }
+
+        if (tracerObj != null)
+        {
+            tracerObj.transform.position = end;
+            Destroy(tracerObj, 0.1f);
+        }
     }
 
     public void TriggerReload()
@@ -132,7 +183,7 @@ public class EnemyShooting : MonoBehaviour
     {
         isReloading = true;
         isShootingInProgress = false; 
-        recoilIndex = 0;
+        currentBloom = 0; // RESET RECOIL
 
         EnemyBehaviorAgent behavior = GetComponent<EnemyBehaviorAgent>();
         bool inCover = (behavior != null && behavior.IsInCover);
@@ -146,19 +197,14 @@ public class EnemyShooting : MonoBehaviour
 
             if (shouldCrouchReload)
             {
-                // Play active crouching reload
                 animator.CrossFade("crouching_reload", 0.1f);
-                
-                // Wait for the animation to play (Adjusted for your 24-frame clip @ 0.25 speed)
-                float animDuration = 3.2f; 
+                float animDuration = 1.5f; 
                 yield return new WaitForSeconds(animDuration);
 
                 if (isReloading && inCover)
                 {
-                    // Transition to the silent hiding pose
                     animator.CrossFade("Cover_Crouching", 0.2f);
                 }
-                
                 float remaining = Mathf.Max(0, reloadTime - animDuration);
                 if (remaining > 0) yield return new WaitForSeconds(remaining);
             }
@@ -178,22 +224,18 @@ public class EnemyShooting : MonoBehaviour
         
         if (animator != null && HasParameter("isReloading", animator)) 
             animator.SetBool("isReloading", false);
-            
-        Debug.Log("[Enemy Weapon] Reload Complete.");
     }
 
     private void AimAtTarget()
     {
-        if (firePoint == null) return;
-        float aimHeight = isCrouched ? 0.6f : 1.2f; 
-        Vector3 targetPos = detection.CurrentTarget.position + Vector3.up * aimHeight;
+        if (firePoint == null || detection.CurrentTarget == null) return;
+        Vector3 targetPos = detection.CurrentTarget.position + Vector3.up * 0.5f;
         firePoint.LookAt(targetPos);
     }
 
     private void StartShooting()
     {
         isShootingInProgress = true;
-        recoilIndex = 0;
         isCrouched = Random.value > 0.5f;
         if (animator != null)
         {
@@ -213,6 +255,7 @@ public class EnemyShooting : MonoBehaviour
     private void EndShooting()
     {
         isShootingInProgress = false;
+        currentBloom = 0; // RESET RECOIL
         if (animator != null)
         {
             if (HasParameter("isShooting", animator)) animator.SetBool("isShooting", false);
