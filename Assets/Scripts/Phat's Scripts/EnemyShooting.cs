@@ -156,6 +156,9 @@ public class EnemyShooting : MonoBehaviour
             var enemy = hit.collider.GetComponentInParent<EnemyHealth>();
             if (enemy != null && enemy.gameObject != gameObject) enemy.TakeDamage(damagePerShot);
 
+            var teammate = hit.collider.GetComponentInParent<TeammateHealth>();
+            if (teammate != null && teammate.gameObject != gameObject) teammate.TakeDamage(damagePerShot);
+
             if (impactVfxPrefab != null)
             {
                 Instantiate(impactVfxPrefab, hit.point, Quaternion.LookRotation(hit.normal));

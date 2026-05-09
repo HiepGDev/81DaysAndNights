@@ -29,14 +29,13 @@ public class BulletDamage : MonoBehaviour
                 teammateHealth.TakeDamage(damageAmount);
             }
         }
-
-        if (!other.CompareTag(PLAYER_STRING))
-            return;
-        var health = other.GetComponentInParent<PlayerHealth>();
-        if (health == null)
-            return;
-        health.TakeDamage(damageAmount);
-        Debug.Log($"Player take {damageAmount} damage");
+        //if (!other.CompareTag(PLAYER_STRING))
+        //    return;
+        //var health = other.GetComponentInParent<PlayerHealth>();
+        //if (health == null)
+        //    return;
+        //health.TakeDamage(damageAmount);
+        //Debug.Log($"Player take {damageAmount} damage");
     }
     void Start()
     {

@@ -167,9 +167,6 @@ public class TeammateAI : MonoBehaviour
                 shooting.TriggerReload();
             }
         }
-
-        // Nếu súng báo nạp xong rồi (IsOutOfAmmo = false), hàm Update() sẽ tự động thoát khỏi SeekingCover 
-        // và nhảy xuống UpdateState() để tiếp tục chiến đấu hoặc đi tuần.
     }
 
     private void UpdateState()
@@ -326,9 +323,26 @@ public class TeammateAI : MonoBehaviour
     private void UpdateAnimation()
     {
         if (animator == null) return;
-        if (!HasParameter("Speed", animator)) return;
+
         float speed = agent.desiredVelocity.magnitude;
-        animator.SetFloat("Speed", speed);
+
+        if (HasParameter("isRunning", animator))
+        {
+            animator.SetBool("isRunning", speed > 2.5f);
+        }
+
+        bool isActuallyReloading = (shooting != null && shooting.IsReloading);
+        if (!isActuallyReloading)
+        {
+            if (HasParameter("Speed", animator))
+                animator.SetFloat("Speed", speed);
+        }
+        else
+        {
+            if (HasParameter("Speed", animator))
+                animator.SetFloat("Speed", 0f);
+        }
+
         lastLoggedSpeed = speed;
     }
 
