@@ -32,6 +32,8 @@ public class EnemyTacticalPeek : MonoBehaviour
         if (behaviorAgent == null || !behaviorAgent.IsInCover) 
         {
             if (isCurrentlyPeeking) isCurrentlyPeeking = false;
+            // THE LOCK FIX: If we aren't at a wall, the safety MUST be OFF.
+            if (shooting != null) shooting.allowFiring = true;
             return;
         }
 

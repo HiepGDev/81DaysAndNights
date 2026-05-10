@@ -12,9 +12,12 @@ public class EnemyBehaviorAgent : MonoBehaviour
     private EnemyCover cover;
     private Animator animator;
 
-    [Header("Behavior Settings")]
+    [Header("Ambush Settings")]
     public EnemyMode currentMode = EnemyMode.Wander;
     [SerializeField] private float ambushStopDistance = 5f; 
+    [SerializeField] private float ambushShootRange = 15f; 
+    
+    [Header("Wander Settings")]
     [SerializeField] private float wanderRadius = 15f;
     [SerializeField] private float idleTime = 2f;
     
@@ -26,10 +29,11 @@ public class EnemyBehaviorAgent : MonoBehaviour
     private Vector3 currentTarget; 
     private EnemyCover.CoverPoint activeCover;
 
-    // --- State Tracking ---
     private bool wasTargetInShootingRangeLastFrame = false;
     private bool isChasing = false;
-    private bool isHidingFromRange = false; // NEW: Track safety hiding
+    private bool isHidingFromRange = false;
+
+    public bool IsReadyToShoot { get; private set; }
 
     private void Awake()
     {
@@ -49,6 +53,7 @@ public class EnemyBehaviorAgent : MonoBehaviour
 
         agent.updatePosition = false; 
         agent.updateRotation = true;
+        agent.speed = 4.0f;
         agent.acceleration = 30f; 
         agent.angularSpeed = 600f; 
         agent.stoppingDistance = 0.5f;
@@ -59,18 +64,6 @@ public class EnemyBehaviorAgent : MonoBehaviour
 
     private void Start()
     {
-        // THE SKELETON PROTECTOR:
-        // We only reset the main functional points, but we MUST NOT 
-        // reset the Hips or any bones, otherwise hit detection and ragdolls break.
-        foreach (Transform child in transform)
-        {
-            // Only reset top-level containers that aren't part of the actual character skeleton
-            if (child.name.ToLower().Contains("weapon") || child.name.ToLower().Contains("target")) 
-            {
-                child.localPosition = Vector3.zero;
-                child.localRotation = Quaternion.identity;
-            }
-        }
         spawnPoint = transform.position;
         if (agent.isOnNavMesh) agent.Warp(transform.position);
         StartIdle();
@@ -81,111 +74,112 @@ public class EnemyBehaviorAgent : MonoBehaviour
         if (!agent.isOnNavMesh) return;
         transform.position = agent.nextPosition;
 
-        // THE AMBUSH FIX: Re-find player if reference is lost
+        // 1. RE-FIND PLAYER
         if (playerTransform == null)
         {
             GameObject p = GameObject.FindGameObjectWithTag("Player");
-            if (p != null) playerTransform = p.transform;
-        }
-
-        if (animator != null)
-        {
-            float speed = agent.desiredVelocity.magnitude;
-            if (HasParameter("isRunning", animator))
-                animator.SetBool("isRunning", speed > 2.5f);
-
-            bool isActuallyReloading = (shooting != null && shooting.IsReloading);
-            if (!isActuallyReloading)
+            if (p != null) 
             {
-                if (HasParameter("Speed", animator))
-                    animator.SetFloat("Speed", speed);
+                playerTransform = p.transform;
             }
-            else
+            else if (Time.frameCount % 120 == 0)
             {
-                if (HasParameter("Speed", animator))
-                    animator.SetFloat("Speed", 0f);
+                Debug.LogError("[BRAIN] CRITICAL: No object with tag 'Player' found!");
             }
         }
 
-        // 1. TACTICAL DETECTION: Ambush mode "Cheats" and always sees you
+        // 2. TACTICAL DETECTION
         bool isAmbushing = (currentMode == EnemyMode.Ambush && playerTransform != null);
         bool isDetected = isAmbushing || (detection != null && detection.IsTargetDetected);
         Transform target = isAmbushing ? playerTransform : (detection != null ? detection.CurrentTarget : null);
 
-        bool inShootingRange = false;
-        if (isDetected && shooting != null && target != null)
+        float distToTarget = target != null ? Vector3.Distance(transform.position, target.position) : float.MaxValue;
+        float engagementDist = isAmbushing ? ambushShootRange : (shooting != null ? shooting.FireDistance : 25f);
+        bool inShootingRange = isDetected && distToTarget <= engagementDist;
+
+        // --- BRAIN LOGS (Always visible every 1 sec) ---
+        if (Time.frameCount % 60 == 0)
         {
-            float dist = Vector3.Distance(transform.position, target.position);
-            inShootingRange = dist <= shooting.FireDistance;
+            Debug.Log($"[BRAIN] Mode: {currentMode} | PlayerFound: {playerTransform != null} | Detected: {isDetected} | Dist: {distToTarget:F1} | AgentStopped: {agent.isStopped}");
         }
 
-        // 2. THE "OUT OF RANGE" TRIGGER
-        if (wasTargetInShootingRangeLastFrame && !inShootingRange)
+        // 3. ANIMATION CONTROL
+        if (animator != null)
         {
-            // Ambush Mode ALWAYS chases if you run away
-            if (isAmbushing || Random.value > 0.5f)
+            float intentSpeed = agent.isStopped ? 0f : agent.desiredVelocity.magnitude;
+            bool isActuallyReloading = (shooting != null && shooting.IsReloading);
+            bool isMovingToCover = IsMovingToCover;
+
+            // THE RELOAD BRAKE: If we are reloading and NOT moving to cover, STOP physically.
+            if (isActuallyReloading && !isMovingToCover)
             {
-                isChasing = true;
-                isInCover = false; 
-                isHidingFromRange = false;
-                if (animator != null && HasParameter("isCovering", animator)) animator.SetBool("isCovering", false);
-                
-                agent.isStopped = false;
-                if (target != null) agent.SetDestination(target.position);
-                wasTargetInShootingRangeLastFrame = inShootingRange;
-                return; 
+                if (!agent.isStopped) StopAgent();
+            }
+
+            // THE SLIDE FIX: Allow animations if we aren't reloading OR if we are running to cover
+            if (!isActuallyReloading || isMovingToCover)
+            {
+                bool shouldBeRunning = intentSpeed > 2.0f;
+                if (HasParameter("isRunning", animator))
+                    animator.SetBool("isRunning", shouldBeRunning);
+
+                if (HasParameter("Speed", animator))
+                {
+                    float finalSpeed = shouldBeRunning ? 0.5f : intentSpeed; 
+                    animator.SetFloat("Speed", finalSpeed);
+                }
             }
             else
             {
-                isChasing = false;
-                isHidingFromRange = true; 
-                if (!isInCover) FindAndGoToCover();
+                if (HasParameter("isRunning", animator)) animator.SetBool("isRunning", false);
+                if (HasParameter("Speed", animator)) animator.SetFloat("Speed", 0f);
             }
         }
 
-        // 3. OUT OF AMMO logic (Tactical Reload in Cover)
-        if (shooting != null && shooting.IsOutOfAmmo && !shooting.IsReloading)
+        // 4. THE BRAIN (PRIORITY SYSTEM)
+
+        // A. RELOAD: If empty, go to wall
+        if (shooting != null && shooting.IsOutOfAmmo)
         {
             if (!isInCover) FindAndGoToCover();
             else HandleCoverLogic();
-            wasTargetInShootingRangeLastFrame = inShootingRange;
             return;
         }
 
-        // 4. ACTIVE COVER logic
+        // B. COVER: If in cover, stay hidden
         if (isInCover)
         {
             HandleCoverLogic();
-            wasTargetInShootingRangeLastFrame = inShootingRange;
             return;
         }
 
-        // 5. Handle Chasing
-        if (isChasing || (isAmbushing && !inShootingRange))
+        // C. ENGAGEMENT
+        if (isDetected && target != null)
         {
-            if (inShootingRange) 
+            if (!inShootingRange)
             {
-                isChasing = false; 
+                // CHASE
+                IsReadyToShoot = false;
+                if (agent.isStopped) agent.isStopped = false;
+                agent.SetDestination(target.position);
+                FaceTarget();
             }
             else
             {
-                if (target != null) agent.SetDestination(target.position);
-                wasTargetInShootingRangeLastFrame = inShootingRange;
-                return;
+                // SHOOT
+                IsReadyToShoot = true;
+                if (!agent.isStopped) 
+                {
+                    Debug.Log("[BRAIN] In range. Locking feet for combat.");
+                    StopAgent();
+                }
+                FaceTarget();
             }
-        }
-
-        // 6. NORMAL COMBAT
-        if (inShootingRange)
-        {
-            if (shooting != null) shooting.enabled = true;
-            StopAgent();
-            wasTargetInShootingRangeLastFrame = true;
-            FaceTarget();
             return;
         }
 
-        wasTargetInShootingRangeLastFrame = inShootingRange;
+        IsReadyToShoot = false; // Safety fallback
+        // D. WANDER
         if (isIdle) HandleIdle();
         else HandleWandering();
     }
@@ -196,18 +190,20 @@ public class EnemyBehaviorAgent : MonoBehaviour
 
     private void FindAndGoToCover()
     {
-        if (cover == null || detection.CurrentTarget == null && !isChasing) 
+        bool isAmbushing = (currentMode == EnemyMode.Ambush && playerTransform != null);
+        if (cover == null || (detection.CurrentTarget == null && !isAmbushing)) 
         {
+            Debug.Log("[BRAIN] Aborting cover search: No player seen.");
             shooting.TriggerReload();
             return;
         }
 
-        // If we lost them, use last known pos to find cover
-        Vector3 targetPosForCover = (detection.CurrentTarget != null) ? detection.CurrentTarget.position : detection.LastKnownPosition;
-        activeCover = cover.FindNearestCover(targetPosForCover);
+        Vector3 targetPos = isAmbushing ? playerTransform.position : detection.CurrentTarget.position;
+        activeCover = cover.FindNearestCover(targetPos);
         
         if (activeCover.found)
         {
+            Debug.Log($"[BRAIN] Cover FOUND at {activeCover.position}. Running to wall.");
             isInCover = true;
             isIdle = false;
             agent.isStopped = false;
@@ -215,6 +211,7 @@ public class EnemyBehaviorAgent : MonoBehaviour
         }
         else
         {
+            Debug.LogWarning("[BRAIN] No wall found! Reloading in the open.");
             shooting.TriggerReload();
         }
     }
@@ -222,21 +219,22 @@ public class EnemyBehaviorAgent : MonoBehaviour
     private void HandleCoverLogic()
     {
         float distToCover = Vector3.Distance(transform.position, activeCover.position);
-        
+        bool inShootingRange = (currentMode == EnemyMode.Ambush) || (detection != null && detection.IsTargetDetected);
+
         if (distToCover <= 0.2f || (!agent.pathPending && agent.remainingDistance <= agent.stoppingDistance))
         {
-            bool isActuallyReloading = (shooting != null && shooting.IsReloading);
-            bool shouldCrouch = (shooting != null && (shooting.IsOutOfAmmo || isHidingFromRange));
+            bool isReloading = (shooting != null && shooting.IsReloading);
+            bool shouldCrouch = (shooting != null && shooting.IsOutOfAmmo);
 
-            // THE ROTATION FIX: Always allow him to face the wall, even if reloading
-            if (shouldCrouch)
+            // Turn to face the wall immediately
+            if (shouldCrouch || isReloading)
             {
                 StopAgent();
                 transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(activeCover.lookDirection), Time.deltaTime * 10f);
             }
 
-            // THE ANIMATION LOCK: Only touch animator params if NOT reloading
-            if (!isActuallyReloading)
+            // Animation Control
+            if (!isReloading)
             {
                 if (shouldCrouch)
                 {
@@ -247,82 +245,47 @@ public class EnemyBehaviorAgent : MonoBehaviour
                             animator.CrossFade("Cover_Crouching", 0.1f);
                     }
                 }
-                else
+                else if (!shooting.IsOutOfAmmo)
                 {
-                    if (animator != null && HasParameter("isCovering", animator)) 
-                        animator.SetBool("isCovering", false);
-                    
-                    if (agent.isStopped) agent.isStopped = false;
-                    FaceTarget();
+                    // If we have ammo, LEAVE the wall to resume the hunt
+                    ExitCover();
                 }
             }
 
-            // RELOAD logic (Check remains active to allow TriggerReload to start)
-            if (shooting != null && shooting.IsOutOfAmmo && !isActuallyReloading)
-            {
+            if (shooting != null && shooting.IsOutOfAmmo && !isReloading)
                 shooting.TriggerReload();
-            }
-
-            // EXIT logic
-            if (!isActuallyReloading)
-            {
-                if (isHidingFromRange)
-                {
-                    idleTimer -= Time.deltaTime;
-                    if (idleTimer <= 0)
-                    {
-                        ExitCover();
-                    }
-                }
-            }
         }
     }
 
     private void ExitCover()
     {
+        Debug.Log("[BRAIN] Exiting Cover.");
         isInCover = false;
-        isHidingFromRange = false; // Reset the flag
         if (animator != null) animator.SetBool("isCovering", false);
-        
-        if (detection.IsTargetDetected)
-        {
-            StopAgent();
-            FaceTarget();
-        }
-        else
-        {
-            PickNewWanderPoint();
-        }
+        agent.isStopped = false;
     }
 
     public void FaceTarget()
     {
-        // THE AMBUSH FIX: Use playerTransform directly if in Ambush mode
-        Transform target = (currentMode == EnemyMode.Ambush) ? playerTransform : detection.CurrentTarget;
-
-        if (target != null)
+        Transform t = (currentMode == EnemyMode.Ambush) ? playerTransform : detection.CurrentTarget;
+        if (t != null)
         {
-            Vector3 lookPos = target.position - transform.position;
-            lookPos.y = 0;
-            if (lookPos != Vector3.zero)
-            {
-                Quaternion targetRot = Quaternion.LookRotation(lookPos);
-                transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, Time.deltaTime * 5f);
-            }
+            Vector3 dir = (t.position - transform.position);
+            dir.y = 0;
+            if (dir != Vector3.zero)
+                transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(dir), Time.deltaTime * 5f);
         }
     }
 
-    private bool HasParameter(string paramName, Animator animator)
+    private bool HasParameter(string n, Animator a)
     {
-        if (animator == null) return false;
-        foreach (AnimatorControllerParameter param in animator.parameters)
-            if (param.name == paramName) return true;
+        foreach (var p in a.parameters) if (p.name == n) return true;
         return false;
     }
 
     private void HandleWandering()
     {
-        if (!agent.pathPending && agent.hasPath && agent.remainingDistance <= agent.stoppingDistance)
+        if (!agent.pathPending && agent.remainingDistance <= agent.stoppingDistance)
             StartIdle();
     }
 
@@ -335,22 +298,17 @@ public class EnemyBehaviorAgent : MonoBehaviour
     private void PickNewWanderPoint()
     {
         if (!agent.isOnNavMesh) return;
-        for (int i = 0; i < 15; i++)
+        for (int i = 0; i < 10; i++)
         {
-            Vector3 randomPos = spawnPoint + Random.insideUnitSphere * wanderRadius;
+            Vector3 rand = spawnPoint + Random.insideUnitSphere * wanderRadius;
             NavMeshHit hit;
-            if (NavMesh.SamplePosition(randomPos, out hit, 5.0f, NavMesh.AllAreas))
+            if (NavMesh.SamplePosition(rand, out hit, 5f, NavMesh.AllAreas))
             {
-                NavMeshPath path = new NavMeshPath();
-                agent.CalculatePath(hit.position, path);
-                if (path.status == NavMeshPathStatus.PathComplete)
-                {
-                    currentTarget = hit.position;
-                    isIdle = false;
-                    agent.isStopped = false;
-                    agent.SetDestination(currentTarget);
-                    return;
-                }
+                currentTarget = hit.position;
+                isIdle = false;
+                agent.isStopped = false;
+                agent.SetDestination(currentTarget);
+                return;
             }
         }
     }
@@ -367,31 +325,8 @@ public class EnemyBehaviorAgent : MonoBehaviour
         if (agent.isOnNavMesh)
         {
             agent.isStopped = true;
+            agent.ResetPath();
             agent.velocity = Vector3.zero;
-            agent.nextPosition = transform.position; 
-        }
-    }
-
-    private void HandleAmbushMode()
-    {
-        float distToPlayer = Vector3.Distance(transform.position, playerTransform.position);
-        
-        // THE AGGRESSIVE FIX: Always keep the path updated to the player's feet
-        agent.SetDestination(playerTransform.position);
-
-        // Only STOP if we are physically touching/near the player
-        if (distToPlayer > ambushStopDistance)
-        {
-            agent.isStopped = false;
-            
-            if (animator != null && HasParameter("isCovering", animator)) 
-                animator.SetBool("isCovering", false);
-        }
-        else
-        {
-            // We are "In your face" - Stop and focus on aim
-            StopAgent();
-            FaceTarget();
         }
     }
 }
