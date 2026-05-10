@@ -10,7 +10,6 @@ public class EnemyTacticalPeek : MonoBehaviour
     
     [Header("Peek Settings")]
     [SerializeField] private float peekDistance = 0.7f; 
-    [SerializeField] private float arrivalThreshold = 0.4f;
 
     private Vector3 originalCoverPos;
     private Vector3 peekPos;

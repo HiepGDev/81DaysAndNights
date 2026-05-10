@@ -14,7 +14,6 @@ public class EnemyBehaviorAgent : MonoBehaviour
 
     [Header("Ambush Settings")]
     public EnemyMode currentMode = EnemyMode.Wander;
-    [SerializeField] private float ambushStopDistance = 5f; 
     [SerializeField] private float ambushShootRange = 15f; 
     
     [Header("Wander Settings")]
@@ -28,10 +27,6 @@ public class EnemyBehaviorAgent : MonoBehaviour
     private bool isInCover = false;
     private Vector3 currentTarget; 
     private EnemyCover.CoverPoint activeCover;
-
-    private bool wasTargetInShootingRangeLastFrame = false;
-    private bool isChasing = false;
-    private bool isHidingFromRange = false;
 
     public bool IsReadyToShoot { get; private set; }
 
@@ -96,12 +91,6 @@ public class EnemyBehaviorAgent : MonoBehaviour
         float distToTarget = target != null ? Vector3.Distance(transform.position, target.position) : float.MaxValue;
         float engagementDist = isAmbushing ? ambushShootRange : (shooting != null ? shooting.FireDistance : 25f);
         bool inShootingRange = isDetected && distToTarget <= engagementDist;
-
-        // --- BRAIN LOGS (Always visible every 1 sec) ---
-        if (Time.frameCount % 60 == 0)
-        {
-            Debug.Log($"[BRAIN] Mode: {currentMode} | PlayerFound: {playerTransform != null} | Detected: {isDetected} | Dist: {distToTarget:F1} | AgentStopped: {agent.isStopped}");
-        }
 
         // 3. ANIMATION CONTROL
         if (animator != null)
@@ -168,11 +157,7 @@ public class EnemyBehaviorAgent : MonoBehaviour
             {
                 // SHOOT
                 IsReadyToShoot = true;
-                if (!agent.isStopped) 
-                {
-                    Debug.Log("[BRAIN] In range. Locking feet for combat.");
-                    StopAgent();
-                }
+                if (!agent.isStopped) StopAgent();
                 FaceTarget();
             }
             return;
@@ -203,7 +188,6 @@ public class EnemyBehaviorAgent : MonoBehaviour
         
         if (activeCover.found)
         {
-            Debug.Log($"[BRAIN] Cover FOUND at {activeCover.position}. Running to wall.");
             isInCover = true;
             isIdle = false;
             agent.isStopped = false;
@@ -211,7 +195,6 @@ public class EnemyBehaviorAgent : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning("[BRAIN] No wall found! Reloading in the open.");
             shooting.TriggerReload();
         }
     }
@@ -259,7 +242,6 @@ public class EnemyBehaviorAgent : MonoBehaviour
 
     private void ExitCover()
     {
-        Debug.Log("[BRAIN] Exiting Cover.");
         isInCover = false;
         if (animator != null) animator.SetBool("isCovering", false);
         agent.isStopped = false;

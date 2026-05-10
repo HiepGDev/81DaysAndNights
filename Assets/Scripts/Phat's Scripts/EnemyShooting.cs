@@ -19,7 +19,6 @@ public class EnemyShooting : MonoBehaviour
 
     [Header("Hitscan Settings")]
     [SerializeField] private LayerMask hitLayers;
-    [SerializeField] private float tracerDuration = 0.05f;
     
     [Header("Bloom (Recoil) Settings")]
     [SerializeField] private float minSpread = 0.01f;      // Precision of first shot
