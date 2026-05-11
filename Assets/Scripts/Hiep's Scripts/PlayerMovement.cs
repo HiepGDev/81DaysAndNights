@@ -43,6 +43,14 @@ public class PlayerMovement : MonoBehaviour
     {
         DisableCursor();
         playerController = GetComponent<CharacterController>();
+        if (animator == null) animator = GetComponentInChildren<Animator>(); 
+        if (staminaSystem == null) staminaSystem = GetComponent<PlayerStamina>();
+        if (playerCamera == null)
+        {
+            // Look for a child named...
+            Transform camPivot = transform.Find("Player_Camera"); 
+            playerCamera = camPivot;
+        }
         moveAction = InputSystem.actions.FindAction("Move");
         lookAction = InputSystem.actions.FindAction("Look");
         jumpAction = InputSystem.actions.FindAction("Jump");
@@ -56,9 +64,8 @@ public class PlayerMovement : MonoBehaviour
     }
     void Start()
     {
-        staminaSystem = GetComponent<PlayerStamina>();
-        playerGun = GetComponentInChildren<PlayerGun>();
-        originalCamPos = playerCamera.localPosition;
+        if (playerGun == null) playerGun = GetComponentInChildren<PlayerGun>();
+        if (playerCamera != null) originalCamPos = playerCamera.localPosition;
         lookSensitivity = PlayerPrefs.GetFloat("MouseSensitivity", 10f);
     }
 
@@ -116,8 +123,11 @@ public class PlayerMovement : MonoBehaviour
         // if aiming, the animator will naturally fall back to "Idle".
         bool Walk = isWalking && (playerGun == null || !playerGun.isAiming);
         bool Run = isRunning && (playerGun == null || !playerGun.isAiming);
-        animator.SetBool("isWalk", Walk);
-        animator.SetBool("isRun", Run);
+        if (animator != null && animator.isActiveAndEnabled)
+        {
+            animator.SetBool("isWalk", Walk);
+            animator.SetBool("isRun", Run);
+        }
     }
     
     void HandleLook()

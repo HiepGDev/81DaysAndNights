@@ -44,11 +44,33 @@ public class PlayerGun : MonoBehaviour
       shootAction?.Enable();
       reloadAction?.Enable();
       aimAction?.Enable();
+
+      if (animator == null) animator = GetComponent<Animator>();
+      if (audioSource == null) audioSource = GetComponent<AudioSource>();
+      if (muzzleFlash == null) muzzleFlash = GetComponentInChildren<ParticleSystem>();
+      if (weaponTransform == null) weaponTransform = transform;
     }
     void Start()
     {
         if (playerMovement == null) playerMovement = GetComponentInParent<PlayerMovement>();
         if (recoil == null) recoil = GetComponentInParent<GunRecoil>();
+        if (crosshair == null) crosshair = FindFirstObjectByType<CrosshairController>();
+        if (ammoText == null) ammoText = FindFirstObjectByType<TMP_Text>();
+        if (virtualCamera == null) virtualCamera = FindFirstObjectByType<CinemachineCamera>();
+
+        // Find the Overlay Weapon Camera specifically
+        if (weaponCamera == null)
+        {
+            Camera[] allCameras = Object.FindObjectsByType<Camera>(FindObjectsSortMode.None);
+            foreach (Camera cam in allCameras)
+            {
+                if (cam.name.Contains("Weapon")) // Find "WeaponCamera"
+                {
+                    weaponCamera = cam;
+                    break;
+                }
+            }
+        }
 
         animator = GetComponent<Animator>();
         audioSource = GetComponent<AudioSource>();
@@ -63,9 +85,17 @@ public class PlayerGun : MonoBehaviour
         {
             hipPosition = weaponTransform.localPosition;
             hipRotation = weaponTransform.localRotation;
-        } 
-
-        defaultFOV = virtualCamera.Lens.FieldOfView;
+        }
+        
+        defaultFOV = PlayerPrefs.GetFloat("PlayerFOV", 75f);
+        if (virtualCamera != null)
+        {
+            virtualCamera.Lens.FieldOfView = defaultFOV;
+        }
+        if (weaponCamera != null)
+        {
+            weaponCamera.fieldOfView = defaultFOV;
+        }
     }
     private void OnDisable()
     {
@@ -86,6 +116,8 @@ public class PlayerGun : MonoBehaviour
 
     void Update()
     {
+        // If the game is paused, stop all gun logic
+        if (Time.timeScale == 0) return;
         HandleShoot();
         HandleReload();
         HandleAim();

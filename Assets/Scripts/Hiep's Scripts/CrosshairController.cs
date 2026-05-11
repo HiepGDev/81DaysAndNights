@@ -26,9 +26,12 @@ public class CrosshairController : MonoBehaviour
     }
     void Start()
     {
+        if (movement == null) movement = FindFirstObjectByType<PlayerMovement>();
+        if (gun == null) gun = FindFirstObjectByType<PlayerGun>();
+        if (controller == null) controller = FindFirstObjectByType<CharacterController>();
         if (movement == null || gun == null || controller == null)
         {
-            Debug.LogWarning("Crosshair is missing player references! Drag them in via the Inspector.");
+            Debug.LogWarning($"[Crosshair] Missing Player references in {gameObject.name}!");
         }
         currentSize = normalSize;
     }

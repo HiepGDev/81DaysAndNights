@@ -21,6 +21,7 @@ public class PlayerHealth : MonoBehaviour
     private CinemachineImpulseSource impulseSource; // yeh impulse also need get component 
     [SerializeField] GameObject gameOverCanvas; 
     private bool isDead = false;
+    public bool IsDead => isDead;
     // private Collider playerCollider;
     private Rigidbody playerRigidbody;
 
