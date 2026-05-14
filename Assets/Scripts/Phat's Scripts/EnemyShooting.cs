@@ -19,7 +19,6 @@ public class EnemyShooting : MonoBehaviour
 
     [Header("Hitscan Settings")]
     [SerializeField] private LayerMask hitLayers;
-    [SerializeField] private float tracerDuration = 0.05f;
     
     [Header("Bloom (Recoil) Settings")]
     [SerializeField] private float minSpread = 0.01f;      // Precision of first shot
@@ -83,6 +82,7 @@ public class EnemyShooting : MonoBehaviour
             // Find player directly (Cheating for Ambush Mode)
             GameObject p = GameObject.FindGameObjectWithTag("Player");
             if (p != null) target = p.transform;
+            else if (Time.frameCount % 60 == 0) Debug.LogWarning("[SHOOT] Ambush Mode ON but Player TAG is missing!");
         }
         else if (detection != null && detection.IsTargetDetected)
         {
@@ -92,12 +92,12 @@ public class EnemyShooting : MonoBehaviour
         if (target == null)
         {
             if (isShootingInProgress) EndShooting();
+            if (isAmbushing && Time.frameCount % 60 == 0) Debug.Log("[SHOOT] No target found in Ambush mode.");
             return;
         }
 
-        // 3. RANGE CHECK
-        float distanceToTarget = Vector3.Distance(transform.position, target.position);
-        if (distanceToTarget > fireDistance)
+        // 3. MOVEMENT SYNC: Only shoot if the behavior agent is physically ready
+        if (behaviorAgent == null || !behaviorAgent.IsReadyToShoot)
         {
             if (isShootingInProgress) EndShooting();
             return;

@@ -10,7 +10,6 @@ public class EnemyTacticalPeek : MonoBehaviour
     
     [Header("Peek Settings")]
     [SerializeField] private float peekDistance = 0.7f; 
-    [SerializeField] private float arrivalThreshold = 0.4f;
 
     private Vector3 originalCoverPos;
     private Vector3 peekPos;
@@ -32,6 +31,8 @@ public class EnemyTacticalPeek : MonoBehaviour
         if (behaviorAgent == null || !behaviorAgent.IsInCover) 
         {
             if (isCurrentlyPeeking) isCurrentlyPeeking = false;
+            // THE LOCK FIX: If we aren't at a wall, the safety MUST be OFF.
+            if (shooting != null) shooting.allowFiring = true;
             return;
         }
 
