@@ -29,6 +29,7 @@ public class EnemyBehaviorAgent : MonoBehaviour
     private EnemyCover.CoverPoint activeCover;
 
     public bool IsReadyToShoot { get; private set; }
+    public Transform PlayerTransform => playerTransform;
 
     private void Awake()
     {

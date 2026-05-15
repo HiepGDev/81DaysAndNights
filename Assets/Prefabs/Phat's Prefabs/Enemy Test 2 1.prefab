@@ -1944,7 +1944,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.28444186, y: 0.45637983, z: 0.2649736}
+  m_Size: {x: 0.28444186, y: 0.58, z: 0.2649736}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!54 &4347605396011372855
 Rigidbody:
@@ -2583,7 +2583,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &69578435293259307
 Transform:
   m_ObjectHideFlags: 0
@@ -2670,6 +2670,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyShooting
   impactVfxPrefab: {fileID: 0}
+  muzzleFlashPrefab: {fileID: 4123609111075997096, guid: 4852900e4ffebde4db129e3f5f9acbbf, type: 3}
   tracerPrefab: {fileID: 7048567237833717488, guid: b951bfa1a90276e4b94fe9511357e939, type: 3}
   audioSource: {fileID: 0}
   shootSound: {fileID: 8300000, guid: e8776a34720384a43aab1f3bcf8dcba8, type: 3}
@@ -2702,7 +2703,7 @@ MonoBehaviour:
   coverLayer:
     serializedVersion: 2
     m_Bits: 128
-  searchRadius: 1000
+  searchRadius: 10
 --- !u!114 &768440080619893575
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3399,7 +3400,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.24550536, y: 0.45637983, z: 0.2649736}
+  m_Size: {x: 0.28, y: 0.45637983, z: 0.2649736}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!54 &2293358756780740280
 Rigidbody:
