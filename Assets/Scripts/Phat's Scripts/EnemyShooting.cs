@@ -76,7 +76,6 @@ public class EnemyShooting : MonoBehaviour
             audioSource = p.GetComponentInChildren<AudioSource>();
             if (audioSource != null)
             {
-                Debug.Log($"[Enemy Audio] Success! Found AudioSource on Player child: {audioSource.gameObject.name}");
                 return;
             }
         }
