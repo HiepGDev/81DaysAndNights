@@ -17,6 +17,7 @@ public class TeammateShooting : MonoBehaviour
     [SerializeField] private GameObject impactVfxPrefab;
     [SerializeField] private GameObject tracerPrefab;
     [SerializeField] private Transform firePoint;
+    [SerializeField] private GameObject muzzleFlashPrefab;
     [SerializeField] private float autoFireRate = 0.12f;
     [SerializeField] private float semiFireRateMin = 0.3f;
     [SerializeField] private float semiFireRateMax = 0.6f;
@@ -40,6 +41,7 @@ public class TeammateShooting : MonoBehaviour
     [Header("Audio Settings")]
     [SerializeField] private AudioSource audioSource;
     [SerializeField] private AudioClip shootSound;
+    [SerializeField] private AudioClip reloadSound;
     [SerializeField][Range(0f, 1f)] private float shootVolume = 0.8f;
 
     private int currentAmmo;
@@ -121,6 +123,13 @@ public class TeammateShooting : MonoBehaviour
 
         if (audioSource != null && shootSound != null)
             audioSource.PlayOneShot(shootSound, shootVolume);
+
+        if (muzzleFlashPrefab != null)
+        {
+            GameObject muzzleFlash = Instantiate(muzzleFlashPrefab, firePoint.position, firePoint.rotation);
+            muzzleFlash.transform.SetParent(firePoint);
+            Destroy(muzzleFlash, 0.05f);
+        }
 
         // Tính toán Bloom (Độ giật nảy ngẫu nhiên)
         float totalSpread = minSpread + currentBloom;
@@ -230,7 +239,10 @@ public class TeammateShooting : MonoBehaviour
     {
         isReloading = true;
         isShootingInProgress = false;
-        currentBloom = 0f; // Nạp đạn -> Reset tâm ngắm
+        currentBloom = 0f; 
+
+        if(audioSource != null && reloadSound != null)
+            audioSource.PlayOneShot(reloadSound, shootVolume);
 
         TeammateAI behavior = GetComponent<TeammateAI>();
         bool inCover = (behavior != null && behavior.CurrentState == TeammateAI.TeammateState.SeekingCover);

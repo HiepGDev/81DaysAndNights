@@ -1361,6 +1361,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::TeammateAI
   aiMode: 0
   playerTarget: {fileID: 0}
+  defendPoint: {fileID: 0}
   followTriggerDistance: 10
   stopFollowDistance: 2.5
   rotationSpeed: 8
@@ -1397,29 +1398,27 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TeammateShooting
   currentFireMode: 0
-  bulletPrefab: {fileID: 1362100356248084211, guid: ab9f738a060fdbd4195d92a3088535c9, type: 3}
+  impactVfxPrefab: {fileID: 0}
+  tracerPrefab: {fileID: 7048567237833717488, guid: b951bfa1a90276e4b94fe9511357e939, type: 3}
   firePoint: {fileID: 4698994043853969924}
+  muzzleFlashPrefab: {fileID: 4123609111075997096, guid: 4852900e4ffebde4db129e3f5f9acbbf, type: 3}
   autoFireRate: 0.1
   semiFireRateMin: 0.3
   semiFireRateMax: 0.6
   fireDistance: 20
-  sprayPattern:
-  - {x: 0, y: 0}
-  - {x: 0, y: 0.2}
-  - {x: 0, y: 0.5}
-  - {x: -0.2, y: 0.8}
-  - {x: -0.4, y: 1}
-  - {x: 0.2, y: 1.2}
-  - {x: 0.5, y: 1.3}
-  - {x: 0.3, y: 1.1}
-  - {x: -0.1, y: 0.9}
-  - {x: -0.3, y: 1}
-  patternScale: 0.5
+  damagePerShot: 15
+  hitLayers:
+    serializedVersion: 2
+    m_Bits: 1
+  minSpread: 0.01
+  maxSpread: 0.08
+  bloomIncrease: 0.01
   magazineSize: 30
   reloadTime: 2.5
   audioSource: {fileID: 989290586463883571}
   shootSound: {fileID: 8300000, guid: e8776a34720384a43aab1f3bcf8dcba8, type: 3}
-  shootVolume: 0.6
+  reloadSound: {fileID: 8300000, guid: 9dc6b4d7a4602854c8f5f733ff764596, type: 3}
+  shootVolume: 0.1
 --- !u!82 &989290586463883571
 AudioSource:
   m_ObjectHideFlags: 0

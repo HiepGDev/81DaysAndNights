@@ -8,7 +8,7 @@ public class TeammateHealth : MonoBehaviour
     [SerializeField] private float currentHealth;
 
     private static System.Collections.Generic.List<GameObject> ragdollPool = new System.Collections.Generic.List<GameObject>();
-    private const int MAX_RAGDOLLS = 30;
+    private const int MAX_RAGDOLLS = 10;
 
     private bool isDead = false;
 
