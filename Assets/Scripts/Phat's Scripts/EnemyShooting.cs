@@ -119,14 +119,11 @@ public class EnemyShooting : MonoBehaviour
             return;
         }
 
-        // 2. TARGET SELECTION: Use detection OR Ambush Target
+        // 2. TARGET SELECTION: Sync with Behavior Agent
         Transform target = null;
         if (isAmbushing)
         {
-            // Find player directly (Cheating for Ambush Mode)
-            GameObject p = GameObject.FindGameObjectWithTag("Player");
-            if (p != null) target = p.transform;
-            else if (Time.frameCount % 60 == 0) Debug.LogWarning("[SHOOT] Ambush Mode ON but Player TAG is missing!");
+            target = (behaviorAgent != null) ? behaviorAgent.CurrentAmbushTarget : null;
         }
         else if (detection != null && detection.IsTargetDetected)
         {
@@ -136,7 +133,6 @@ public class EnemyShooting : MonoBehaviour
         if (target == null)
         {
             if (isShootingInProgress) EndShooting();
-            if (isAmbushing && Time.frameCount % 60 == 0) Debug.Log("[SHOOT] No target found in Ambush mode.");
             return;
         }
 

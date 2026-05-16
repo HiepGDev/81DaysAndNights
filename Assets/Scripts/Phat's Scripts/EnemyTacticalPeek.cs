@@ -15,6 +15,8 @@ public class EnemyTacticalPeek : MonoBehaviour
     private Vector3 peekPos;
     private bool isCurrentlyPeeking = false;
 
+    public bool IsPeeking => isCurrentlyPeeking;
+
     private void Awake()
     {
         agent = GetComponent<NavMeshAgent>();
@@ -38,8 +40,12 @@ public class EnemyTacticalPeek : MonoBehaviour
 
         if (shooting == null || agent == null) return;
 
-        // TRIGGER PEEK: Ammo full and ready
-        if (!shooting.IsOutOfAmmo && !shooting.IsReloading && !isCurrentlyPeeking)
+        // THE AMBUSH FIX: Determine if we have a target (Sensor OR Ambush)
+        bool hasTarget = (detection != null && detection.IsTargetDetected) || 
+                         (behaviorAgent.currentMode == EnemyBehaviorAgent.EnemyMode.Ambush && behaviorAgent.CurrentAmbushTarget != null);
+
+        // TRIGGER PEEK: Ammo full and ready and we see someone
+        if (!shooting.IsOutOfAmmo && !shooting.IsReloading && !isCurrentlyPeeking && hasTarget)
         {
             // If the Agent is stopped at the hide spot, start the peek
             if (agent.isStopped || agent.remainingDistance < 0.4f)
@@ -49,7 +55,7 @@ public class EnemyTacticalPeek : MonoBehaviour
         }
 
         // TRIGGER STOP: Empty or target lost
-        if ((shooting.IsOutOfAmmo || (detection != null && !detection.IsTargetDetected)) && isCurrentlyPeeking)
+        if ((shooting.IsOutOfAmmo || !hasTarget) && isCurrentlyPeeking)
         {
             ReturnToCover();
         }

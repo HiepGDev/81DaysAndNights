@@ -10,6 +10,7 @@ public class EnemyBehaviorAgent : MonoBehaviour
     private EnemyDetection detection;
     private EnemyShooting shooting;
     private EnemyCover cover;
+    private EnemyTacticalPeek peek;
     private Animator animator;
 
     [Header("Ambush Settings")]
@@ -21,8 +22,9 @@ public class EnemyBehaviorAgent : MonoBehaviour
     [SerializeField] private float idleTime = 2f;
 
     [Header("Squad Spacing")]
-    [SerializeField] private float rangeSpread = 3.0f;       // Random +/- distance to stop
-    [SerializeField] private float destinationSpread = 2.0f; // Random +/- left/right spread
+    [SerializeField] private float minEngagementDist = 8.0f; 
+    [SerializeField] private float rangeSpread = 3.0f;       
+    [SerializeField] private float destinationSpread = 2.0f;
     
     private Transform playerTransform;
     private Vector3 spawnPoint;
@@ -32,11 +34,18 @@ public class EnemyBehaviorAgent : MonoBehaviour
     private Vector3 currentTarget; 
     private EnemyCover.CoverPoint activeCover;
 
-    // Spacing offsets
+    // Spacing and Targeting
     private float personalRangeOffset;
-    private Vector3 personalDestinationOffset;
+    private float personalFlankingAngle;
+    private float targetSearchTimer = 0f;
+
+    // Squad Distribution
+    private static System.Collections.Generic.Dictionary<int, int> targetAttackers = new System.Collections.Generic.Dictionary<int, int>();
+    private int myCurrentTargetID = -1;
 
     public bool IsReadyToShoot { get; private set; }
+    public float CurrentEngagementDist { get; private set; } 
+    public Transform CurrentAmbushTarget { get; private set; }
     public Transform PlayerTransform => playerTransform;
 
     private void Awake()
@@ -45,6 +54,7 @@ public class EnemyBehaviorAgent : MonoBehaviour
         detection = GetComponent<EnemyDetection>();
         shooting = GetComponent<EnemyShooting>();
         cover = GetComponent<EnemyCover>();
+        peek = GetComponent<EnemyTacticalPeek>();
         animator = GetComponentInChildren<Animator>();
 
         GameObject p = GameObject.FindGameObjectWithTag("Player");
@@ -65,13 +75,9 @@ public class EnemyBehaviorAgent : MonoBehaviour
         Rigidbody rb = GetComponent<Rigidbody>();
         if (rb != null) rb.isKinematic = true;
 
-        // Initialize personal spacing using Inspector values
+        // Initialize personal spacing
         personalRangeOffset = Random.Range(-rangeSpread, rangeSpread);
-        personalDestinationOffset = new Vector3(
-            Random.Range(-destinationSpread, destinationSpread), 
-            0, 
-            Random.Range(-destinationSpread, destinationSpread)
-        );
+        personalFlankingAngle = Random.Range(-destinationSpread * 10f, destinationSpread * 10f);
     }
 
     private void Start()
@@ -86,28 +92,36 @@ public class EnemyBehaviorAgent : MonoBehaviour
         if (!agent.isOnNavMesh) return;
         transform.position = agent.nextPosition;
 
-        // 1. RE-FIND PLAYER
+        IsReadyToShoot = false;
+
+        // 1. RE-FIND PLAYER REFERENCE
         if (playerTransform == null)
         {
             GameObject p = GameObject.FindGameObjectWithTag("Player");
-            if (p != null) 
+            if (p != null) playerTransform = p.transform;
+        }
+
+        // 2. TACTICAL TARGETING: Hunt closest person (Optimized & Shared)
+        bool isAmbushing = (currentMode == EnemyMode.Ambush);
+        if (isAmbushing)
+        {
+            targetSearchTimer -= Time.deltaTime;
+            if (targetSearchTimer <= 0 || CurrentAmbushTarget == null || !IsAlive(CurrentAmbushTarget.gameObject))
             {
-                playerTransform = p.transform;
-            }
-            else if (Time.frameCount % 120 == 0)
-            {
-                Debug.LogError("[BRAIN] CRITICAL: No object with tag 'Player' found!");
+                CurrentAmbushTarget = GetClosestTarget();
+                targetSearchTimer = 0.5f; 
             }
         }
 
-        // 2. TACTICAL DETECTION
-        bool isAmbushing = (currentMode == EnemyMode.Ambush && playerTransform != null);
-        bool isDetected = isAmbushing || (detection != null && detection.IsTargetDetected);
-        Transform target = isAmbushing ? playerTransform : (detection != null ? detection.CurrentTarget : null);
+        bool isDetected = (isAmbushing && CurrentAmbushTarget != null) || (detection != null && detection.IsTargetDetected);
+        Transform target = isAmbushing ? CurrentAmbushTarget : (detection != null ? detection.CurrentTarget : null);
 
         float distToTarget = target != null ? Vector3.Distance(transform.position, target.position) : float.MaxValue;
-        float engagementDist = isAmbushing ? ambushShootRange : (shooting != null ? shooting.FireDistance : 25f);
-        bool inShootingRange = isDetected && distToTarget <= engagementDist;
+        float maxGunRange = (shooting != null ? shooting.FireDistance : 25f);
+        float baseRange = isAmbushing ? ambushShootRange : maxGunRange;
+        
+        CurrentEngagementDist = Mathf.Clamp(baseRange + personalRangeOffset, minEngagementDist, maxGunRange - 2.0f);
+        bool inShootingRange = isDetected && distToTarget <= CurrentEngagementDist;
 
         // 3. ANIMATION CONTROL
         if (animator != null)
@@ -116,13 +130,11 @@ public class EnemyBehaviorAgent : MonoBehaviour
             bool isActuallyReloading = (shooting != null && shooting.IsReloading);
             bool isMovingToCover = IsMovingToCover;
 
-            // THE RELOAD BRAKE: If we are reloading and NOT moving to cover, STOP physically.
             if (isActuallyReloading && !isMovingToCover)
             {
                 if (!agent.isStopped) StopAgent();
             }
 
-            // THE SLIDE FIX: Allow animations if we aren't reloading OR if we are running to cover
             if (!isActuallyReloading || isMovingToCover)
             {
                 bool shouldBeRunning = intentSpeed > 2.0f;
@@ -144,46 +156,47 @@ public class EnemyBehaviorAgent : MonoBehaviour
 
         // 4. THE BRAIN (PRIORITY SYSTEM)
 
-        // A. RELOAD: If empty, go to wall
         if (shooting != null && shooting.IsOutOfAmmo)
         {
             if (!isInCover) FindAndGoToCover();
-            else HandleCoverLogic();
+            else HandleCoverLogic(inShootingRange);
             return;
         }
 
-        // B. COVER: If in cover, stay hidden
         if (isInCover)
         {
-            HandleCoverLogic();
+            HandleCoverLogic(inShootingRange);
             return;
         }
 
-        // C. ENGAGEMENT
         if (isDetected && target != null)
         {
             if (!inShootingRange)
             {
-                // CHASE
-                IsReadyToShoot = false;
                 if (agent.isStopped) agent.isStopped = false;
                 
-                // THE SPACING FIX: Run to a slightly offset spot
-                agent.SetDestination(target.position + personalDestinationOffset);
+                Vector3 dirFromTarget = (transform.position - target.position).normalized;
+                if (dirFromTarget == Vector3.zero) dirFromTarget = Vector3.forward;
+                Vector3 flankingDir = Quaternion.Euler(0, personalFlankingAngle, 0) * dirFromTarget;
+                Vector3 tacticalPos = target.position + flankingDir * (CurrentEngagementDist - 1.0f); 
+
+                NavMeshHit hit;
+                if (NavMesh.SamplePosition(tacticalPos, out hit, 4.0f, NavMesh.AllAreas))
+                    agent.SetDestination(hit.position);
+                else
+                    agent.SetDestination(target.position);
+                
                 FaceTarget();
             }
             else
             {
-                // SHOOT
-                IsReadyToShoot = true;
                 if (!agent.isStopped) StopAgent();
                 FaceTarget();
+                IsReadyToShoot = true;
             }
             return;
         }
 
-        IsReadyToShoot = false; // Safety fallback
-        // D. WANDER
         if (isIdle) HandleIdle();
         else HandleWandering();
     }
@@ -194,15 +207,14 @@ public class EnemyBehaviorAgent : MonoBehaviour
 
     private void FindAndGoToCover()
     {
-        bool isAmbushing = (currentMode == EnemyMode.Ambush && playerTransform != null);
+        bool isAmbushing = (currentMode == EnemyMode.Ambush && CurrentAmbushTarget != null);
         if (cover == null || (detection.CurrentTarget == null && !isAmbushing)) 
         {
-            Debug.Log("[BRAIN] Aborting cover search: No player seen.");
             shooting.TriggerReload();
             return;
         }
 
-        Vector3 targetPos = isAmbushing ? playerTransform.position : detection.CurrentTarget.position;
+        Vector3 targetPos = isAmbushing ? CurrentAmbushTarget.position : detection.CurrentTarget.position;
         activeCover = cover.FindNearestCover(targetPos);
         
         if (activeCover.found)
@@ -218,24 +230,34 @@ public class EnemyBehaviorAgent : MonoBehaviour
         }
     }
 
-    private void HandleCoverLogic()
+    private void HandleCoverLogic(bool inShootingRange)
     {
+        bool isPeeking = (peek != null && peek.IsPeeking);
         float distToCover = Vector3.Distance(transform.position, activeCover.position);
-        bool inShootingRange = (currentMode == EnemyMode.Ambush) || (detection != null && detection.IsTargetDetected);
 
-        if (distToCover <= 0.2f || (!agent.pathPending && agent.remainingDistance <= agent.stoppingDistance))
+        if (isPeeking || distToCover <= 0.2f || (!agent.pathPending && agent.remainingDistance <= agent.stoppingDistance))
         {
             bool isReloading = (shooting != null && shooting.IsReloading);
             bool shouldCrouch = (shooting != null && shooting.IsOutOfAmmo);
 
-            // Turn to face the wall immediately
-            if (shouldCrouch || isReloading)
+            if (isPeeking && !isReloading)
+            {
+                // THE RANGE FIX: If the target moved out of reach while peeking, break cover to chase!
+                if (!inShootingRange)
+                {
+                    ExitCover();
+                    return;
+                }
+
+                IsReadyToShoot = true;
+                FaceTarget();
+            }
+            else if (shouldCrouch || isReloading)
             {
                 StopAgent();
                 transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(activeCover.lookDirection), Time.deltaTime * 10f);
             }
 
-            // Animation Control
             if (!isReloading)
             {
                 if (shouldCrouch)
@@ -247,10 +269,9 @@ public class EnemyBehaviorAgent : MonoBehaviour
                             animator.CrossFade("Cover_Crouching", 0.1f);
                     }
                 }
-                else if (!shooting.IsOutOfAmmo)
+                else if (!shooting.IsOutOfAmmo && !isPeeking)
                 {
-                    // If we have ammo, LEAVE the wall to resume the hunt
-                    ExitCover();
+                    if (!inShootingRange) ExitCover();
                 }
             }
 
@@ -261,14 +282,21 @@ public class EnemyBehaviorAgent : MonoBehaviour
 
     private void ExitCover()
     {
+        if (cover != null) cover.ReleaseCover();
         isInCover = false;
         if (animator != null) animator.SetBool("isCovering", false);
         agent.isStopped = false;
+        if (activeCover.found)
+        {
+            Vector3 pushOutDir = (transform.position - activeCover.position).normalized;
+            agent.Warp(transform.position + pushOutDir * 0.5f);
+        }
     }
 
     public void FaceTarget()
     {
-        Transform t = (currentMode == EnemyMode.Ambush) ? playerTransform : detection.CurrentTarget;
+        bool isAmbushing = (currentMode == EnemyMode.Ambush && CurrentAmbushTarget != null);
+        Transform t = isAmbushing ? CurrentAmbushTarget : detection.CurrentTarget;
         if (t != null)
         {
             Vector3 dir = (t.position - transform.position);
@@ -329,5 +357,67 @@ public class EnemyBehaviorAgent : MonoBehaviour
             agent.ResetPath();
             agent.velocity = Vector3.zero;
         }
+    }
+
+    private Transform GetClosestTarget()
+    {
+        float bestScore = float.MaxValue;
+        Transform bestTarget = null;
+        string[] tags = (detection != null) ? detection.TargetTags : new string[] { "Player", "Teammate" };
+
+        foreach (string tag in tags)
+        {
+            GameObject[] potentialTargets = GameObject.FindGameObjectsWithTag(tag);
+            foreach (GameObject obj in potentialTargets)
+            {
+                if (!IsAlive(obj)) continue;
+
+                float dist = Vector3.Distance(transform.position, obj.transform.position);
+                int targetID = obj.GetInstanceID();
+
+                int attackers = targetAttackers.ContainsKey(targetID) ? targetAttackers[targetID] : 0;
+                float score = dist + (attackers * 10f);
+
+                if (score < bestScore)
+                {
+                    bestScore = score;
+                    bestTarget = obj.transform;
+                }
+            }
+        }
+
+        UpdateAttackerCount(bestTarget);
+        return bestTarget;
+    }
+
+    private void UpdateAttackerCount(Transform newTarget)
+    {
+        if (myCurrentTargetID != -1 && targetAttackers.ContainsKey(myCurrentTargetID))
+            targetAttackers[myCurrentTargetID]--;
+
+        if (newTarget != null)
+        {
+            myCurrentTargetID = newTarget.gameObject.GetInstanceID();
+            if (!targetAttackers.ContainsKey(myCurrentTargetID)) targetAttackers[myCurrentTargetID] = 0;
+            targetAttackers[myCurrentTargetID]++;
+        }
+        else myCurrentTargetID = -1;
+    }
+
+    private void OnDestroy() 
+    { 
+        if (cover != null) cover.ReleaseCover(); 
+        UpdateAttackerCount(null); 
+    }
+
+    private bool IsAlive(GameObject obj)
+    {
+        if (obj == null) return false;
+        GameObject root = obj.transform.root.gameObject;
+        var ph = root.GetComponentInChildren<PlayerHealth>();
+        if (ph != null) return true; 
+        var th = root.GetComponentInChildren<TeammateHealth>();
+        if (th != null) return root.CompareTag("Teammate");
+        return true; 
     }
 }

@@ -946,11 +946,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5f501b313ffd5f943870b2d7e19d3148, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerGun
---- !u!82 &2137603504 stripped
-AudioSource:
-  m_CorrespondingSourceObject: {fileID: 3538067657429038979, guid: cda25b92a85739c48a1a47c252f2924c, type: 3}
-  m_PrefabInstance: {fileID: 525705733523635284}
-  m_PrefabAsset: {fileID: 0}
 --- !u!198 &342679325009926516
 ParticleSystem:
   m_ObjectHideFlags: 0
@@ -6019,10 +6014,6 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 622332415734339571, guid: fa5bd4966e1d52f4984a4d751608e009, type: 3}
-      propertyPath: audioSource
-      value: 
-      objectReference: {fileID: 2137603504}
     - target: {fileID: 3617796667323854859, guid: fa5bd4966e1d52f4984a4d751608e009, type: 3}
       propertyPath: m_Name
       value: Enemy Test 2 1

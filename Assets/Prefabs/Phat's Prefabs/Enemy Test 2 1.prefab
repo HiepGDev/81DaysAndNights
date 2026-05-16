@@ -2657,8 +2657,9 @@ MonoBehaviour:
   ambushShootRange: 15
   wanderRadius: 15
   idleTime: 2
-  rangeSpread: 20
-  destinationSpread: 20
+  minEngagementDist: 15
+  rangeSpread: 15
+  destinationSpread: 15
 --- !u!114 &622332415734339571
 MonoBehaviour:
   m_ObjectHideFlags: 0

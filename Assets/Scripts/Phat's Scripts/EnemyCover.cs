@@ -65,7 +65,8 @@ public class EnemyCover : MonoBehaviour
                 bool isReserved = false;
                 foreach (var claim in claimedSpots)
                 {
-                    if (claim.Key != gameObject.GetInstanceID() && Vector3.Distance(claim.Value, safePos) < 1.5f)
+                    // INCREASED SPACING: 2.2m ensures they don't clip each other
+                    if (claim.Key != gameObject.GetInstanceID() && Vector3.Distance(claim.Value, safePos) < 2.2f)
                     {
                         isReserved = true;
                         break;
@@ -74,20 +75,25 @@ public class EnemyCover : MonoBehaviour
                 if (isReserved) continue;
 
                 // THE SQUAD FIX 2: Check if someone is PHYSICALLY there (Chest Height)
-                if (Physics.CheckSphere(safePos + Vector3.up * 1f, 1.0f, LayerMask.GetMask("Enemy")))
+                if (Physics.CheckSphere(safePos + Vector3.up * 1.5f, 1.2f, LayerMask.GetMask("Enemy")))
                     continue; 
 
                 NavMeshHit navHit;
                 if (NavMesh.SamplePosition(safePos, out navHit, 3.0f, NavMesh.AllAreas))
                 {
-                    cp.position = navHit.position;
-                    cp.lookDirection = edgeDir; 
-                    cp.isRightSide = tryRight;
-                    cp.found = true;
-                    
-                    // Claim the spot
-                    claimedSpots[gameObject.GetInstanceID()] = cp.position;
-                    return cp;
+                    // THE REACHABILITY FIX: Ensure we can actually walk to this specific spot
+                    NavMeshPath path = new NavMeshPath();
+                    if (agent != null && agent.CalculatePath(navHit.position, path) && path.status == NavMeshPathStatus.PathComplete)
+                    {
+                        cp.position = navHit.position;
+                        cp.lookDirection = edgeDir; 
+                        cp.isRightSide = tryRight;
+                        cp.found = true;
+                        
+                        // Claim the spot
+                        claimedSpots[gameObject.GetInstanceID()] = cp.position;
+                        return cp;
+                    }
                 }
             }
         }
