@@ -19,6 +19,10 @@ public class EnemyBehaviorAgent : MonoBehaviour
     [Header("Wander Settings")]
     [SerializeField] private float wanderRadius = 15f;
     [SerializeField] private float idleTime = 2f;
+
+    [Header("Squad Spacing")]
+    [SerializeField] private float rangeSpread = 3.0f;       // Random +/- distance to stop
+    [SerializeField] private float destinationSpread = 2.0f; // Random +/- left/right spread
     
     private Transform playerTransform;
     private Vector3 spawnPoint;
@@ -28,7 +32,12 @@ public class EnemyBehaviorAgent : MonoBehaviour
     private Vector3 currentTarget; 
     private EnemyCover.CoverPoint activeCover;
 
+    // Spacing offsets
+    private float personalRangeOffset;
+    private Vector3 personalDestinationOffset;
+
     public bool IsReadyToShoot { get; private set; }
+    public Transform PlayerTransform => playerTransform;
 
     private void Awake()
     {
@@ -55,6 +64,14 @@ public class EnemyBehaviorAgent : MonoBehaviour
 
         Rigidbody rb = GetComponent<Rigidbody>();
         if (rb != null) rb.isKinematic = true;
+
+        // Initialize personal spacing using Inspector values
+        personalRangeOffset = Random.Range(-rangeSpread, rangeSpread);
+        personalDestinationOffset = new Vector3(
+            Random.Range(-destinationSpread, destinationSpread), 
+            0, 
+            Random.Range(-destinationSpread, destinationSpread)
+        );
     }
 
     private void Start()
@@ -150,7 +167,9 @@ public class EnemyBehaviorAgent : MonoBehaviour
                 // CHASE
                 IsReadyToShoot = false;
                 if (agent.isStopped) agent.isStopped = false;
-                agent.SetDestination(target.position);
+                
+                // THE SPACING FIX: Run to a slightly offset spot
+                agent.SetDestination(target.position + personalDestinationOffset);
                 FaceTarget();
             }
             else

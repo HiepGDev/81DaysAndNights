@@ -8,6 +8,7 @@ public class EnemyShooting : MonoBehaviour
 
     [Header("Weapon Stats")]
     [SerializeField] private GameObject impactVfxPrefab; 
+    [SerializeField] private GameObject muzzleFlashPrefab; 
     [SerializeField] private GameObject tracerPrefab;   
     [SerializeField] private AudioSource audioSource;
     [SerializeField] private AudioClip shootSound;
@@ -48,10 +49,53 @@ public class EnemyShooting : MonoBehaviour
         currentAmmo = magazineSize;
     }
 
-    private void Start()
+    private IEnumerator Start()
     {
         animator = GetComponentInChildren<Animator>();
         if (animator == null) animator = GetComponent<Animator>();
+        
+        // THE RACE CONDITION FIX: Wait a bit longer for the player to fully wake up
+        yield return new WaitForSeconds(0.2f);
+        TryFindAudioSource();
+    }
+
+    private void TryFindAudioSource()
+    {
+        if (audioSource != null) return;
+
+        // 1. Try local first
+        audioSource = GetComponent<AudioSource>();
+        if (audioSource == null) audioSource = GetComponentInChildren<AudioSource>();
+        if (audioSource != null) return;
+
+        // 2. THE BLOODHOUND SEARCH: Scan ALL "Player" tagged objects
+        GameObject[] players = GameObject.FindGameObjectsWithTag("Player");
+        foreach (GameObject p in players)
+        {
+            // Search this player and ALL its children (Camera, Gun, Feet, etc)
+            audioSource = p.GetComponentInChildren<AudioSource>();
+            if (audioSource != null)
+            {
+                return;
+            }
+        }
+
+        // 3. FALLBACK: Search by name if tags are broken
+        GameObject namePlayer = GameObject.Find("Player");
+        if (namePlayer != null)
+        {
+            audioSource = namePlayer.GetComponentInChildren<AudioSource>();
+            if (audioSource != null) return;
+        }
+
+        // 4. LAST RESORT: Find ANY AudioSource in the world
+        if (audioSource == null)
+        {
+            audioSource = Object.FindFirstObjectByType<AudioSource>();
+        }
+
+        if (audioSource == null)
+            Debug.LogWarning("[Enemy Audio] Still could not find an AudioSource anywhere in the scene!");
     }
 
     private void Update()
@@ -132,6 +176,25 @@ public class EnemyShooting : MonoBehaviour
         if (audioSource != null && shootSound != null)
         {
             audioSource.PlayOneShot(shootSound, shootVolume);
+        }
+
+        // THE MUZZLE FLASH FIX: Explicitly play ParticleSystems
+        if (muzzleFlashPrefab != null && firePoint != null)
+        {
+            GameObject flash = Instantiate(muzzleFlashPrefab, firePoint.position, firePoint.rotation);
+            
+            // Check if it's a particle system and play it
+            ParticleSystem ps = flash.GetComponent<ParticleSystem>();
+            if (ps != null) ps.Play();
+            else
+            {
+                // If it's a list of children particles, play all of them
+                foreach (var childPs in flash.GetComponentsInChildren<ParticleSystem>())
+                    childPs.Play();
+            }
+
+            // Destroy only after a few seconds to let the particles fade naturally
+            Destroy(flash, 1.0f); 
         }
         
         float totalSpread = minSpread + currentBloom;
