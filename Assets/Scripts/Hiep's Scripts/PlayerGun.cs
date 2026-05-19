@@ -16,7 +16,8 @@ public class PlayerGun : MonoBehaviour
     public bool isAiming;
     private AudioSource audioSource; 
     [SerializeField] private LayerMask interactionLayers; 
-    [SerializeField] private ParticleSystem muzzleFlash; 
+    [SerializeField] private ParticleSystem muzzleFlash;
+    [SerializeField] private GameObject bloodEffectPrefab;
     private float nextFireTime = 0f;
     private Animator animator;
     // public CinemachineImpulseSource weaponImpulseSource; 
@@ -161,15 +162,26 @@ public class PlayerGun : MonoBehaviour
             }
 
             //  Apply Damage to Health
-            var enemy = hit.collider.GetComponentInParent<EnemyHealth>();
-            if (enemy != null)
+            if (hit.collider.CompareTag("Enemy"))
             {
-                enemy.TakeDamage((int)finalDamage);
+                var enemy = hit.collider.GetComponentInParent<EnemyHealth>();
+                if (enemy != null)
+                {
+                    enemy.TakeDamage((int)finalDamage);
+                }
+                // INSTANTIATE BLOOD
+                if (bloodEffectPrefab != null)
+                {
+                    // Spawn blood at hit point, facing away from the wound
+                    Instantiate(bloodEffectPrefab, hit.point, Quaternion.LookRotation(hit.normal));
+                }
             }
-
-            if (gunData.HitVfxPrefab != null)
+            else
             {
-                Instantiate(gunData.HitVfxPrefab, hit.point, Quaternion.LookRotation(hit.normal));
+                if (gunData.HitVfxPrefab != null)
+                {
+                    Instantiate(gunData.HitVfxPrefab, hit.point, Quaternion.LookRotation(hit.normal));
+                }
             }
             Debug.Log("Hit: " + hit.collider.name);
         } 

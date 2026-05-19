@@ -4,14 +4,19 @@ using UnityEngine.InputSystem;
 public class PlayerFootstep : MonoBehaviour
 {
     [SerializeField] private AudioSource footstepSource;
-    [SerializeField] private AudioClip[] footstepSound;
+    [Header("Surface Sounds")]
+    [SerializeField] private AudioClip[] dirtSteps;
+    [SerializeField] private AudioClip[] stoneSteps;
+    [SerializeField] private AudioClip[] woodSteps;
     [SerializeField] private float walkStepInterval = 0.5f; // Time between steps when walking
     [SerializeField] private float sprintStepInterval = 0.3f; // Time between steps when sprinting (shorter = faster)
     [SerializeField] private float crouchStepInterval = 0.7f;
-    [SerializeField] private float pitchMin = 0.9f;
-    [SerializeField] private float pitchMax = 1.1f;
+    [SerializeField] private float rayDistance = 1.5f;
+    [SerializeField] private LayerMask groundLayers;
+    // [SerializeField] private float pitchMin = 0.9f;
+    // [SerializeField] private float pitchMax = 1.1f;
     private float stepTimer = 0f;
-    private float lastStepTime = 0f;
+    // private float lastStepTime = 0f;
     private CharacterController controller;
     private PlayerMovement movement;
     private InputAction moveAction;
@@ -43,11 +48,7 @@ public class PlayerFootstep : MonoBehaviour
             stepTimer -= Time.deltaTime;
             if (stepTimer <= 0f)
             {
-                if (Time.time > lastStepTime + 0.2f)
-                {
-                    PlayFootstep();
-                    lastStepTime = Time.time; // Reset timer
-                }
+                CheckSurfaceAndPlay();
                 stepTimer = interval;
             }
         }
@@ -57,19 +58,35 @@ public class PlayerFootstep : MonoBehaviour
         }
     }
 
-    private void PlayFootstep()
+    private void CheckSurfaceAndPlay()
     {
-        if (footstepSource != null && footstepSound.Length > 0)
+        RaycastHit hit;
+        // Raycast straight down from the player's center
+        if (Physics.Raycast(transform.position, Vector3.down, out hit, rayDistance, groundLayers))
         {
-            footstepSource.pitch = Random.Range(pitchMin, pitchMax);
-            AudioClip clip = footstepSound[Random.Range(0, footstepSound.Length)];
-            footstepSource.PlayOneShot(clip);
-        }
-        else
-        {
-            Debug.LogError("PlayerFootstep: Cannot play footstep - AudioSource or clips missing!");
+            string surfaceTag = hit.collider.tag;
+            AudioClip[] currentClips;
+            // Select array based on tag
+            switch (surfaceTag)
+            {
+                case "Stone":
+                    currentClips = stoneSteps;
+                    break;
+                case "Wood":
+                    currentClips = woodSteps;
+                    break;
+                default: // Default to Dirt 
+                    currentClips = dirtSteps;
+                    break;
+            }
+            if (currentClips != null && currentClips.Length > 0)
+            {
+                footstepSource.pitch = Random.Range(0.94f, 1.1f);
+                footstepSource.PlayOneShot(currentClips[Random.Range(0, currentClips.Length)]);
+            }
         }
     }
-} 
+}
+
 
 

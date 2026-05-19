@@ -3500,8 +3500,12 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 8307326518882533893}
     - target: {fileID: 3745780743010571552, guid: ba4ad7ea0d312b141ada6cdb0fa36df3, type: 3}
+      propertyPath: bloodEffectPrefab
+      value: 
+      objectReference: {fileID: 1236252522621119485, guid: 1bf55f58ce078b94d8312c8368dce63a, type: 3}
+    - target: {fileID: 3745780743010571552, guid: ba4ad7ea0d312b141ada6cdb0fa36df3, type: 3}
       propertyPath: interactionLayers.m_Bits
-      value: 4294967295
+      value: 247
       objectReference: {fileID: 0}
     - target: {fileID: 6151883432935650293, guid: ba4ad7ea0d312b141ada6cdb0fa36df3, type: 3}
       propertyPath: m_LocalPosition.x
