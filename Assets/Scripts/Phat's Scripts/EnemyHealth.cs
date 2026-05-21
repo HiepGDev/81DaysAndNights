@@ -3,6 +3,7 @@ using UnityEngine;
 public class EnemyHealth : MonoBehaviour
 {
     [SerializeField] private int health = 100;
+    [SerializeField] private EnemySO enemyData;
     
     // Track all dead bodies across the whole game
     private static System.Collections.Generic.List<GameObject> ragdollPool = new System.Collections.Generic.List<GameObject>();
@@ -19,6 +20,11 @@ public class EnemyHealth : MonoBehaviour
         ragdollColliders = GetComponentsInChildren<Collider>();
         
         SetRagdollState(false);
+
+        if (enemyData != null)
+        {
+            health = enemyData.maxHealth;
+        }
     }
 
     public void TakeDamage(int damageAmount)

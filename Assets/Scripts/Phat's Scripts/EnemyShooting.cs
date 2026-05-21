@@ -6,6 +6,8 @@ public class EnemyShooting : MonoBehaviour
     private EnemyDetection detection;
     private Animator animator;
 
+    [SerializeField] private EnemySO enemyData;
+
     [Header("Weapon Stats")]
     [SerializeField] private GameObject impactVfxPrefab; 
     [SerializeField] private GameObject muzzleFlashPrefab; 
@@ -46,6 +48,24 @@ public class EnemyShooting : MonoBehaviour
     private void Awake()
     {
         detection = GetComponent<EnemyDetection>();
+        if (enemyData != null)
+        {
+            fireRate = enemyData.fireRate;
+            fireDistance = enemyData.fireDistance;
+            damagePerShot = enemyData.damagePerShot;
+            magazineSize = enemyData.magazineSize;
+            reloadTime = enemyData.reloadTime;
+
+            minSpread = enemyData.minSpread;
+            maxSpread = enemyData.maxSpread;
+            bloomIncrease = enemyData.bloomIncrease;
+
+            if (enemyData.impactVfxPrefab != null) impactVfxPrefab = enemyData.impactVfxPrefab;
+            if (enemyData.muzzleFlashPrefab != null) muzzleFlashPrefab = enemyData.muzzleFlashPrefab;
+            if (enemyData.tracerPrefab != null) tracerPrefab = enemyData.tracerPrefab;
+            if (enemyData.shootSound != null) shootSound = enemyData.shootSound;
+            shootVolume = enemyData.shootVolume;
+        }
         currentAmmo = magazineSize;
     }
 

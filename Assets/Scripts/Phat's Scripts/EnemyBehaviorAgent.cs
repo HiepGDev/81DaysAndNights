@@ -12,6 +12,7 @@ public class EnemyBehaviorAgent : MonoBehaviour
     private EnemyCover cover;
     private EnemyTacticalPeek peek;
     private Animator animator;
+    [SerializeField] private EnemySO enemyData;
 
     [Header("Ambush Settings")]
     public EnemyMode currentMode = EnemyMode.Wander;
@@ -56,6 +57,17 @@ public class EnemyBehaviorAgent : MonoBehaviour
         cover = GetComponent<EnemyCover>();
         peek = GetComponent<EnemyTacticalPeek>();
         animator = GetComponentInChildren<Animator>();
+
+        if (enemyData != null)
+        {
+            currentMode = enemyData.defaultMode;
+            ambushShootRange = enemyData.ambushShootRange;
+            wanderRadius = enemyData.wanderRadius;
+            idleTime = enemyData.idleTime;
+            minEngagementDist = enemyData.minEngagementDist;
+            rangeSpread = enemyData.rangeSpread;
+            destinationSpread = enemyData.destinationSpread;
+        }
 
         GameObject p = GameObject.FindGameObjectWithTag("Player");
         if (p != null) playerTransform = p.transform;

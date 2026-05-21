@@ -8,6 +8,8 @@ public class EnemyTacticalPeek : MonoBehaviour
     private EnemyDetection detection;
     private EnemyBehaviorAgent behaviorAgent;
     
+    [SerializeField] private EnemySO enemyData;
+
     [Header("Peek Settings")]
     [SerializeField] private float peekDistance = 0.7f; 
 
@@ -26,6 +28,11 @@ public class EnemyTacticalPeek : MonoBehaviour
 
         // THE TRIGGER FIX: Allow agent to get closer than the shooting threshold
         if (agent != null) agent.stoppingDistance = 0.1f;
+
+        if (enemyData != null)
+        {
+            peekDistance = enemyData.peekDistance;
+        }
     }
 
     private void Update()

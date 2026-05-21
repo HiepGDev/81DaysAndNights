@@ -2653,6 +2653,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 810ec3203dfe0174c96cd5155f07b172, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyBehaviorAgent
+  enemyData: {fileID: 11400000, guid: 3a4b9c1f2e3d4c5b6a7b8c9d0e1f2a3b, type: 2}
   currentMode: 1
   ambushShootRange: 15
   wanderRadius: 15
@@ -2672,6 +2673,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c4232bf22af459043b2481e074357c46, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyShooting
+  enemyData: {fileID: 11400000, guid: 3a4b9c1f2e3d4c5b6a7b8c9d0e1f2a3b, type: 2}
   impactVfxPrefab: {fileID: 0}
   muzzleFlashPrefab: {fileID: 4123609111075997096, guid: 4852900e4ffebde4db129e3f5f9acbbf, type: 3}
   tracerPrefab: {fileID: 7048567237833717488, guid: b951bfa1a90276e4b94fe9511357e939, type: 3}
@@ -2703,6 +2705,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ce8c1f7565a297b478eec574bc8c4924, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyCover
+  enemyData: {fileID: 11400000, guid: 3a4b9c1f2e3d4c5b6a7b8c9d0e1f2a3b, type: 2}
   coverLayer:
     serializedVersion: 2
     m_Bits: 128
@@ -2719,6 +2722,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1b22ec319f5018f4ebdb02edf07da7f5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyTacticalPeek
+  enemyData: {fileID: 11400000, guid: 3a4b9c1f2e3d4c5b6a7b8c9d0e1f2a3b, type: 2}
   peekDistance: 1.2
 --- !u!114 &1497563120457316720
 MonoBehaviour:
@@ -2732,6 +2736,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d91887886571dd1478e0cdcee865d67d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyHealth
+  enemyData: {fileID: 11400000, guid: 3a4b9c1f2e3d4c5b6a7b8c9d0e1f2a3b, type: 2}
   health: 100
 --- !u!136 &7071849098243369949
 CapsuleCollider:

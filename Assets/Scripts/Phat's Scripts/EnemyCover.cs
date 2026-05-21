@@ -5,13 +5,22 @@ public class EnemyCover : MonoBehaviour
 {
     public struct CoverPoint { public Vector3 position; public Vector3 lookDirection; public bool isRightSide; public bool found; }
 
+    [SerializeField] private EnemySO enemyData;
+
     [Header("Cover Settings")]
     [SerializeField] private LayerMask coverLayer;
     [SerializeField] private float searchRadius = 25f;
 
     private NavMeshAgent agent;
 
-    private void Awake() { agent = GetComponent<NavMeshAgent>(); }
+    private void Awake()
+    {
+        agent = GetComponent<NavMeshAgent>();
+        if (enemyData != null)
+        {
+            searchRadius = enemyData.coverSearchRadius;
+        }
+    }
 
     // THE SQUAD COORDINATOR: Track all spots being moved to or occupied
     private static System.Collections.Generic.Dictionary<int, Vector3> claimedSpots = new System.Collections.Generic.Dictionary<int, Vector3>();
