@@ -16,7 +16,8 @@ public class PlayerGun : MonoBehaviour
     public bool isAiming;
     private AudioSource audioSource; 
     [SerializeField] private LayerMask interactionLayers; 
-    [SerializeField] private ParticleSystem muzzleFlash; 
+    [SerializeField] private ParticleSystem muzzleFlash;
+    [SerializeField] private GameObject bloodEffectPrefab;
     private float nextFireTime = 0f;
     private Animator animator;
     // public CinemachineImpulseSource weaponImpulseSource; 
@@ -44,11 +45,33 @@ public class PlayerGun : MonoBehaviour
       shootAction?.Enable();
       reloadAction?.Enable();
       aimAction?.Enable();
+
+      if (animator == null) animator = GetComponent<Animator>();
+      if (audioSource == null) audioSource = GetComponent<AudioSource>();
+      if (muzzleFlash == null) muzzleFlash = GetComponentInChildren<ParticleSystem>();
+      if (weaponTransform == null) weaponTransform = transform;
     }
     void Start()
     {
         if (playerMovement == null) playerMovement = GetComponentInParent<PlayerMovement>();
         if (recoil == null) recoil = GetComponentInParent<GunRecoil>();
+        if (crosshair == null) crosshair = FindFirstObjectByType<CrosshairController>();
+        if (ammoText == null) ammoText = FindFirstObjectByType<TMP_Text>();
+        if (virtualCamera == null) virtualCamera = FindFirstObjectByType<CinemachineCamera>();
+
+        // Find the Overlay Weapon Camera specifically
+        if (weaponCamera == null)
+        {
+            Camera[] allCameras = Object.FindObjectsByType<Camera>(FindObjectsSortMode.None);
+            foreach (Camera cam in allCameras)
+            {
+                if (cam.name.Contains("Weapon")) // Find "WeaponCamera"
+                {
+                    weaponCamera = cam;
+                    break;
+                }
+            }
+        }
 
         animator = GetComponent<Animator>();
         audioSource = GetComponent<AudioSource>();
@@ -63,9 +86,17 @@ public class PlayerGun : MonoBehaviour
         {
             hipPosition = weaponTransform.localPosition;
             hipRotation = weaponTransform.localRotation;
-        } 
-
-        defaultFOV = virtualCamera.Lens.FieldOfView;
+        }
+        
+        defaultFOV = PlayerPrefs.GetFloat("PlayerFOV", 75f);
+        if (virtualCamera != null)
+        {
+            virtualCamera.Lens.FieldOfView = defaultFOV;
+        }
+        if (weaponCamera != null)
+        {
+            weaponCamera.fieldOfView = defaultFOV;
+        }
     }
     private void OnDisable()
     {
@@ -86,6 +117,8 @@ public class PlayerGun : MonoBehaviour
 
     void Update()
     {
+        // If the game is paused, stop all gun logic
+        if (Time.timeScale == 0) return;
         HandleShoot();
         HandleReload();
         HandleAim();
@@ -129,15 +162,26 @@ public class PlayerGun : MonoBehaviour
             }
 
             //  Apply Damage to Health
-            var enemy = hit.collider.GetComponentInParent<EnemyHealth>();
-            if (enemy != null)
+            if (hit.collider.CompareTag("Enemy"))
             {
-                enemy.TakeDamage((int)finalDamage);
+                var enemy = hit.collider.GetComponentInParent<EnemyHealth>();
+                if (enemy != null)
+                {
+                    enemy.TakeDamage((int)finalDamage);
+                }
+                // INSTANTIATE BLOOD
+                if (bloodEffectPrefab != null)
+                {
+                    // Spawn blood at hit point, facing away from the wound
+                    Instantiate(bloodEffectPrefab, hit.point, Quaternion.LookRotation(hit.normal));
+                }
             }
-
-            if (gunData.HitVfxPrefab != null)
+            else
             {
-                Instantiate(gunData.HitVfxPrefab, hit.point, Quaternion.LookRotation(hit.normal));
+                if (gunData.HitVfxPrefab != null)
+                {
+                    Instantiate(gunData.HitVfxPrefab, hit.point, Quaternion.LookRotation(hit.normal));
+                }
             }
             Debug.Log("Hit: " + hit.collider.name);
         } 
