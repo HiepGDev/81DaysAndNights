@@ -40,32 +40,59 @@ public class EnemyHealth : MonoBehaviour
         isDead = true;
         
         Debug.Log($"{gameObject.name} triggering physical death.");
+        
+        // 1. Untag the root and all child components previously tagged as "Enemy"
         gameObject.tag = "Untagged"; 
+        foreach (Transform child in GetComponentsInChildren<Transform>())
+        {
+            if (child.CompareTag("Enemy"))
+            {
+                child.gameObject.tag = "Untagged";
+            }
+        }
 
-        // 1. Disable Main AI Components
+        // 2. Disable Main AI Components
         UnityEngine.AI.NavMeshAgent agent = GetComponent<UnityEngine.AI.NavMeshAgent>();
         if (agent != null) agent.enabled = false;
 
-        // 2. Disable Animator 
-        Animator anim = GetComponentInChildren<Animator>();
-        if (anim != null) anim.enabled = false;
+        // 3. Disable Animator and unload controllers
+        Animator[] anims = GetComponentsInChildren<Animator>();
+        foreach (var anim in anims)
+        {
+            if (anim != null)
+            {
+                anim.enabled = false;
+                anim.runtimeAnimatorController = null; // Unloads controller and fully disables animation logic
+            }
+        }
 
-        // 3. Disable all AI Logic scripts
+        // 4. Disable all AI Logic scripts and stop active coroutines
         MonoBehaviour[] scripts = GetComponents<MonoBehaviour>();
         foreach (var s in scripts)
         {
             // Only disable other scripts, not this one
-            if (s != null && s != this) s.enabled = false;
+            if (s != null && s != this)
+            {
+                s.StopAllCoroutines(); // Stop any pending reloads, movement cycles, or timers
+                s.enabled = false;
+            }
         }
 
-        // 4. Enable Physics
+        // 5. Explicit cover release (safeguard)
+        EnemyCover cover = GetComponent<EnemyCover>();
+        if (cover != null)
+        {
+            cover.ReleaseCover();
+        }
+
+        // 6. Enable Physics
         SetRagdollState(true);
 
-        // 5. Disable root collider
+        // 7. Disable root collider
         Collider rootCol = GetComponent<Collider>();
         if (rootCol != null) rootCol.enabled = false;
 
-        // 6. Physics Kick: Wake up every single bone and push it
+        // 8. Physics Kick: Wake up every single bone and push it
         foreach (var rb in ragdollRigidbodies)
         {
             if (rb != null)
@@ -78,7 +105,7 @@ public class EnemyHealth : MonoBehaviour
             }
         }
 
-        // 7. THE ENEMY POOL MANAGER: Limit to 30 enemy bodies
+        // 9. THE ENEMY POOL MANAGER: Limit to 30 enemy bodies
         ragdollPool.Add(this.gameObject);
 
         // Remove any dead bodies that were destroyed by other means (falling off map, etc)

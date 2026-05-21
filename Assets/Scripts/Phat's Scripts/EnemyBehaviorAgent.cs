@@ -404,6 +404,12 @@ public class EnemyBehaviorAgent : MonoBehaviour
         else myCurrentTargetID = -1;
     }
 
+    private void OnDisable()
+    {
+        if (cover != null) cover.ReleaseCover();
+        UpdateAttackerCount(null);
+    }
+
     private void OnDestroy() 
     { 
         if (cover != null) cover.ReleaseCover(); 
