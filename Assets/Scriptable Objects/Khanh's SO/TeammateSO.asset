@@ -1,0 +1,42 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8fa208e34f0a2594eb82083c1d94985b, type: 3}
+  m_Name: TeammateSO
+  m_EditorClassIdentifier: Assembly-CSharp::TeammateSO
+  maxHealth: 100
+  defaultAiMode: 0
+  detectionRadius: 15
+  rotationSpeed: 8
+  followTriggerDistance: 10
+  stopFollowDistance: 2.5
+  waypointStopDistance: 0.5
+  waypointWaitTime: 1.5
+  loopPatrol: 1
+  fireMode: 1
+  autoFireRate: 0.12
+  semiFireRateMin: 0.3
+  semiFireRateMax: 0.6
+  fireDistance: 25
+  damagePerShot: 15
+  magazineSize: 30
+  reloadTime: 2.5
+  minSpread: 0.01
+  maxSpread: 0.08
+  bloomIncrease: 0.01
+  coverSearchRadius: 25
+  teammatePrefab: {fileID: 2069129159604702209, guid: 0ae54a5f061143540a2393c93f78d894, type: 3}
+  impactVfxPrefab: {fileID: 0}
+  muzzleFlashPrefab: {fileID: 4123609111075997096, guid: 4852900e4ffebde4db129e3f5f9acbbf, type: 3}
+  tracerPrefab: {fileID: 7048567237833717488, guid: b951bfa1a90276e4b94fe9511357e939, type: 3}
+  shootSound: {fileID: 8300000, guid: e8776a34720384a43aab1f3bcf8dcba8, type: 3}
+  reloadSound: {fileID: 8300000, guid: 9dc6b4d7a4602854c8f5f733ff764596, type: 3}
+  shootVolume: 0.2

@@ -9,6 +9,7 @@ public class TeammateShooting : MonoBehaviour
 
     private TeammateDetection detection;
     private Animator animator;
+    [SerializeField] private TeammateSO teammateData;
 
     [Header("Weapon Stats")]
     [SerializeField] private FireMode currentFireMode = FireMode.SemiAuto;
@@ -58,6 +59,28 @@ public class TeammateShooting : MonoBehaviour
         detection = GetComponent<TeammateDetection>();
         currentAmmo = magazineSize;
         if (audioSource == null) audioSource = GetComponent<AudioSource>();
+
+        if (teammateData != null)
+        {
+            currentFireMode = teammateData.fireMode;
+            autoFireRate = teammateData.autoFireRate;
+            semiFireRateMin = teammateData.semiFireRateMin;
+            semiFireRateMax = teammateData.semiFireRateMax;
+            fireDistance = teammateData.fireDistance;
+            damagePerShot = teammateData.damagePerShot;
+            magazineSize = teammateData.magazineSize;
+            reloadTime = teammateData.reloadTime;
+            minSpread = teammateData.minSpread;
+            maxSpread = teammateData.maxSpread;
+            bloomIncrease = teammateData.bloomIncrease;
+
+            if (teammateData.impactVfxPrefab != null) impactVfxPrefab = teammateData.impactVfxPrefab;
+            if (teammateData.muzzleFlashPrefab != null) muzzleFlashPrefab = teammateData.muzzleFlashPrefab;
+            if (teammateData.tracerPrefab != null) tracerPrefab = teammateData.tracerPrefab;
+            if (teammateData.shootSound != null) shootSound = teammateData.shootSound;
+            if (teammateData.reloadSound != null) reloadSound = teammateData.reloadSound;
+            shootVolume = teammateData.shootVolume;
+        }
     }
 
     private void Start()

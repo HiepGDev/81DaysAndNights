@@ -5,7 +5,8 @@ public class TeammateDetection : MonoBehaviour
 {
     [Header("Detection Settings")]
     [SerializeField] private float detectionRadius = 15.0f;
-    [SerializeField] private string[] targetTags = { "Enemy" }; 
+    [SerializeField] private string[] targetTags = { "Enemy" };
+    [SerializeField] private TeammateSO teammateData;
 
     private TeammateAI teammateAI;
 
@@ -14,6 +15,11 @@ public class TeammateDetection : MonoBehaviour
 
     private void Awake()
     {
+        if (teammateData != null)
+        {
+            detectionRadius = teammateData.detectionRadius;
+        }
+
         teammateAI = GetComponent<TeammateAI>();
     }
 
