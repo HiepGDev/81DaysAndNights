@@ -8,10 +8,18 @@ public class TeammateCover : MonoBehaviour
     [Header("Cover Settings")]
     [SerializeField] private LayerMask coverLayer;
     [SerializeField] private float searchRadius = 25f;
+    [SerializeField] private TeammateSO teammateData;
 
     private NavMeshAgent agent;
 
-    private void Awake() { agent = GetComponent<NavMeshAgent>(); }
+    private void Awake() 
+    {
+        if (teammateData != null)
+        {
+            searchRadius = teammateData.coverSearchRadius;
+        }
+        agent = GetComponent<NavMeshAgent>();       
+    }
 
     public CoverPoint FindNearestCover(Vector3 threatPos)
     {

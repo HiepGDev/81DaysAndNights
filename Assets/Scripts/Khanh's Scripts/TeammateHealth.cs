@@ -6,6 +6,8 @@ public class TeammateHealth : MonoBehaviour
     [Header("Health Settings")]
     [SerializeField] private float maxHealth = 100f;
     [SerializeField] private float currentHealth;
+    [SerializeField] private TeammateSO teammateData;
+
 
     private static System.Collections.Generic.List<GameObject> ragdollPool = new System.Collections.Generic.List<GameObject>();
     private const int MAX_RAGDOLLS = 10;
@@ -17,6 +19,11 @@ public class TeammateHealth : MonoBehaviour
 
     private void Awake()
     {
+        if (teammateData != null)
+        {
+            maxHealth = teammateData.maxHealth;
+        }
+
         currentHealth = maxHealth;
 
         ragdollRigidbodies = GetComponentsInChildren<Rigidbody>();

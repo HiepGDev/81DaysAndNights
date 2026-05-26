@@ -936,6 +936,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d4cdb56b10e452b4eaa6bb37275ddc92, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TeammateAI
+  teammateData: {fileID: 11400000, guid: 7c6ff9ee23f0c784c823ea9003f8bfb7, type: 2}
   aiMode: 0
   playerTarget: {fileID: 0}
   defendPoint: {fileID: 0}
@@ -962,6 +963,7 @@ MonoBehaviour:
   detectionRadius: 15
   targetTags:
   - Enemy
+  teammateData: {fileID: 11400000, guid: 7c6ff9ee23f0c784c823ea9003f8bfb7, type: 2}
 --- !u!114 &3362498691519322670
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -974,6 +976,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 64e3e05966663014d9ab2527f0208a14, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TeammateShooting
+  teammateData: {fileID: 11400000, guid: 7c6ff9ee23f0c784c823ea9003f8bfb7, type: 2}
   currentFireMode: 1
   impactVfxPrefab: {fileID: 0}
   tracerPrefab: {fileID: 7048567237833717488, guid: b951bfa1a90276e4b94fe9511357e939, type: 3}
@@ -1107,6 +1110,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::TeammateHealth
   maxHealth: 101
   currentHealth: 0
+  teammateData: {fileID: 11400000, guid: 7c6ff9ee23f0c784c823ea9003f8bfb7, type: 2}
 --- !u!136 &2582913553731477740
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -1146,6 +1150,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 128
   searchRadius: 25
+  teammateData: {fileID: 11400000, guid: 7c6ff9ee23f0c784c823ea9003f8bfb7, type: 2}
 --- !u!1 &2177698044826205447
 GameObject:
   m_ObjectHideFlags: 0

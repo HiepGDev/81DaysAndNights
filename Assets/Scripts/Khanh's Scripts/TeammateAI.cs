@@ -7,6 +7,8 @@ public class TeammateAI : MonoBehaviour
     public enum TeammateState { Idle, Following, Combat, Patrolling, SeekingCover }
     public TeammateState CurrentState => currentState;
 
+    [SerializeField] private TeammateSO teammateData;
+
     // THÊM MODE MỚI: Defender (Tử thủ 1 chỗ)
     public enum AIMode { Follower, Patroller, Defender }
 
@@ -63,6 +65,17 @@ public class TeammateAI : MonoBehaviour
         agent.acceleration = 15f;
         agent.angularSpeed = 300f;
         agent.updateRotation = false;
+
+        if (teammateData != null)
+        {
+            aiMode = teammateData.defaultAiMode;
+            followTriggerDistance = teammateData.followTriggerDistance;
+            stopFollowDistance = teammateData.stopFollowDistance;
+            rotationSpeed = teammateData.rotationSpeed;
+            waypointStopDistance = teammateData.waypointStopDistance;
+            waypointWaitTime = teammateData.waypointWaitTime;
+            loopPatrol = teammateData.loopPatrol;
+        }
     }
 
     private void Start()
