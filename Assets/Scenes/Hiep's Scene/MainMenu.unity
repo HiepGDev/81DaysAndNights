@@ -25342,15 +25342,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 3452618528282268195, guid: a20c1cc7c56d1a6418490ca7cec2025a, type: 3}
       propertyPath: m_Name
-      value: Terrain
-      objectReference: {fileID: 0}
-    - target: {fileID: 4891277739108156669, guid: a20c1cc7c56d1a6418490ca7cec2025a, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 416.5
-      objectReference: {fileID: 0}
-    - target: {fileID: 4891277739108156669, guid: a20c1cc7c56d1a6418490ca7cec2025a, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 472.11
+      value: Menu Terrain
       objectReference: {fileID: 0}
     - target: {fileID: 5360664405882548141, guid: a20c1cc7c56d1a6418490ca7cec2025a, type: 3}
       propertyPath: m_LocalPosition.x

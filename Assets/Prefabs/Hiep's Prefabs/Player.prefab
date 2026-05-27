@@ -2703,13 +2703,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerFootstep
   footstepSource: {fileID: 5257900339224169386}
-  footstepSound:
+  dirtSteps:
   - {fileID: 8300000, guid: f2fa09d2239f1e14fbc8ab76baf7f1d3, type: 3}
+  stoneSteps:
+  - {fileID: 8300000, guid: 488abb602c488584fbc9f81b23ce8a56, type: 3}
+  - {fileID: 8300000, guid: 4340e1b4b4d12224eae5644f847e831a, type: 3}
+  woodSteps: []
   walkStepInterval: 0.62
   sprintStepInterval: 0.38
   crouchStepInterval: 0.72
-  pitchMin: 0.94
-  pitchMax: 1.1
+  rayDistance: 1.5
+  groundLayers:
+    serializedVersion: 2
+    m_Bits: 1
 --- !u!82 &5257900339224169386
 AudioSource:
   m_ObjectHideFlags: 0
