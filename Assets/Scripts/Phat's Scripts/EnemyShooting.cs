@@ -6,32 +6,39 @@ public class EnemyShooting : MonoBehaviour
     private EnemyDetection detection;
     private Animator animator;
 
+    [SerializeField] private EnemySO enemyData;
+
     [Header("Weapon Stats")]
-    [SerializeField] private GameObject bulletPrefab;
+    [SerializeField] private GameObject impactVfxPrefab; 
+    [SerializeField] private GameObject muzzleFlashPrefab; 
+    [SerializeField] private GameObject tracerPrefab;   
+    [SerializeField] private AudioSource audioSource;
+    [SerializeField] private AudioClip shootSound;
+    [Range(0, 1)] [SerializeField] private float shootVolume = 0.4f;
     [SerializeField] private Transform firePoint;
     [SerializeField] private float fireRate = 0.1f;
-    [SerializeField] private float fireDistance = 25.0f;
+    [SerializeField] private float fireDistance = 25.0f; // Reduced from 50.0f
+    [SerializeField] private int damagePerShot = 5;
 
-    [Header("CS:GO Style Spray Pattern")]
-    [SerializeField] private Vector2[] sprayPattern = new Vector2[] 
-    {
-        new Vector2(0, 0), new Vector2(0, 0.2f), new Vector2(0, 0.5f), 
-        new Vector2(-0.2f, 0.8f), new Vector2(-0.4f, 1.0f), new Vector2(0.2f, 1.2f)
-    };
-    [SerializeField] private float patternScale = 0.5f;
+    [Header("Hitscan Settings")]
+    [SerializeField] private LayerMask hitLayers;
+    
+    [Header("Bloom (Recoil) Settings")]
+    [SerializeField] private float minSpread = 0.01f;      // Precision of first shot
+    [SerializeField] private float maxSpread = 0.08f;      // Max inaccuracy
+    [SerializeField] private float bloomIncrease = 0.01f;  // Growth per bullet
+    private float currentBloom = 0f;
 
     [Header("Ammo Settings")]
     [SerializeField] private int magazineSize = 30;
-    [SerializeField] private float reloadTime = 2.5f;
+    [SerializeField] private float reloadTime = 3.0f;
     
     private int currentAmmo;
-    private int recoilIndex = 0; 
     private float nextFireTime;
     private bool isShootingInProgress = false;
     private bool isReloading = false;
     private bool isCrouched = false;
 
-    // THE 1-BULLET FIX: Allow external control (Peek script)
     [HideInInspector] public bool allowFiring = true;
 
     public bool IsOutOfAmmo => currentAmmo <= 0;
@@ -41,86 +48,243 @@ public class EnemyShooting : MonoBehaviour
     private void Awake()
     {
         detection = GetComponent<EnemyDetection>();
+        if (enemyData != null)
+        {
+            fireRate = enemyData.fireRate;
+            fireDistance = enemyData.fireDistance;
+            damagePerShot = enemyData.damagePerShot;
+            magazineSize = enemyData.magazineSize;
+            reloadTime = enemyData.reloadTime;
+
+            minSpread = enemyData.minSpread;
+            maxSpread = enemyData.maxSpread;
+            bloomIncrease = enemyData.bloomIncrease;
+
+            if (enemyData.impactVfxPrefab != null) impactVfxPrefab = enemyData.impactVfxPrefab;
+            if (enemyData.muzzleFlashPrefab != null) muzzleFlashPrefab = enemyData.muzzleFlashPrefab;
+            if (enemyData.tracerPrefab != null) tracerPrefab = enemyData.tracerPrefab;
+            if (enemyData.shootSound != null) shootSound = enemyData.shootSound;
+            shootVolume = enemyData.shootVolume;
+        }
         currentAmmo = magazineSize;
     }
 
-    private void Start()
+    private IEnumerator Start()
     {
         animator = GetComponentInChildren<Animator>();
         if (animator == null) animator = GetComponent<Animator>();
+        
+        // THE RACE CONDITION FIX: Wait a bit longer for the player to fully wake up
+        yield return new WaitForSeconds(0.2f);
+        TryFindAudioSource();
+    }
+
+    private void TryFindAudioSource()
+    {
+        if (audioSource != null) return;
+
+        // 1. Try local first
+        audioSource = GetComponent<AudioSource>();
+        if (audioSource == null) audioSource = GetComponentInChildren<AudioSource>();
+        if (audioSource != null) return;
+
+        // 2. THE BLOODHOUND SEARCH: Scan ALL "Player" tagged objects
+        GameObject[] players = GameObject.FindGameObjectsWithTag("Player");
+        foreach (GameObject p in players)
+        {
+            // Search this player and ALL its children (Camera, Gun, Feet, etc)
+            audioSource = p.GetComponentInChildren<AudioSource>();
+            if (audioSource != null)
+            {
+                return;
+            }
+        }
+
+        // 3. FALLBACK: Search by name if tags are broken
+        GameObject namePlayer = GameObject.Find("Player");
+        if (namePlayer != null)
+        {
+            audioSource = namePlayer.GetComponentInChildren<AudioSource>();
+            if (audioSource != null) return;
+        }
+
+        // 4. LAST RESORT: Find ANY AudioSource in the world
+        if (audioSource == null)
+        {
+            audioSource = Object.FindFirstObjectByType<AudioSource>();
+        }
+
+        if (audioSource == null)
+            Debug.LogWarning("[Enemy Audio] Still could not find an AudioSource anywhere in the scene!");
     }
 
     private void Update()
     {
         if (isReloading) return;
 
-        EnemyBehaviorAgent agent = GetComponent<EnemyBehaviorAgent>();
-        if (agent != null && agent.IsMovingToCover)
+        // THE AMBUSH BYPASS: If in Ambush mode, we don't need the detection script!
+        EnemyBehaviorAgent behaviorAgent = GetComponent<EnemyBehaviorAgent>();
+        bool isAmbushing = (behaviorAgent != null && behaviorAgent.currentMode == EnemyBehaviorAgent.EnemyMode.Ambush);
+
+        // 1. Ammo Check (Always priority)
+        if (currentAmmo <= 0)
+        {
+            TriggerReload();
+            return;
+        }
+
+        if (behaviorAgent != null && behaviorAgent.IsMovingToCover)
         {
             if (isShootingInProgress) EndShooting();
             return;
         }
 
-        if (detection == null || !detection.IsTargetDetected || detection.CurrentTarget == null)
+        // 2. TARGET SELECTION: Sync with Behavior Agent
+        Transform target = null;
+        if (isAmbushing)
+        {
+            target = (behaviorAgent != null) ? behaviorAgent.CurrentAmbushTarget : null;
+        }
+        else if (detection != null && detection.IsTargetDetected)
+        {
+            target = detection.CurrentTarget;
+        }
+
+        if (target == null)
         {
             if (isShootingInProgress) EndShooting();
             return;
         }
 
-        float distanceToTarget = Vector3.Distance(transform.position, detection.CurrentTarget.position);
-        if (distanceToTarget > fireDistance)
+        // 3. MOVEMENT SYNC: Only shoot if the behavior agent is physically ready
+        if (behaviorAgent == null || !behaviorAgent.IsReadyToShoot)
         {
             if (isShootingInProgress) EndShooting();
             return;
         }
 
         if (!isShootingInProgress) StartShooting();
-        AimAtTarget();
+        
+        // Face and Aim
+        AimAtTargetManual(target);
 
         if (Time.time >= nextFireTime && currentAmmo > 0 && allowFiring)
         {
-            Shoot();
+            ShootManual(target);
             nextFireTime = Time.time + fireRate;
-        }
-        else if (currentAmmo <= 0 && !isReloading)
-        {
-            if (isShootingInProgress) EndShooting();
         }
     }
 
-    private void Shoot()
+    private void AimAtTargetManual(Transform target)
     {
-        if (bulletPrefab == null || firePoint == null) return;
+        if (firePoint == null || target == null) return;
+        Vector3 targetPos = target.position + Vector3.up * 0.5f;
+        firePoint.LookAt(targetPos);
+    }
 
+    private void ShootManual(Transform target)
+    {
+        if (firePoint == null || target == null) return;
+        
         currentAmmo--;
-        Debug.Log($"[Enemy Weapon] Shot Fired! Ammo: {currentAmmo}/{magazineSize}");
 
-        Vector2 patternOffset = Vector2.zero;
-        if (sprayPattern != null && sprayPattern.Length > 0)
+        // THE SOUND FIX: Play gunshot sound with volume control
+        if (audioSource != null && shootSound != null)
         {
-            patternOffset = sprayPattern[recoilIndex % sprayPattern.Length] * patternScale;
+            audioSource.PlayOneShot(shootSound, shootVolume);
         }
 
-        Quaternion recoilRotation = Quaternion.Euler(-patternOffset.y, patternOffset.x, 0);
-        Quaternion finalRotation = firePoint.rotation * recoilRotation;
-
-        GameObject bullet = Instantiate(bulletPrefab, firePoint.position, finalRotation);
-        
-        ParticleSystem ps = bullet.GetComponent<ParticleSystem>();
-        if (ps == null) ps = bullet.GetComponentInChildren<ParticleSystem>();
-        
-        if (ps != null)
+        // THE MUZZLE FLASH FIX: Explicitly play ParticleSystems
+        if (muzzleFlashPrefab != null && firePoint != null)
         {
-            var main = ps.main;
-            main.simulationSpace = ParticleSystemSimulationSpace.World;
-            var emission = ps.emission;
-            emission.rateOverTime = 0;
-            emission.SetBursts(new ParticleSystem.Burst[] { });
-            ps.Emit(1);
+            GameObject flash = Instantiate(muzzleFlashPrefab, firePoint.position, firePoint.rotation);
+            
+            // Check if it's a particle system and play it
+            ParticleSystem ps = flash.GetComponent<ParticleSystem>();
+            if (ps != null) ps.Play();
+            else
+            {
+                // If it's a list of children particles, play all of them
+                foreach (var childPs in flash.GetComponentsInChildren<ParticleSystem>())
+                    childPs.Play();
+            }
+
+            // Destroy only after a few seconds to let the particles fade naturally
+            Destroy(flash, 1.0f); 
+        }
+        
+        float totalSpread = minSpread + currentBloom;
+        float spreadX = Random.Range(-totalSpread, totalSpread);
+        float spreadY = Random.Range(-totalSpread, totalSpread);
+
+        Vector3 targetPoint = target.position + Vector3.up * 0.5f;
+        Vector3 baseDir = (targetPoint - firePoint.position).normalized;
+
+        Quaternion bloomRot = Quaternion.Euler(spreadY * 20f, spreadX * 20f, 0);
+        Vector3 shootDir = (Quaternion.LookRotation(baseDir) * bloomRot) * Vector3.forward;
+
+        RaycastHit hit;
+        Vector3 endPoint = firePoint.position + (shootDir * fireDistance);
+
+        if (Physics.Raycast(firePoint.position, shootDir, out hit, fireDistance, hitLayers))
+        {
+            endPoint = hit.point;
+            var player = hit.collider.GetComponentInParent<PlayerHealth>();
+            if (player != null) player.TakeDamage(damagePerShot);
+            
+            var enemy = hit.collider.GetComponentInParent<EnemyHealth>();
+            if (enemy != null && enemy.gameObject != gameObject) enemy.TakeDamage(damagePerShot);
+
+            var teammate = hit.collider.GetComponentInParent<TeammateHealth>();
+            if (teammate != null && teammate.gameObject != gameObject) teammate.TakeDamage(damagePerShot);
+
+            if (impactVfxPrefab != null)
+            {
+                Instantiate(impactVfxPrefab, hit.point, Quaternion.LookRotation(hit.normal));
+            }
         }
 
-        recoilIndex++;
-        Destroy(bullet, 2.0f);
+        if (tracerPrefab != null)
+        {
+            StartCoroutine(SpawnMovingTracer(firePoint.position, endPoint));
+        }
+
+        currentBloom = Mathf.Min(currentBloom + bloomIncrease, maxSpread);
+    }
+
+    private IEnumerator SpawnMovingTracer(Vector3 start, Vector3 end)
+    {
+        GameObject tracerObj = Instantiate(tracerPrefab, start, Quaternion.identity);
+        LineRenderer line = tracerObj.GetComponent<LineRenderer>();
+        if (line != null)
+        {
+            line.useWorldSpace = true;
+            line.SetPosition(0, start);
+            line.SetPosition(1, end);
+            line.startWidth = 0.05f;
+            line.endWidth = 0.01f;
+            line.startColor = Color.yellow;
+            line.endColor = new Color(1f, 1f, 0f, 0f);
+        }
+        
+        float travelSpeed = 400f; 
+        float distance = Vector3.Distance(start, end);
+        float remainingDistance = distance;
+
+        while (remainingDistance > 1.0f)
+        {
+            if (tracerObj == null) yield break;
+            float moveStep = travelSpeed * Time.deltaTime;
+            tracerObj.transform.position = Vector3.MoveTowards(tracerObj.transform.position, end, moveStep);
+            remainingDistance -= moveStep;
+            yield return null;
+        }
+
+        if (tracerObj != null)
+        {
+            tracerObj.transform.position = end;
+            Destroy(tracerObj, 0.1f);
+        }
     }
 
     public void TriggerReload()
@@ -132,7 +296,7 @@ public class EnemyShooting : MonoBehaviour
     {
         isReloading = true;
         isShootingInProgress = false; 
-        recoilIndex = 0;
+        currentBloom = 0; // RESET RECOIL
 
         EnemyBehaviorAgent behavior = GetComponent<EnemyBehaviorAgent>();
         bool inCover = (behavior != null && behavior.IsInCover);
@@ -146,19 +310,14 @@ public class EnemyShooting : MonoBehaviour
 
             if (shouldCrouchReload)
             {
-                // Play active crouching reload
                 animator.CrossFade("crouching_reload", 0.1f);
-                
-                // Wait for the animation to play (Adjusted for your 24-frame clip @ 0.25 speed)
-                float animDuration = 3.2f; 
+                float animDuration = 1.5f; 
                 yield return new WaitForSeconds(animDuration);
 
                 if (isReloading && inCover)
                 {
-                    // Transition to the silent hiding pose
                     animator.CrossFade("Cover_Crouching", 0.2f);
                 }
-                
                 float remaining = Mathf.Max(0, reloadTime - animDuration);
                 if (remaining > 0) yield return new WaitForSeconds(remaining);
             }
@@ -178,22 +337,18 @@ public class EnemyShooting : MonoBehaviour
         
         if (animator != null && HasParameter("isReloading", animator)) 
             animator.SetBool("isReloading", false);
-            
-        Debug.Log("[Enemy Weapon] Reload Complete.");
     }
 
     private void AimAtTarget()
     {
-        if (firePoint == null) return;
-        float aimHeight = isCrouched ? 0.6f : 1.2f; 
-        Vector3 targetPos = detection.CurrentTarget.position + Vector3.up * aimHeight;
+        if (firePoint == null || detection.CurrentTarget == null) return;
+        Vector3 targetPos = detection.CurrentTarget.position + Vector3.up * 0.5f;
         firePoint.LookAt(targetPos);
     }
 
     private void StartShooting()
     {
         isShootingInProgress = true;
-        recoilIndex = 0;
         isCrouched = Random.value > 0.5f;
         if (animator != null)
         {
@@ -213,6 +368,7 @@ public class EnemyShooting : MonoBehaviour
     private void EndShooting()
     {
         isShootingInProgress = false;
+        currentBloom = 0; // RESET RECOIL
         if (animator != null)
         {
             if (HasParameter("isShooting", animator)) animator.SetBool("isShooting", false);

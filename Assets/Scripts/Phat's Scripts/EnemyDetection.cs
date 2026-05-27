@@ -10,6 +10,7 @@ public class EnemyDetection : MonoBehaviour
     public bool IsTargetDetected { get; private set; }
     public Transform CurrentTarget { get; private set; }
     public Vector3 LastKnownPosition { get; private set; }
+    public string[] TargetTags => targetTags;
 
     private void Update()
     {

@@ -5,100 +5,118 @@ public class EnemyCover : MonoBehaviour
 {
     public struct CoverPoint { public Vector3 position; public Vector3 lookDirection; public bool isRightSide; public bool found; }
 
+    [SerializeField] private EnemySO enemyData;
+
     [Header("Cover Settings")]
     [SerializeField] private LayerMask coverLayer;
     [SerializeField] private float searchRadius = 25f;
-    [SerializeField] private float hugDistance = 0.2f; 
 
     private NavMeshAgent agent;
 
-    private void Awake() { agent = GetComponent<NavMeshAgent>(); }
+    private void Awake()
+    {
+        agent = GetComponent<NavMeshAgent>();
+        if (enemyData != null)
+        {
+            searchRadius = enemyData.coverSearchRadius;
+        }
+    }
+
+    // THE SQUAD COORDINATOR: Track all spots being moved to or occupied
+    private static System.Collections.Generic.Dictionary<int, Vector3> claimedSpots = new System.Collections.Generic.Dictionary<int, Vector3>();
 
     public CoverPoint FindNearestCover(Vector3 playerPos)
     {
         CoverPoint cp = new CoverPoint { found = false };
         Collider[] potentialCovers = Physics.OverlapSphere(transform.position, searchRadius, coverLayer);
-        Collider bestCol = null;
-        float closestDist = float.MaxValue;
+        
+        if (potentialCovers.Length == 0) return cp;
+
+        System.Array.Sort(potentialCovers, (a, b) => 
+            Vector3.Distance(transform.position, a.transform.position).CompareTo(
+            Vector3.Distance(transform.position, b.transform.position)));
 
         foreach (var col in potentialCovers)
         {
-            float d = Vector3.Distance(transform.position, col.transform.position);
-            if (d < closestDist) { closestDist = d; bestCol = col; }
+            Renderer rend = col.GetComponentInChildren<Renderer>();
+            Bounds visualBounds = (rend != null) ? rend.bounds : col.bounds;
+            Vector3 wallHitPoint = visualBounds.ClosestPoint(playerPos);
+            
+            RaycastHit faceHit;
+            Vector3 rayDir = (wallHitPoint - playerPos).normalized;
+            if (rayDir == Vector3.zero) rayDir = transform.forward;
+            Vector3 faceNormal = rayDir; 
+            if (Physics.Raycast(playerPos, rayDir, out faceHit, Vector3.Distance(playerPos, wallHitPoint) + 5f, coverLayer))
+                faceNormal = faceHit.normal;
+
+            faceNormal.y = 0;
+            faceNormal.Normalize();
+
+            Vector3 wallTangent = Vector3.Cross(Vector3.up, faceNormal).normalized;
+            Vector3 edgeR = ProbeForPhysicalEdge(wallHitPoint, wallTangent, faceNormal);
+            Vector3 edgeL = ProbeForPhysicalEdge(wallHitPoint, -wallTangent, faceNormal);
+
+            foreach (bool tryRight in new bool[] { true, false })
+            {
+                Vector3 chosenCorner = tryRight ? edgeR : edgeL;
+                Vector3 edgeDir = tryRight ? wallTangent : -wallTangent;
+
+                float agentRadius = (agent != null ? agent.radius : 0.5f);
+                Vector3 shadowDir = (chosenCorner - playerPos).normalized;
+                shadowDir.y = 0;
+
+                Vector3 depthOffset = shadowDir * (agentRadius + 0.4f);
+                Vector3 tuckOffset = -edgeDir * 0.3f; 
+                Vector3 safePos = chosenCorner + depthOffset + tuckOffset;
+                safePos.y = transform.position.y;
+
+                // THE SQUAD FIX 1: Check if anyone has RESERVED this spot already
+                bool isReserved = false;
+                foreach (var claim in claimedSpots)
+                {
+                    // INCREASED SPACING: 2.2m ensures they don't clip each other
+                    if (claim.Key != gameObject.GetInstanceID() && Vector3.Distance(claim.Value, safePos) < 2.2f)
+                    {
+                        isReserved = true;
+                        break;
+                    }
+                }
+                if (isReserved) continue;
+
+                // THE SQUAD FIX 2: Check if someone is PHYSICALLY there (Chest Height)
+                if (Physics.CheckSphere(safePos + Vector3.up * 1.5f, 1.2f, LayerMask.GetMask("Enemy")))
+                    continue; 
+
+                NavMeshHit navHit;
+                if (NavMesh.SamplePosition(safePos, out navHit, 3.0f, NavMesh.AllAreas))
+                {
+                    // THE REACHABILITY FIX: Ensure we can actually walk to this specific spot
+                    NavMeshPath path = new NavMeshPath();
+                    if (agent != null && agent.CalculatePath(navHit.position, path) && path.status == NavMeshPathStatus.PathComplete)
+                    {
+                        cp.position = navHit.position;
+                        cp.lookDirection = edgeDir; 
+                        cp.isRightSide = tryRight;
+                        cp.found = true;
+                        
+                        // Claim the spot
+                        claimedSpots[gameObject.GetInstanceID()] = cp.position;
+                        return cp;
+                    }
+                }
+            }
         }
-
-        if (bestCol == null) return cp;
-
-        Renderer rend = bestCol.GetComponentInChildren<Renderer>();
-        Bounds visualBounds = (rend != null) ? rend.bounds : bestCol.bounds;
-
-        // 1. Find the point on the wall surface closest to the player
-        // THE FIX: Use visualBounds to support non-convex Mesh Colliders
-        Vector3 wallHitPoint = visualBounds.ClosestPoint(playerPos);
-        
-        // 2. Get the actual Face Normal using a Raycast
-        RaycastHit faceHit;
-        Vector3 rayDir = (wallHitPoint - playerPos).normalized;
-        if (rayDir == Vector3.zero) rayDir = transform.forward; // Safety
-        
-        Vector3 faceNormal = rayDir; // Fallback
-        
-        if (Physics.Raycast(playerPos, rayDir, out faceHit, Vector3.Distance(playerPos, wallHitPoint) + 5f, coverLayer))
-        {
-            faceNormal = faceHit.normal;
-        }
-        faceNormal.y = 0;
-        if (faceNormal == Vector3.zero) faceNormal = rayDir;
-        faceNormal.Normalize();
-
-        // 3. DEPTH is always AGAINST the normal
-        Vector3 depthDir = -faceNormal;
-        
-        // 4. TANGENT is along the wall face
-        Vector3 wallTangent = Vector3.Cross(Vector3.up, faceNormal).normalized;
-        if (wallTangent == Vector3.zero) wallTangent = transform.right; // Safety for zero vector
-
-        // 4. PROBE: Find the actual physical corners (Raycast walk along the surface)
-        Vector3 edgeR = ProbeForPhysicalEdge(wallHitPoint, wallTangent, faceNormal);
-        Vector3 edgeL = ProbeForPhysicalEdge(wallHitPoint, -wallTangent, faceNormal);
-
-        float dR = Vector3.Distance(transform.position, edgeR);
-        float dL = Vector3.Distance(transform.position, edgeL);
-        bool useRight = dR < dL;
-        
-        Vector3 chosenCorner = useRight ? edgeR : edgeL;
-        Vector3 edgeDir = useRight ? wallTangent : -wallTangent;
-
-        // 5. CALCULATE POSITION (Shadow Projection)
-        float agentRadius = (agent != null ? agent.radius : 0.5f);
-        
-        // A. Shadow Direction: The straight line from player to the corner
-        Vector3 shadowDir = (chosenCorner - playerPos).normalized;
-        shadowDir.y = 0;
-
-        // B. Depth: Push into the shadow (Radius + 0.4m buffer)
-        // This ensures the back and shoulders are well behind the line of sight
-        Vector3 depthOffset = shadowDir * (agentRadius + 0.4f);
-        
-        // C. Tuck: Move slightly back along the wall to be extra safe
-        Vector3 tuckOffset = -edgeDir * 0.3f; 
-
-        Vector3 safePos = chosenCorner + depthOffset + tuckOffset;
-        safePos.y = transform.position.y;
-
-        // 6. SNAP TO NAVMESH
-        NavMeshHit navHit;
-        if (NavMesh.SamplePosition(safePos, out navHit, 3.0f, NavMesh.AllAreas))
-        {
-            cp.position = navHit.position;
-            // Face along the wall towards the peek side
-            cp.lookDirection = edgeDir; 
-            cp.isRightSide = useRight;
-            cp.found = true;
-        }
-        
         return cp;
     }
+
+    // Call this when enemy leaves cover or dies
+    public void ReleaseCover()
+    {
+        int id = gameObject.GetInstanceID();
+        if (claimedSpots.ContainsKey(id)) claimedSpots.Remove(id);
+    }
+
+    private void OnDestroy() { ReleaseCover(); }
 
     private Vector3 ProbeForPhysicalEdge(Vector3 start, Vector3 moveDir, Vector3 faceNormal)
     {

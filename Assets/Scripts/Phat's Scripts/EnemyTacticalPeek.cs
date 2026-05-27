@@ -8,13 +8,16 @@ public class EnemyTacticalPeek : MonoBehaviour
     private EnemyDetection detection;
     private EnemyBehaviorAgent behaviorAgent;
     
+    [SerializeField] private EnemySO enemyData;
+
     [Header("Peek Settings")]
     [SerializeField] private float peekDistance = 0.7f; 
-    [SerializeField] private float arrivalThreshold = 0.4f;
 
     private Vector3 originalCoverPos;
     private Vector3 peekPos;
     private bool isCurrentlyPeeking = false;
+
+    public bool IsPeeking => isCurrentlyPeeking;
 
     private void Awake()
     {
@@ -25,6 +28,11 @@ public class EnemyTacticalPeek : MonoBehaviour
 
         // THE TRIGGER FIX: Allow agent to get closer than the shooting threshold
         if (agent != null) agent.stoppingDistance = 0.1f;
+
+        if (enemyData != null)
+        {
+            peekDistance = enemyData.peekDistance;
+        }
     }
 
     private void Update()
@@ -32,13 +40,19 @@ public class EnemyTacticalPeek : MonoBehaviour
         if (behaviorAgent == null || !behaviorAgent.IsInCover) 
         {
             if (isCurrentlyPeeking) isCurrentlyPeeking = false;
+            // THE LOCK FIX: If we aren't at a wall, the safety MUST be OFF.
+            if (shooting != null) shooting.allowFiring = true;
             return;
         }
 
         if (shooting == null || agent == null) return;
 
-        // TRIGGER PEEK: Ammo full and ready
-        if (!shooting.IsOutOfAmmo && !shooting.IsReloading && !isCurrentlyPeeking)
+        // THE AMBUSH FIX: Determine if we have a target (Sensor OR Ambush)
+        bool hasTarget = (detection != null && detection.IsTargetDetected) || 
+                         (behaviorAgent.currentMode == EnemyBehaviorAgent.EnemyMode.Ambush && behaviorAgent.CurrentAmbushTarget != null);
+
+        // TRIGGER PEEK: Ammo full and ready and we see someone
+        if (!shooting.IsOutOfAmmo && !shooting.IsReloading && !isCurrentlyPeeking && hasTarget)
         {
             // If the Agent is stopped at the hide spot, start the peek
             if (agent.isStopped || agent.remainingDistance < 0.4f)
@@ -48,7 +62,7 @@ public class EnemyTacticalPeek : MonoBehaviour
         }
 
         // TRIGGER STOP: Empty or target lost
-        if ((shooting.IsOutOfAmmo || (detection != null && !detection.IsTargetDetected)) && isCurrentlyPeeking)
+        if ((shooting.IsOutOfAmmo || !hasTarget) && isCurrentlyPeeking)
         {
             ReturnToCover();
         }

@@ -458,7 +458,7 @@ GameObject:
   - component: {fileID: 6791406818883596023}
   m_Layer: 0
   m_Name: ForeArm.R
-  m_TagString: Untagged
+  m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -1538,7 +1538,7 @@ GameObject:
   - component: {fileID: 7899501030532579144}
   m_Layer: 0
   m_Name: Arm.R
-  m_TagString: Untagged
+  m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -1904,7 +1904,7 @@ GameObject:
   - component: {fileID: 6503051202957460740}
   m_Layer: 0
   m_Name: Spine1
-  m_TagString: Untagged
+  m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -1944,7 +1944,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.28444186, y: 0.45637983, z: 0.2649736}
+  m_Size: {x: 0.28444186, y: 0.58, z: 0.2649736}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!54 &4347605396011372855
 Rigidbody:
@@ -2397,7 +2397,7 @@ GameObject:
   - component: {fileID: 8859321581231328998}
   m_Layer: 0
   m_Name: UpLeg.L
-  m_TagString: Untagged
+  m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -2576,13 +2576,14 @@ GameObject:
   - component: {fileID: 297410935676978228}
   - component: {fileID: 768440080619893575}
   - component: {fileID: 1497563120457316720}
+  - component: {fileID: 7071849098243369949}
   m_Layer: 0
   m_Name: Enemy Test 2 1
-  m_TagString: Untagged
+  m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &69578435293259307
 Transform:
   m_ObjectHideFlags: 0
@@ -2652,8 +2653,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 810ec3203dfe0174c96cd5155f07b172, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyBehaviorAgent
+  enemyData: {fileID: 11400000, guid: 3a4b9c1f2e3d4c5b6a7b8c9d0e1f2a3b, type: 2}
+  currentMode: 1
+  ambushShootRange: 15
   wanderRadius: 15
   idleTime: 2
+  minEngagementDist: 15
+  rangeSpread: 15
+  destinationSpread: 15
 --- !u!114 &622332415734339571
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2666,22 +2673,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c4232bf22af459043b2481e074357c46, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyShooting
-  bulletPrefab: {fileID: 1362100356248084211, guid: 91149d0af11b2294cb97cb0777f7bc69, type: 3}
+  enemyData: {fileID: 11400000, guid: 3a4b9c1f2e3d4c5b6a7b8c9d0e1f2a3b, type: 2}
+  impactVfxPrefab: {fileID: 0}
+  muzzleFlashPrefab: {fileID: 4123609111075997096, guid: 4852900e4ffebde4db129e3f5f9acbbf, type: 3}
+  tracerPrefab: {fileID: 7048567237833717488, guid: b951bfa1a90276e4b94fe9511357e939, type: 3}
+  audioSource: {fileID: 0}
+  shootSound: {fileID: 8300000, guid: e8776a34720384a43aab1f3bcf8dcba8, type: 3}
+  shootVolume: 0.1
   firePoint: {fileID: 3822392644324549868}
   fireRate: 0.1
-  fireDistance: 20
-  sprayPattern:
-  - {x: 0, y: 0}
-  - {x: 0, y: 0.5}
-  - {x: 0, y: 1.2}
-  - {x: -0.5, y: 2}
-  - {x: -1.2, y: 2.5}
-  - {x: 0.5, y: 2.8}
-  - {x: 1.5, y: 3}
-  - {x: 2, y: 2.5}
-  - {x: 1, y: 2}
-  - {x: -1, y: 2.2}
-  patternScale: 0.25
+  fireDistance: 50
+  damagePerShot: 5
+  hitLayers:
+    serializedVersion: 2
+    m_Bits: 1
+  minSpread: 0.3
+  maxSpread: 0.8
+  bloomIncrease: 0.01
   magazineSize: 30
   reloadTime: 5
   allowFiring: 1
@@ -2697,11 +2705,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ce8c1f7565a297b478eec574bc8c4924, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyCover
+  enemyData: {fileID: 11400000, guid: 3a4b9c1f2e3d4c5b6a7b8c9d0e1f2a3b, type: 2}
   coverLayer:
     serializedVersion: 2
     m_Bits: 128
-  searchRadius: 1000
-  hugDistance: 0.2
+  searchRadius: 10
 --- !u!114 &768440080619893575
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2714,8 +2722,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1b22ec319f5018f4ebdb02edf07da7f5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyTacticalPeek
+  enemyData: {fileID: 11400000, guid: 3a4b9c1f2e3d4c5b6a7b8c9d0e1f2a3b, type: 2}
   peekDistance: 1.2
-  arrivalThreshold: 0.4
 --- !u!114 &1497563120457316720
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2728,7 +2736,31 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d91887886571dd1478e0cdcee865d67d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyHealth
+  enemyData: {fileID: 11400000, guid: 3a4b9c1f2e3d4c5b6a7b8c9d0e1f2a3b, type: 2}
   health: 100
+--- !u!136 &7071849098243369949
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3617796667323854859}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0
+  m_Height: 0
+  m_Direction: 1
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &3724000224864024029
 GameObject:
   m_ObjectHideFlags: 0
@@ -3191,7 +3223,7 @@ GameObject:
   - component: {fileID: 8930704006397227292}
   m_Layer: 0
   m_Name: Leg.R
-  m_TagString: Untagged
+  m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -3336,7 +3368,7 @@ GameObject:
   - component: {fileID: 8531139668487885101}
   m_Layer: 0
   m_Name: Spine
-  m_TagString: Untagged
+  m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -3376,7 +3408,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.24550536, y: 0.45637983, z: 0.2649736}
+  m_Size: {x: 0.28, y: 0.45637983, z: 0.2649736}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!54 &2293358756780740280
 Rigidbody:
@@ -3560,7 +3592,7 @@ GameObject:
   - component: {fileID: 4244774501466289263}
   m_Layer: 0
   m_Name: UpLeg.R
-  m_TagString: Untagged
+  m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -3802,7 +3834,7 @@ GameObject:
   - component: {fileID: 4800879419415368113}
   m_Layer: 0
   m_Name: Arm.L
-  m_TagString: Untagged
+  m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -5015,7 +5047,7 @@ GameObject:
   - component: {fileID: 1040307950906471310}
   m_Layer: 0
   m_Name: Leg.L
-  m_TagString: Untagged
+  m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -5652,7 +5684,7 @@ GameObject:
   - component: {fileID: 5138206424068371409}
   m_Layer: 0
   m_Name: Head
-  m_TagString: Untagged
+  m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -6316,7 +6348,7 @@ GameObject:
   - component: {fileID: 6821691758005795617}
   m_Layer: 0
   m_Name: ForeArm.L
-  m_TagString: Untagged
+  m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

@@ -4,16 +4,30 @@ using UnityEngine.AI;
 [RequireComponent(typeof(NavMeshAgent))]
 public class EnemyBehaviorAgent : MonoBehaviour
 {
+    public enum EnemyMode { Wander, Ambush }
+
     private NavMeshAgent agent;
     private EnemyDetection detection;
     private EnemyShooting shooting;
     private EnemyCover cover;
+    private EnemyTacticalPeek peek;
     private Animator animator;
+    [SerializeField] private EnemySO enemyData;
 
-    [Header("Behavior Settings")]
+    [Header("Ambush Settings")]
+    public EnemyMode currentMode = EnemyMode.Wander;
+    [SerializeField] private float ambushShootRange = 15f; 
+    
+    [Header("Wander Settings")]
     [SerializeField] private float wanderRadius = 15f;
     [SerializeField] private float idleTime = 2f;
+
+    [Header("Squad Spacing")]
+    [SerializeField] private float minEngagementDist = 8.0f; 
+    [SerializeField] private float rangeSpread = 3.0f;       
+    [SerializeField] private float destinationSpread = 2.0f;
     
+    private Transform playerTransform;
     private Vector3 spawnPoint;
     private float idleTimer;
     private bool isIdle = false;
@@ -21,10 +35,19 @@ public class EnemyBehaviorAgent : MonoBehaviour
     private Vector3 currentTarget; 
     private EnemyCover.CoverPoint activeCover;
 
-    // --- State Tracking ---
-    private bool wasTargetInShootingRangeLastFrame = false;
-    private bool isChasing = false;
-    private bool isHidingFromRange = false; // NEW: Track safety hiding
+    // Spacing and Targeting
+    private float personalRangeOffset;
+    private float personalFlankingAngle;
+    private float targetSearchTimer = 0f;
+
+    // Squad Distribution
+    private static System.Collections.Generic.Dictionary<int, int> targetAttackers = new System.Collections.Generic.Dictionary<int, int>();
+    private int myCurrentTargetID = -1;
+
+    public bool IsReadyToShoot { get; private set; }
+    public float CurrentEngagementDist { get; private set; } 
+    public Transform CurrentAmbushTarget { get; private set; }
+    public Transform PlayerTransform => playerTransform;
 
     private void Awake()
     {
@@ -32,7 +55,22 @@ public class EnemyBehaviorAgent : MonoBehaviour
         detection = GetComponent<EnemyDetection>();
         shooting = GetComponent<EnemyShooting>();
         cover = GetComponent<EnemyCover>();
+        peek = GetComponent<EnemyTacticalPeek>();
         animator = GetComponentInChildren<Animator>();
+
+        if (enemyData != null)
+        {
+            currentMode = enemyData.defaultMode;
+            ambushShootRange = enemyData.ambushShootRange;
+            wanderRadius = enemyData.wanderRadius;
+            idleTime = enemyData.idleTime;
+            minEngagementDist = enemyData.minEngagementDist;
+            rangeSpread = enemyData.rangeSpread;
+            destinationSpread = enemyData.destinationSpread;
+        }
+
+        GameObject p = GameObject.FindGameObjectWithTag("Player");
+        if (p != null) playerTransform = p.transform;
 
         if (animator != null) {
             animator.applyRootMotion = false;
@@ -41,28 +79,21 @@ public class EnemyBehaviorAgent : MonoBehaviour
 
         agent.updatePosition = false; 
         agent.updateRotation = true;
+        agent.speed = 4.0f;
         agent.acceleration = 30f; 
         agent.angularSpeed = 600f; 
         agent.stoppingDistance = 0.5f;
 
         Rigidbody rb = GetComponent<Rigidbody>();
         if (rb != null) rb.isKinematic = true;
+
+        // Initialize personal spacing
+        personalRangeOffset = Random.Range(-rangeSpread, rangeSpread);
+        personalFlankingAngle = Random.Range(-destinationSpread * 10f, destinationSpread * 10f);
     }
 
     private void Start()
     {
-        // THE SKELETON PROTECTOR:
-        // We only reset the main functional points, but we MUST NOT 
-        // reset the Hips or any bones, otherwise hit detection and ragdolls break.
-        foreach (Transform child in transform)
-        {
-            // Only reset top-level containers that aren't part of the actual character skeleton
-            if (child.name.ToLower().Contains("weapon") || child.name.ToLower().Contains("target")) 
-            {
-                child.localPosition = Vector3.zero;
-                child.localRotation = Quaternion.identity;
-            }
-        }
         spawnPoint = transform.position;
         if (agent.isOnNavMesh) agent.Warp(transform.position);
         StartIdle();
@@ -73,112 +104,111 @@ public class EnemyBehaviorAgent : MonoBehaviour
         if (!agent.isOnNavMesh) return;
         transform.position = agent.nextPosition;
 
+        IsReadyToShoot = false;
+
+        // 1. RE-FIND PLAYER REFERENCE
+        if (playerTransform == null)
+        {
+            GameObject p = GameObject.FindGameObjectWithTag("Player");
+            if (p != null) playerTransform = p.transform;
+        }
+
+        // 2. TACTICAL TARGETING: Hunt closest person (Optimized & Shared)
+        bool isAmbushing = (currentMode == EnemyMode.Ambush);
+        if (isAmbushing)
+        {
+            targetSearchTimer -= Time.deltaTime;
+            if (targetSearchTimer <= 0 || CurrentAmbushTarget == null || !IsAlive(CurrentAmbushTarget.gameObject))
+            {
+                CurrentAmbushTarget = GetClosestTarget();
+                targetSearchTimer = 0.5f; 
+            }
+        }
+
+        bool isDetected = (isAmbushing && CurrentAmbushTarget != null) || (detection != null && detection.IsTargetDetected);
+        Transform target = isAmbushing ? CurrentAmbushTarget : (detection != null ? detection.CurrentTarget : null);
+
+        float distToTarget = target != null ? Vector3.Distance(transform.position, target.position) : float.MaxValue;
+        float maxGunRange = (shooting != null ? shooting.FireDistance : 25f);
+        float baseRange = isAmbushing ? ambushShootRange : maxGunRange;
+        
+        CurrentEngagementDist = Mathf.Clamp(baseRange + personalRangeOffset, minEngagementDist, maxGunRange - 2.0f);
+        bool inShootingRange = isDetected && distToTarget <= CurrentEngagementDist;
+
+        // 3. ANIMATION CONTROL
         if (animator != null)
         {
-            // THE RELOAD PROTECTION FIX:
-            // If the AI is reloading, we MUST NOT update the 'Speed' parameter,
-            // otherwise the Walk animation will instantly cancel the Reload animation.
+            float intentSpeed = agent.isStopped ? 0f : agent.desiredVelocity.magnitude;
             bool isActuallyReloading = (shooting != null && shooting.IsReloading);
-            
-            if (!isActuallyReloading)
+            bool isMovingToCover = IsMovingToCover;
+
+            if (isActuallyReloading && !isMovingToCover)
             {
-                float speed = agent.desiredVelocity.magnitude;
+                if (!agent.isStopped) StopAgent();
+            }
+
+            if (!isActuallyReloading || isMovingToCover)
+            {
+                bool shouldBeRunning = intentSpeed > 2.0f;
+                if (HasParameter("isRunning", animator))
+                    animator.SetBool("isRunning", shouldBeRunning);
+
                 if (HasParameter("Speed", animator))
-                    animator.SetFloat("Speed", speed);
+                {
+                    float finalSpeed = shouldBeRunning ? 0.5f : intentSpeed; 
+                    animator.SetFloat("Speed", finalSpeed);
+                }
             }
             else
             {
-                // Force speed to 0 so he stays in the reload pose
-                if (HasParameter("Speed", animator))
-                    animator.SetFloat("Speed", 0f);
+                if (HasParameter("isRunning", animator)) animator.SetBool("isRunning", false);
+                if (HasParameter("Speed", animator)) animator.SetFloat("Speed", 0f);
             }
         }
 
-        // 1. DETECTION & RANGE CHECK (Primary priority to allow breaking cover)
-        bool isDetected = (detection != null && detection.IsTargetDetected);
-        bool inShootingRange = false;
-        if (isDetected && shooting != null)
-        {
-            float dist = Vector3.Distance(transform.position, detection.CurrentTarget.position);
-            inShootingRange = dist <= shooting.FireDistance;
-        }
+        // 4. THE BRAIN (PRIORITY SYSTEM)
 
-        // 2. THE 50/50 "OUT OF RANGE" TRIGGER
-        if (wasTargetInShootingRangeLastFrame && !inShootingRange)
-        {
-            if (Random.value > 0.5f)
-            {
-                // CHASE: Break out of cover and run!
-                isChasing = true;
-                isInCover = false; 
-                isHidingFromRange = false;
-                if (animator != null) animator.SetBool("isCovering", false);
-                
-                agent.isStopped = false;
-                Vector3 targetPos = isDetected ? detection.CurrentTarget.position : detection.LastKnownPosition;
-                agent.SetDestination(targetPos);
-                Debug.Log("[Agent] Target lost: Breaking cover to CHASE!");
-                
-                wasTargetInShootingRangeLastFrame = inShootingRange;
-                return; 
-            }
-            else
-            {
-                // SEEK COVER
-                isChasing = false;
-                isHidingFromRange = true; 
-                if (!isInCover) FindAndGoToCover();
-                Debug.Log("[Agent] Target lost: Seeking/Staying in cover.");
-            }
-        }
-
-        // 3. OUT OF AMMO logic
-        if (shooting != null && shooting.IsOutOfAmmo && !shooting.IsReloading)
+        if (shooting != null && shooting.IsOutOfAmmo)
         {
             if (!isInCover) FindAndGoToCover();
-            else HandleCoverLogic();
-            wasTargetInShootingRangeLastFrame = inShootingRange;
+            else HandleCoverLogic(inShootingRange);
             return;
         }
 
-        // 4. ACTIVE COVER logic
         if (isInCover)
         {
-            HandleCoverLogic();
-            wasTargetInShootingRangeLastFrame = inShootingRange;
+            HandleCoverLogic(inShootingRange);
             return;
         }
 
-        // 5. Handle Chasing
-        if (isChasing)
+        if (isDetected && target != null)
         {
-            if (inShootingRange) 
+            if (!inShootingRange)
             {
-                isChasing = false; 
-            }
-            else if (!agent.pathPending && agent.remainingDistance <= agent.stoppingDistance)
-            {
-                isChasing = false;
-                Debug.Log("[Agent] Chase ended. Resuming patrol.");
+                if (agent.isStopped) agent.isStopped = false;
+                
+                Vector3 dirFromTarget = (transform.position - target.position).normalized;
+                if (dirFromTarget == Vector3.zero) dirFromTarget = Vector3.forward;
+                Vector3 flankingDir = Quaternion.Euler(0, personalFlankingAngle, 0) * dirFromTarget;
+                Vector3 tacticalPos = target.position + flankingDir * (CurrentEngagementDist - 1.0f); 
+
+                NavMeshHit hit;
+                if (NavMesh.SamplePosition(tacticalPos, out hit, 4.0f, NavMesh.AllAreas))
+                    agent.SetDestination(hit.position);
+                else
+                    agent.SetDestination(target.position);
+                
+                FaceTarget();
             }
             else
             {
-                wasTargetInShootingRangeLastFrame = inShootingRange;
-                return;
+                if (!agent.isStopped) StopAgent();
+                FaceTarget();
+                IsReadyToShoot = true;
             }
-        }
-
-        // 6. NORMAL COMBAT / IDLE / PATROL
-        if (inShootingRange)
-        {
-            if (shooting != null) shooting.enabled = true;
-            StopAgent();
-            wasTargetInShootingRangeLastFrame = true;
-            FaceTarget();
             return;
         }
 
-        wasTargetInShootingRangeLastFrame = inShootingRange;
         if (isIdle) HandleIdle();
         else HandleWandering();
     }
@@ -189,15 +219,15 @@ public class EnemyBehaviorAgent : MonoBehaviour
 
     private void FindAndGoToCover()
     {
-        if (cover == null || detection.CurrentTarget == null && !isChasing) 
+        bool isAmbushing = (currentMode == EnemyMode.Ambush && CurrentAmbushTarget != null);
+        if (cover == null || (detection.CurrentTarget == null && !isAmbushing)) 
         {
             shooting.TriggerReload();
             return;
         }
 
-        // If we lost them, use last known pos to find cover
-        Vector3 targetPosForCover = (detection.CurrentTarget != null) ? detection.CurrentTarget.position : detection.LastKnownPosition;
-        activeCover = cover.FindNearestCover(targetPosForCover);
+        Vector3 targetPos = isAmbushing ? CurrentAmbushTarget.position : detection.CurrentTarget.position;
+        activeCover = cover.FindNearestCover(targetPos);
         
         if (activeCover.found)
         {
@@ -212,24 +242,35 @@ public class EnemyBehaviorAgent : MonoBehaviour
         }
     }
 
-    private void HandleCoverLogic()
+    private void HandleCoverLogic(bool inShootingRange)
     {
+        bool isPeeking = (peek != null && peek.IsPeeking);
         float distToCover = Vector3.Distance(transform.position, activeCover.position);
-        
-        if (distToCover <= 0.2f || (!agent.pathPending && agent.remainingDistance <= agent.stoppingDistance))
-        {
-            bool isActuallyReloading = (shooting != null && shooting.IsReloading);
-            bool shouldCrouch = (shooting != null && (shooting.IsOutOfAmmo || isHidingFromRange));
 
-            // THE ROTATION FIX: Always allow him to face the wall, even if reloading
-            if (shouldCrouch)
+        if (isPeeking || distToCover <= 0.2f || (!agent.pathPending && agent.remainingDistance <= agent.stoppingDistance))
+        {
+            bool isReloading = (shooting != null && shooting.IsReloading);
+            bool shouldCrouch = (shooting != null && shooting.IsOutOfAmmo);
+
+            if (isPeeking && !isReloading)
+            {
+                // THE RANGE FIX: If the target moved out of reach while peeking, break cover to chase!
+                if (!inShootingRange)
+                {
+                    ExitCover();
+                    return;
+                }
+
+                IsReadyToShoot = true;
+                FaceTarget();
+            }
+            else if (shouldCrouch || isReloading)
             {
                 StopAgent();
                 transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(activeCover.lookDirection), Time.deltaTime * 10f);
             }
 
-            // THE ANIMATION LOCK: Only touch animator params if NOT reloading
-            if (!isActuallyReloading)
+            if (!isReloading)
             {
                 if (shouldCrouch)
                 {
@@ -240,79 +281,52 @@ public class EnemyBehaviorAgent : MonoBehaviour
                             animator.CrossFade("Cover_Crouching", 0.1f);
                     }
                 }
-                else
+                else if (!shooting.IsOutOfAmmo && !isPeeking)
                 {
-                    if (animator != null && HasParameter("isCovering", animator)) 
-                        animator.SetBool("isCovering", false);
-                    
-                    if (agent.isStopped) agent.isStopped = false;
-                    FaceTarget();
+                    if (!inShootingRange) ExitCover();
                 }
             }
 
-            // RELOAD logic (Check remains active to allow TriggerReload to start)
-            if (shooting != null && shooting.IsOutOfAmmo && !isActuallyReloading)
-            {
+            if (shooting != null && shooting.IsOutOfAmmo && !isReloading)
                 shooting.TriggerReload();
-            }
-
-            // EXIT logic
-            if (!isActuallyReloading)
-            {
-                if (isHidingFromRange)
-                {
-                    idleTimer -= Time.deltaTime;
-                    if (idleTimer <= 0)
-                    {
-                        ExitCover();
-                    }
-                }
-            }
         }
     }
 
     private void ExitCover()
     {
+        if (cover != null) cover.ReleaseCover();
         isInCover = false;
-        isHidingFromRange = false; // Reset the flag
         if (animator != null) animator.SetBool("isCovering", false);
-        
-        if (detection.IsTargetDetected)
+        agent.isStopped = false;
+        if (activeCover.found)
         {
-            StopAgent();
-            FaceTarget();
-        }
-        else
-        {
-            PickNewWanderPoint();
+            Vector3 pushOutDir = (transform.position - activeCover.position).normalized;
+            agent.Warp(transform.position + pushOutDir * 0.5f);
         }
     }
 
     public void FaceTarget()
     {
-        if (detection.CurrentTarget != null)
+        bool isAmbushing = (currentMode == EnemyMode.Ambush && CurrentAmbushTarget != null);
+        Transform t = isAmbushing ? CurrentAmbushTarget : detection.CurrentTarget;
+        if (t != null)
         {
-            Vector3 lookPos = detection.CurrentTarget.position - transform.position;
-            lookPos.y = 0;
-            if (lookPos != Vector3.zero)
-            {
-                Quaternion targetRot = Quaternion.LookRotation(lookPos);
-                transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, Time.deltaTime * 5f);
-            }
+            Vector3 dir = (t.position - transform.position);
+            dir.y = 0;
+            if (dir != Vector3.zero)
+                transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(dir), Time.deltaTime * 5f);
         }
     }
 
-    private bool HasParameter(string paramName, Animator animator)
+    private bool HasParameter(string n, Animator a)
     {
-        if (animator == null) return false;
-        foreach (AnimatorControllerParameter param in animator.parameters)
-            if (param.name == paramName) return true;
+        foreach (var p in a.parameters) if (p.name == n) return true;
         return false;
     }
 
     private void HandleWandering()
     {
-        if (!agent.pathPending && agent.hasPath && agent.remainingDistance <= agent.stoppingDistance)
+        if (!agent.pathPending && agent.remainingDistance <= agent.stoppingDistance)
             StartIdle();
     }
 
@@ -325,22 +339,17 @@ public class EnemyBehaviorAgent : MonoBehaviour
     private void PickNewWanderPoint()
     {
         if (!agent.isOnNavMesh) return;
-        for (int i = 0; i < 15; i++)
+        for (int i = 0; i < 10; i++)
         {
-            Vector3 randomPos = spawnPoint + Random.insideUnitSphere * wanderRadius;
+            Vector3 rand = spawnPoint + Random.insideUnitSphere * wanderRadius;
             NavMeshHit hit;
-            if (NavMesh.SamplePosition(randomPos, out hit, 5.0f, NavMesh.AllAreas))
+            if (NavMesh.SamplePosition(rand, out hit, 5f, NavMesh.AllAreas))
             {
-                NavMeshPath path = new NavMeshPath();
-                agent.CalculatePath(hit.position, path);
-                if (path.status == NavMeshPathStatus.PathComplete)
-                {
-                    currentTarget = hit.position;
-                    isIdle = false;
-                    agent.isStopped = false;
-                    agent.SetDestination(currentTarget);
-                    return;
-                }
+                currentTarget = hit.position;
+                isIdle = false;
+                agent.isStopped = false;
+                agent.SetDestination(currentTarget);
+                return;
             }
         }
     }
@@ -357,8 +366,76 @@ public class EnemyBehaviorAgent : MonoBehaviour
         if (agent.isOnNavMesh)
         {
             agent.isStopped = true;
+            agent.ResetPath();
             agent.velocity = Vector3.zero;
-            agent.nextPosition = transform.position; 
         }
+    }
+
+    private Transform GetClosestTarget()
+    {
+        float bestScore = float.MaxValue;
+        Transform bestTarget = null;
+        string[] tags = (detection != null) ? detection.TargetTags : new string[] { "Player", "Teammate" };
+
+        foreach (string tag in tags)
+        {
+            GameObject[] potentialTargets = GameObject.FindGameObjectsWithTag(tag);
+            foreach (GameObject obj in potentialTargets)
+            {
+                if (!IsAlive(obj)) continue;
+
+                float dist = Vector3.Distance(transform.position, obj.transform.position);
+                int targetID = obj.GetInstanceID();
+
+                int attackers = targetAttackers.ContainsKey(targetID) ? targetAttackers[targetID] : 0;
+                float score = dist + (attackers * 10f);
+
+                if (score < bestScore)
+                {
+                    bestScore = score;
+                    bestTarget = obj.transform;
+                }
+            }
+        }
+
+        UpdateAttackerCount(bestTarget);
+        return bestTarget;
+    }
+
+    private void UpdateAttackerCount(Transform newTarget)
+    {
+        if (myCurrentTargetID != -1 && targetAttackers.ContainsKey(myCurrentTargetID))
+            targetAttackers[myCurrentTargetID]--;
+
+        if (newTarget != null)
+        {
+            myCurrentTargetID = newTarget.gameObject.GetInstanceID();
+            if (!targetAttackers.ContainsKey(myCurrentTargetID)) targetAttackers[myCurrentTargetID] = 0;
+            targetAttackers[myCurrentTargetID]++;
+        }
+        else myCurrentTargetID = -1;
+    }
+
+    private void OnDisable()
+    {
+        if (cover != null) cover.ReleaseCover();
+        UpdateAttackerCount(null);
+    }
+
+    private void OnDestroy() 
+    { 
+        if (cover != null) cover.ReleaseCover(); 
+        UpdateAttackerCount(null); 
+    }
+
+    private bool IsAlive(GameObject obj)
+    {
+        if (obj == null) return false;
+        GameObject root = obj.transform.root.gameObject;
+        var ph = root.GetComponentInChildren<PlayerHealth>();
+        if (ph != null) return true; 
+        var th = root.GetComponentInChildren<TeammateHealth>();
+        if (th != null) return root.CompareTag("Teammate");
+        return true; 
     }
 }
