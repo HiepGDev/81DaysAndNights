@@ -5,7 +5,7 @@ public class WeaponSwitchManager : MonoBehaviour
     [SerializeField] private GameObject gunObject;
     [SerializeField] private GameObject riceObject;
     [SerializeField] private bool startWithRice = true;
-
+    public bool IsHoldingRice { get; private set; }
     void Start()
     {
         // Set the initial state based on preference
@@ -14,6 +14,8 @@ public class WeaponSwitchManager : MonoBehaviour
 
     public void SetHoldingRice(bool isHoldingRice)
     {
+        // Update state variable
+        IsHoldingRice = isHoldingRice;
         if (isHoldingRice)
         {
             if (gunObject != null) gunObject.SetActive(false);

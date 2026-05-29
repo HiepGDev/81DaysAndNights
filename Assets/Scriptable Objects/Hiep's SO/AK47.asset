@@ -14,10 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WeaponSO
   Damage: 30
   MaxDistance: 100
-  currentAmmo: 93
-  reserveAmmo: 986
+  currentAmmo: 30
+  reserveAmmo: 999
   maxReserveAmmo: 999
-  magazineSize: 99
+  magazineSize: 30
   fireRate: 0.2
   reloadTime: 2.3
   reloading: 0

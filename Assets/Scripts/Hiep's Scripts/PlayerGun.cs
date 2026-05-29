@@ -13,8 +13,9 @@ public class PlayerGun : MonoBehaviour
     InputAction shootAction; 
     InputAction reloadAction; 
     InputAction aimAction;
-    public bool isAiming;
+    public bool isAiming; 
     private AudioSource audioSource; 
+    [SerializeField] private AudioClip emptyClipSound;
     [SerializeField] private LayerMask interactionLayers; 
     [SerializeField] private ParticleSystem muzzleFlash;
     [SerializeField] private GameObject bloodEffectPrefab;
@@ -129,23 +130,35 @@ public class PlayerGun : MonoBehaviour
         bool isSprinting = playerMovement != null && playerMovement.isSprinting;
         bool shootInput = gunData.isAutomatic? shootAction.IsPressed(): shootAction.triggered;
         animator.SetBool("isShoot", shootInput && gunData.currentAmmo > 0 && !gunData.reloading);
-        if (shootInput && !isSprinting && !gunData.reloading && Time.time >= nextFireTime && gunData.currentAmmo > 0  )
+        if (shootInput && !isSprinting && !gunData.reloading && Time.time >= nextFireTime )
         {
-        if (recoil != null) recoil.FireRecoil();
-        weaponTransform.localPosition -= Vector3.forward * kickBackAmount; // Push gun backward
-        weaponTransform.localRotation *= Quaternion.Euler(-kickUpAmount, 0, 0); // Tip gun upward
-        // Decrease ammo and update next allowed fire time
-        gunData.currentAmmo--;
-        UpdateAmmoUI();
-        if (crosshair != null) crosshair.FireKick(15f);
-        nextFireTime = Time.time + gunData.fireRate;
-        muzzleFlash.Play();
-        // weaponImpulseSource.GenerateImpulse();
-        audioSource.PlayOneShot(gunData.GunSound);
-
-        //  Raycast / damage logic 
-        FireRayCast();
-    }
+            if (gunData.currentAmmo > 0)
+            {
+                if (recoil != null) recoil.FireRecoil();
+                weaponTransform.localPosition -= Vector3.forward * kickBackAmount; // Push gun backward
+                weaponTransform.localRotation *= Quaternion.Euler(-kickUpAmount, 0, 0); // Tip gun upward
+                // Decrease ammo and update next allowed fire time
+                gunData.currentAmmo--;
+                UpdateAmmoUI();
+                if (crosshair != null) crosshair.FireKick(15f);
+                nextFireTime = Time.time + gunData.fireRate;
+                muzzleFlash.Play();
+                audioSource.PlayOneShot(gunData.GunSound);
+                //  Raycast / damage logic 
+                FireRayCast();
+            }
+            else
+            {
+                if (emptyClipSound != null)
+                {
+                    audioSource.PlayOneShot(emptyClipSound);
+                }
+                
+                // set the nextFireTime here as well
+                // This prevents the click sound from spamming 60 times a second if the player holds down the mouse button
+                nextFireTime = Time.time + gunData.fireRate; 
+            }
+        }
     }
     void FireRayCast()
     {
