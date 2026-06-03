@@ -16,10 +16,23 @@ public class ExplosionDamage : MonoBehaviour
     [Header("Debug")]
     public bool showDebugLog = true;
 
+    [Header("Audio")]
+    public AudioClip explosionSound;
+
+    private AudioSource audioSource;
+
     void Start()
     {
-        ApplyExplosionDamage();
+    audioSource = GetComponent<AudioSource>();
+
+    ApplyExplosionDamage();
+
+    if (explosionSound != null && audioSource != null)
+    {
+        audioSource.pitch = Random.Range(0.95f, 1.02f);
+        audioSource.PlayOneShot(explosionSound);
     }
+  }
 
     void ApplyExplosionDamage()
     {
