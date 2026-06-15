@@ -50,7 +50,17 @@ public class PlayerGun : MonoBehaviour
       if (animator == null) animator = GetComponent<Animator>();
       if (audioSource == null) audioSource = GetComponent<AudioSource>();
       if (muzzleFlash == null) muzzleFlash = GetComponentInChildren<ParticleSystem>();
-      if (weaponTransform == null) weaponTransform = transform;
+      if (weaponTransform != null)
+        {
+            hipPosition = weaponTransform.localPosition;
+            hipRotation = weaponTransform.localRotation;
+        }
+    }
+    private void OnEnable()
+    {
+        shootAction?.Enable();
+        reloadAction?.Enable();
+        aimAction?.Enable();
     }
     void Start()
     {
@@ -73,7 +83,6 @@ public class PlayerGun : MonoBehaviour
                 }
             }
         }
-
         animator = GetComponent<Animator>();
         audioSource = GetComponent<AudioSource>();
         if (gunData != null)
@@ -82,11 +91,6 @@ public class PlayerGun : MonoBehaviour
             gunData.currentAmmo = gunData.magazineSize;
             gunData.reserveAmmo = gunData.maxReserveAmmo;
             UpdateAmmoUI();
-        }
-        if (weaponTransform != null)
-        {
-            hipPosition = weaponTransform.localPosition;
-            hipRotation = weaponTransform.localRotation;
         }
         
         defaultFOV = PlayerPrefs.GetFloat("PlayerFOV", 75f);
@@ -110,7 +114,6 @@ public class PlayerGun : MonoBehaviour
             weaponTransform.localPosition = hipPosition;
             weaponTransform.localRotation = hipRotation;
         }
-        if (weaponTransform != null) weaponTransform.gameObject.SetActive(false);
         shootAction?.Disable();
         reloadAction?.Disable();
         aimAction?.Disable();

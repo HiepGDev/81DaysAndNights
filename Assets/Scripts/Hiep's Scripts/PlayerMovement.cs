@@ -30,6 +30,7 @@ public class PlayerMovement : MonoBehaviour
     private PlayerGun playerGun;
     public bool isSprinting;
     public bool canSprint = true;
+    public bool canMove = true;
     [Header("Crouch Settings")] 
     [SerializeField] private float crouchHeight = 1.0f;
     [SerializeField] private float standingHeight = 2.0f; 
@@ -90,7 +91,7 @@ public class PlayerMovement : MonoBehaviour
     void HandleMove()
     {
         // get vector from input 
-        Vector2 moveValue = moveAction.ReadValue<Vector2>();
+        Vector2 moveValue = canMove ? moveAction.ReadValue<Vector2>() : Vector2.zero;
         // Check the stamina system to see if we are allowed to sprint
         bool hasEnergy = staminaSystem != null && staminaSystem.HasStamina();
         // sprint is held or not 
@@ -146,6 +147,7 @@ public class PlayerMovement : MonoBehaviour
     }
     void HandleJump()
     {
+        if (!canMove) return;
         // If the jump button is pressed this frame, reset the jump buffer counter
         if (jumpAction.triggered)
         {
@@ -172,7 +174,7 @@ public class PlayerMovement : MonoBehaviour
     }
     private void HandleCrouch()
     {
-        if (crouchAction.triggered)
+        if (canMove && crouchAction.triggered)
         {
             isCrouching = !isCrouching;
         } 

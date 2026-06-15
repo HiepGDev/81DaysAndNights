@@ -11,7 +11,9 @@ public class LoadingController : MonoBehaviour
     public TextMeshProUGUI continueText;
     public TextMeshProUGUI factText;
     public TextMeshProUGUI loadingText;
-
+    [Tooltip("Enter the exact name of the scene to load")]
+    [SerializeField] private string sceneToLoad;
+    private AsyncOperation operation;
     private bool isDone = false;
 
     string[] facts = new string[]
@@ -30,6 +32,11 @@ public class LoadingController : MonoBehaviour
 
     void Start()
     {
+        if (string.IsNullOrEmpty(sceneToLoad))
+        {
+            Debug.LogError("[LoadingController] Scene to load is missing! Please type it into the Inspector.");
+            return;
+        }
         continueText.gameObject.SetActive(false);
 
         StartCoroutine(LoadScene());
@@ -46,16 +53,16 @@ public class LoadingController : MonoBehaviour
             continueText.alpha = alpha;
 
             // click để qua scene
-            if (Input.GetMouseButtonDown(0))
+            if (Input.GetMouseButtonDown(0) && operation != null)
             {
-                SceneManager.LoadScene("EmptyScene");
+                operation.allowSceneActivation = true;
             }
         }
     }
 
     IEnumerator LoadScene()
     {
-        AsyncOperation operation = SceneManager.LoadSceneAsync("EmptyScene");
+        operation = SceneManager.LoadSceneAsync(sceneToLoad);
         operation.allowSceneActivation = false;
 
         while (!operation.isDone)
@@ -65,15 +72,10 @@ public class LoadingController : MonoBehaviour
             slider.value = progress;
             progressText.text = (progress * 100f).ToString("F0") + "%";
 
-            if (progress >= 1f)
+            if (operation.progress >= 0.9f)
             {
                 isDone = true;
                 continueText.gameObject.SetActive(true);
-
-                if (Input.GetMouseButtonDown(0))
-                {
-                    operation.allowSceneActivation = true;
-                }
             }
 
             yield return null;
@@ -109,7 +111,7 @@ public class LoadingController : MonoBehaviour
 
     IEnumerator AnimateLoadingText()
     {
-        string baseText = "Entering the operation";
+        string baseText = "";
         int dotCount = 0;
 
         while (true)

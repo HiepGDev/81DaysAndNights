@@ -51,7 +51,7 @@ public class CrosshairController : MonoBehaviour
 
         // Hide crosshair if aiming (ADS) or if the player is holding the rice arm
         bool isAiming = gun != null && gun.isAiming;
-        bool holdingRice = weaponManager != null && weaponManager.IsHoldingRice;
+        bool holdingRice = weaponManager != null && (weaponManager.IsHoldingRice || weaponManager.IsUnarmed);
         float targetAlpha = (isAiming || holdingRice) ? 0f : 1f;
         UpdateAlpha(targetAlpha);
 

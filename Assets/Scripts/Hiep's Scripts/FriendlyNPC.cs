@@ -15,14 +15,15 @@ public class FriendlyNPC : MonoBehaviour, IInteractable
     private float currentLookWeight = 0f; // Blends between animation and look-at target
     private bool hasReceivedFood = false;
     private bool isReceivingFoodState = false;
+    private PlayerMovement playerMovement;
     void Start()
     {
         // Ensure the rice is hidden when the game starts
         if (rice != null) rice.SetActive(false);
-        PlayerMovement player = FindFirstObjectByType<PlayerMovement>();
-        if (player != null)
+        playerMovement = FindFirstObjectByType<PlayerMovement>();
+        if (playerMovement != null)
         {
-            playerTransform = player.transform;
+            playerTransform = playerMovement.transform;
         }
     }
     void LateUpdate()
@@ -61,7 +62,7 @@ public class FriendlyNPC : MonoBehaviour, IInteractable
     }
     public string GetInteractText()
     {
-        return hasReceivedFood ? "" : "Press E to Give Rice";
+        return hasReceivedFood ? "" : "Give Rice";
     }
 
     public void Interact()
@@ -75,6 +76,7 @@ public class FriendlyNPC : MonoBehaviour, IInteractable
 
         hasReceivedFood = true;
         isReceivingFoodState = true;
+        if (playerMovement != null) playerMovement.canMove = false;
         Debug.Log("Soldier received rice.");
     }
     public void SetRiceVisible(int visible)
@@ -95,6 +97,7 @@ public class FriendlyNPC : MonoBehaviour, IInteractable
     public void StopLookingAtPlayer()
     {
         isReceivingFoodState = false;
+        if (playerMovement != null) playerMovement.canMove = true;
         Debug.Log("Food animation finished. Returning to normal idle.");
     }
 }

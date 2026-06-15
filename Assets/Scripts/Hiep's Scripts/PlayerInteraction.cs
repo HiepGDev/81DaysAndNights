@@ -1,5 +1,6 @@
 using TMPro;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class PlayerInteraction : MonoBehaviour
 {
@@ -7,6 +8,15 @@ public class PlayerInteraction : MonoBehaviour
     [SerializeField] private TextMeshProUGUI interactUI; // "Press E" text
     // [SerializeField] private GameObject riceInHand;
     [SerializeField] private Animator riceAnimator;
+    private InputAction interactAction;
+    private string currentKeyName = "E";
+    void Awake()
+    {
+        // Find the action exactly as named in Action Map
+        interactAction = InputSystem.actions.FindAction("Interact");
+        interactAction.Enable();
+        currentKeyName = interactAction.GetBindingDisplayString(0, InputBinding.DisplayStringOptions.DontIncludeInteractions); 
+    }
 
     void Update()
     {
@@ -20,10 +30,10 @@ public class PlayerInteraction : MonoBehaviour
                 string text = interactable.GetInteractText();
                 if (!string.IsNullOrEmpty(text))
                 {
-                    interactUI.text = text;
+                    interactUI.text = $"Press {currentKeyName} to {text}";
                     interactUI.gameObject.SetActive(true);
 
-                    if (Input.GetKeyDown(KeyCode.E))
+                    if (interactAction != null && interactAction.WasPressedThisFrame())
                     {
                         //  NPC to play "Receive" animation
                         interactable.Interact();

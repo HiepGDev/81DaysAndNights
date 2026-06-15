@@ -3,7 +3,17 @@ guid: 92c9f28c155dcd24fa23c829b7f9becf
 ModelImporter:
   serializedVersion: 24200
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: wall-texture-brick-cement-background-colored
+    second: {fileID: 2800000, guid: b977bfbc97450a0489e208536636ca34, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: weathered-concrete-wall-background-colored
+    second: {fileID: 2800000, guid: 85e0b22bb9d142d4b84979ab74c5262f, type: 3}
   materials:
     materialImportMode: 2
     materialName: 0
