@@ -3,7 +3,12 @@ guid: 817fb483a507bc54ca4f60d1242201e5
 ModelImporter:
   serializedVersion: 24200
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Mossy wall
+    second: {fileID: 2100000, guid: 58d4b72e577f6b148a81ab85c53c5184, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

@@ -6,15 +6,24 @@ public class TeammateHealth : MonoBehaviour
     [Header("Health Settings")]
     [SerializeField] private float maxHealth = 100f;
     [SerializeField] private float currentHealth;
+    [SerializeField] private TeammateSO teammateData;
+
+
+    private static System.Collections.Generic.List<GameObject> ragdollPool = new System.Collections.Generic.List<GameObject>();
+    private const int MAX_RAGDOLLS = 10;
 
     private bool isDead = false;
 
-    // Khai báo mảng chứa toàn bộ xương Ragdoll
     private Rigidbody[] ragdollRigidbodies;
     private Collider[] ragdollColliders;
 
     private void Awake()
     {
+        if (teammateData != null)
+        {
+            maxHealth = teammateData.maxHealth;
+        }
+
         currentHealth = maxHealth;
 
         ragdollRigidbodies = GetComponentsInChildren<Rigidbody>();
@@ -22,7 +31,17 @@ public class TeammateHealth : MonoBehaviour
 
         SetRagdollState(false);
     }
-
+    public void Update()
+    {
+        //CheckIfDied();
+    }
+    public void CheckIfDied()
+    {
+        if (currentHealth <= 0 && !isDead)
+        {
+            Die();
+        }
+    }
     public void TakeDamage(float damage)
     {
         if (isDead) return;
@@ -48,15 +67,6 @@ public class TeammateHealth : MonoBehaviour
         NavMeshAgent agent = GetComponent<NavMeshAgent>();
         if (agent != null) agent.enabled = false;
 
-        TeammateAI ai = GetComponent<TeammateAI>();
-        if (ai != null) ai.enabled = false;
-
-        TeammateShooting shooting = GetComponent<TeammateShooting>();
-        if (shooting != null) shooting.enabled = false;
-
-        TeammateDetection detection = GetComponent<TeammateDetection>();
-        if (detection != null) detection.enabled = false;
-
         Animator anim = GetComponentInChildren<Animator>();
         if (anim != null) anim.enabled = false;
 
@@ -66,18 +76,37 @@ public class TeammateHealth : MonoBehaviour
         CharacterController cc = GetComponent<CharacterController>();
         if (cc != null) cc.enabled = false;
 
+        MonoBehaviour[] scripts = GetComponents<MonoBehaviour>();
+        foreach (var s in scripts)
+        {
+            if (s != null && s != this) s.enabled = false;
+        }
+
         SetRagdollState(true);
 
         foreach (var rb in ragdollRigidbodies)
         {
             if (rb != null)
             {
-                rb.WakeUp(); 
+                rb.WakeUp();
                 rb.AddForce(Random.insideUnitSphere * 5f, ForceMode.Impulse);
             }
         }
 
-        Destroy(gameObject, 15f);
+        ragdollPool.Add(this.gameObject);
+
+        ragdollPool.RemoveAll(item => item == null);
+
+        if (ragdollPool.Count > MAX_RAGDOLLS)
+        {
+            GameObject oldest = ragdollPool[0];
+            ragdollPool.RemoveAt(0);
+            if (oldest != null)
+            {
+                Debug.Log($"[Pool] Limit reached. Destroying oldest teammate ragdoll: {oldest.name}");
+                Destroy(oldest);
+            }
+        }
     }
 
     private void SetRagdollState(bool active)

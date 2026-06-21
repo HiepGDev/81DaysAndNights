@@ -20,15 +20,20 @@ public class CrosshairController : MonoBehaviour
     [SerializeField] private PlayerMovement movement;
     [SerializeField] private PlayerGun gun;
     [SerializeField] private CharacterController controller;
+    [SerializeField] private WeaponSwitchManager weaponManager;
     void Awake()
     {
         moveAction = InputSystem.actions.FindAction("Move");
     }
     void Start()
     {
+        if (movement == null) movement = FindFirstObjectByType<PlayerMovement>();
+        if (gun == null) gun = FindFirstObjectByType<PlayerGun>();
+        if (controller == null) controller = FindFirstObjectByType<CharacterController>();
+        if (weaponManager == null) weaponManager = FindFirstObjectByType<WeaponSwitchManager>();
         if (movement == null || gun == null || controller == null)
         {
-            Debug.LogWarning("Crosshair is missing player references! Drag them in via the Inspector.");
+            Debug.LogWarning($"[Crosshair] Missing Player references in {gameObject.name}!");
         }
         currentSize = normalSize;
     }
@@ -44,8 +49,10 @@ public class CrosshairController : MonoBehaviour
             targetSize = movement.isSprinting ? sprintSize : walkSize;
         }
 
-        // Hide crosshair if aiming (ADS)
-        float targetAlpha = (gun != null && gun.isAiming) ? 0f : 1f;
+        // Hide crosshair if aiming (ADS) or if the player is holding the rice arm
+        bool isAiming = gun != null && gun.isAiming;
+        bool holdingRice = weaponManager != null && (weaponManager.IsHoldingRice || weaponManager.IsUnarmed);
+        float targetAlpha = (isAiming || holdingRice) ? 0f : 1f;
         UpdateAlpha(targetAlpha);
 
         //  Smoothly move toward the target size

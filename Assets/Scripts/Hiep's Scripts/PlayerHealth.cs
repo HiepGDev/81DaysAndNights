@@ -21,6 +21,7 @@ public class PlayerHealth : MonoBehaviour
     private CinemachineImpulseSource impulseSource; // yeh impulse also need get component 
     [SerializeField] GameObject gameOverCanvas; 
     private bool isDead = false;
+    public bool IsDead => isDead;
     // private Collider playerCollider;
     private Rigidbody playerRigidbody;
 
@@ -191,7 +192,11 @@ public class PlayerHealth : MonoBehaviour
     private void Die()
     {
         isDead = true;
-        if (playerGun != null) playerGun.enabled = false;
+        if (playerGun != null)
+        {
+            playerGun.enabled = false;
+            playerGun.gameObject.SetActive(false);
+        }
         // Disable movement/physics
         if (playerMovement != null) playerMovement.enabled = false;
         if (characterController != null) characterController.enabled = false;

@@ -232,7 +232,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 0.7660377, g: 0.7660377, b: 0.7660377, a: 0.88235295}
+  m_Color: {r: 0.7660377, g: 0.7660377, b: 0.7660377, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -451,7 +451,7 @@ MonoBehaviour:
     Ch\xED Minh"
   quoteText: {fileID: 4294288604690788746}
   fadeInDuration: 2
-  respawnDelay: 6
+  respawnDelay: 6.5
 --- !u!1 &9063813301567701029
 GameObject:
   m_ObjectHideFlags: 0
