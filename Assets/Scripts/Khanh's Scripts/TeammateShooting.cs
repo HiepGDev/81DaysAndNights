@@ -81,6 +81,11 @@ public class TeammateShooting : MonoBehaviour
             if (teammateData.reloadSound != null) reloadSound = teammateData.reloadSound;
             shootVolume = teammateData.shootVolume;
         }
+        int invisibleWallLayer = LayerMask.NameToLayer("Invisible wall");
+        if (invisibleWallLayer != -1)
+        {
+            hitLayers &= ~(1 << invisibleWallLayer);
+        }
     }
 
     private void Start()

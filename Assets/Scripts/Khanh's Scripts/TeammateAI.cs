@@ -68,7 +68,6 @@ public class TeammateAI : MonoBehaviour
 
         if (teammateData != null)
         {
-            aiMode = teammateData.defaultAiMode;
             followTriggerDistance = teammateData.followTriggerDistance;
             stopFollowDistance = teammateData.stopFollowDistance;
             rotationSpeed = teammateData.rotationSpeed;

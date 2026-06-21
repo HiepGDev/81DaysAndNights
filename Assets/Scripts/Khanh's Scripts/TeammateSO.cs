@@ -7,7 +7,6 @@ public class TeammateSO : ScriptableObject
     public float maxHealth = 100f; 
 
     [Header("AI & Detection Settings")]
-    public TeammateAI.AIMode defaultAiMode = TeammateAI.AIMode.Follower;
     public float detectionRadius = 15.0f;
     public float rotationSpeed = 8f;
 
