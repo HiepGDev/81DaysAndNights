@@ -19,7 +19,7 @@ public class CombatAreaManager : MonoBehaviour
         warningPanel.SetActive(false);
     }
 
-    public void ShowWarning()
+    public void PlayerLeftCombatArea()
     {
         warningPanel.SetActive(true);
 
@@ -29,7 +29,7 @@ public class CombatAreaManager : MonoBehaviour
         }
     }
 
-    public void HideWarning()
+    public void PlayerReturnedCombatArea()
     {
         warningPanel.SetActive(false);
 
@@ -50,12 +50,10 @@ public class CombatAreaManager : MonoBehaviour
         {
             countdownText.text = Mathf.Ceil(timer).ToString();
 
-            yield return null;
-
             timer -= Time.deltaTime;
-        }
 
-        countdownText.text = "0";
+            yield return null;
+        }
 
         SceneManager.LoadScene(
             SceneManager.GetActiveScene().buildIndex

@@ -9,9 +9,7 @@ public class KillBarrier : MonoBehaviour
         if (!other.CompareTag("Player"))
             return;
 
-        Debug.Log("Player entered combat boundary");
-
-        combatAreaManager.ShowWarning();
+        combatAreaManager.PlayerLeftCombatArea();
     }
 
     private void OnTriggerExit(Collider other)
@@ -19,8 +17,6 @@ public class KillBarrier : MonoBehaviour
         if (!other.CompareTag("Player"))
             return;
 
-        Debug.Log("Player returned to combat area");
-
-        combatAreaManager.HideWarning();
+        combatAreaManager.PlayerReturnedCombatArea();
     }
 }

@@ -10,6 +10,10 @@ public class BombSpawner : MonoBehaviour
 
     public LayerMask groundLayer;
 
+    [Header("Spawn Settings")]
+    public bool infiniteSpawn = false;
+    public float spawnDuration = 20f;
+
     void Start()
     {
         StartCoroutine(SpawnBombs());
@@ -19,24 +23,27 @@ public class BombSpawner : MonoBehaviour
     {
         float timer = 0f;
 
-        while (timer < 20f) // 20 giây pháo kích
+        while (infiniteSpawn || timer < spawnDuration)
         {
-            // Mỗi đợt 2 đến 5 quả liên tiếp
             int burstCount = Random.Range(2, 6);
 
             for (int i = 0; i < burstCount; i++)
             {
                 SpawnExplosion();
 
-                // giữa từng quả rất ngắn
-                yield return new WaitForSeconds(Random.Range(0.05f, 0.15f));
+                yield return new WaitForSeconds(
+                    Random.Range(0.05f, 0.15f)
+                );
             }
 
-            // nghỉ rất ngắn rồi tiếp tục
             float waitTime = Random.Range(0.12f, 0.35f);
+
             yield return new WaitForSeconds(waitTime);
 
-            timer += waitTime;
+            if (!infiniteSpawn)
+            {
+                timer += waitTime;
+            }
         }
     }
 
@@ -47,9 +54,18 @@ public class BombSpawner : MonoBehaviour
 
         Vector3 rayStart = new Vector3(x, 50f, z);
 
-        if (Physics.Raycast(rayStart, Vector3.down, out RaycastHit hit, 100f, groundLayer))
+        if (Physics.Raycast(
+            rayStart,
+            Vector3.down,
+            out RaycastHit hit,
+            100f,
+            groundLayer))
         {
-            Instantiate(explosionPrefab, hit.point, Quaternion.identity);
+            Instantiate(
+                explosionPrefab,
+                hit.point,
+                Quaternion.identity
+            );
         }
     }
 }
