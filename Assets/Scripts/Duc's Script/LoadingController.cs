@@ -109,18 +109,16 @@ public class LoadingController : MonoBehaviour
         }
     }
 
-    IEnumerator AnimateLoadingText()
+  IEnumerator AnimateLoadingText()
+{
+    string baseText = "Entering the battlefield";
+    int dotCount = 0;
+
+    while (true)
     {
-        string baseText = "";
-        int dotCount = 0;
-
-        while (true)
-        {
-            dotCount = (dotCount % 3) + 1;
-
-            loadingText.text = baseText + new string('.', dotCount);
-
-            yield return new WaitForSeconds(0.5f);
-        }
+        dotCount = (dotCount % 3) + 1;
+        loadingText.text = baseText + new string('.', dotCount);
+        yield return new WaitForSeconds(0.5f);
     }
+}
 }
