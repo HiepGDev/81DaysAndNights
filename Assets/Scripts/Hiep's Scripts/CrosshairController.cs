@@ -27,10 +27,10 @@ public class CrosshairController : MonoBehaviour
     }
     void Start()
     {
-        if (movement == null) movement = FindFirstObjectByType<PlayerMovement>();
-        if (gun == null) gun = FindFirstObjectByType<PlayerGun>();
+        if (movement == null) movement = FindFirstObjectByType<PlayerMovement>(FindObjectsInactive.Include);
+        if (gun == null) gun = FindFirstObjectByType<PlayerGun>(FindObjectsInactive.Include);
         if (controller == null) controller = FindFirstObjectByType<CharacterController>();
-        if (weaponManager == null) weaponManager = FindFirstObjectByType<WeaponSwitchManager>();
+        if (weaponManager == null) weaponManager = FindFirstObjectByType<WeaponSwitchManager>(FindObjectsInactive.Include);
         if (movement == null || gun == null || controller == null)
         {
             Debug.LogWarning($"[Crosshair] Missing Player references in {gameObject.name}!");
