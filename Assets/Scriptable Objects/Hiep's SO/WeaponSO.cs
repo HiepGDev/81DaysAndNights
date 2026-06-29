@@ -3,6 +3,7 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "WeaponSO", menuName = "Scriptable Objects/WeaponSO")]
 public class WeaponSO : ScriptableObject
 {
+    public string weaponID;
     [Header("Stats")]
     public int  Damage;
     public float MaxDistance;

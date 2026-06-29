@@ -194,5 +194,8 @@ public class PlayerMovement : MonoBehaviour
     {
         lookSensitivity = newSensitivity;
     }
-    
+    public void SetAnimator(Animator newAnimator)
+    {
+        animator = newAnimator;
+    }
 }

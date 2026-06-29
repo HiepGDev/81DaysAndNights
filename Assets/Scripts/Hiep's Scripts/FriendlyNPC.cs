@@ -20,7 +20,7 @@ public class FriendlyNPC : MonoBehaviour, IInteractable
     {
         // Ensure the rice is hidden when the game starts
         if (rice != null) rice.SetActive(false);
-        playerMovement = FindFirstObjectByType<PlayerMovement>();
+        playerMovement = FindFirstObjectByType<PlayerMovement>(FindObjectsInactive.Include);
         if (playerMovement != null)
         {
             playerTransform = playerMovement.transform;
