@@ -130,7 +130,6 @@ public class TeammateAI : MonoBehaviour
         if (!agent.isOnNavMesh) return;
         if (aiMode == AIMode.Follower && playerTarget == null) return;
 
-        // ƯU TIÊN SỐ 1: XỬ LÝ HẾT ĐẠN -> TÌM CHỖ NẤP
         if (shooting != null && shooting.IsOutOfAmmo)
         {
             if (currentState != TeammateState.SeekingCover && !shooting.IsReloading)
@@ -198,9 +197,7 @@ public class TeammateAI : MonoBehaviour
         }
     }
 
-    // =================================================================================
-    // STATE LOGIC CỦA DEFENDER
-    // =================================================================================
+
     private void UpdateDefenderState()
     {
         switch (currentState)
