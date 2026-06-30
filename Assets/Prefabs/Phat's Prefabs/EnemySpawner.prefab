@@ -44,7 +44,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0a709ed34bd29714f900b7e4e6b4e962, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemySpawner
-  enemyPrefab: {fileID: 3617796667323854859, guid: fa5bd4966e1d52f4984a4d751608e009, type: 3}
+  enemyPrefab: {fileID: 4943702373628869083, guid: fe56043a17e1ab04785acc6b7cfbbc75, type: 3}
   spawnRadius: 5
   totalWaves: 1
   enemiesPerWave: 10

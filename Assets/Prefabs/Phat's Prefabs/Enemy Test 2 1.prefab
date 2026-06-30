@@ -2708,7 +2708,7 @@ MonoBehaviour:
   enemyData: {fileID: 11400000, guid: 3a4b9c1f2e3d4c5b6a7b8c9d0e1f2a3b, type: 2}
   coverLayer:
     serializedVersion: 2
-    m_Bits: 128
+    m_Bits: 0
   searchRadius: 10
 --- !u!114 &768440080619893575
 MonoBehaviour:
@@ -2736,8 +2736,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d91887886571dd1478e0cdcee865d67d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyHealth
-  enemyData: {fileID: 11400000, guid: 3a4b9c1f2e3d4c5b6a7b8c9d0e1f2a3b, type: 2}
   health: 100
+  enemyData: {fileID: 11400000, guid: 3a4b9c1f2e3d4c5b6a7b8c9d0e1f2a3b, type: 2}
 --- !u!136 &7071849098243369949
 CapsuleCollider:
   m_ObjectHideFlags: 0
