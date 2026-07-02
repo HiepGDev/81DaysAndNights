@@ -15,6 +15,11 @@ MonoBehaviour:
   m_GroupName: Localization-Assets-Shared
   m_GUID: 5910f54e91f9d7d46aeddce23b5aa1ab
   m_SerializeEntries:
+  - m_GUID: 64b69f49f69c2bb41ad81d4d7469d2b9
+    m_Address: Assets/Localization/Subtitle Labels/CutsceneSubtitles Shared Data.asset
+    m_ReadOnly: 1
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: a9f742071c58a4042a95c3cc6d7606a2
     m_Address: Assets/Localization/Menu Labels/Menu Labels Shared Data.asset
     m_ReadOnly: 1

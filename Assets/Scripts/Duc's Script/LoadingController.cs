@@ -13,21 +13,19 @@ public class LoadingController : MonoBehaviour
     public TextMeshProUGUI loadingText;
     [Tooltip("Enter the exact name of the scene to load")]
     [SerializeField] private string sceneToLoad;
+    [Header("Fact Settings")]
+    [Tooltip("How many seconds the fact stays on screen before fading out")]
+    [SerializeField] private float factDisplayDuration = 4.5f;
     private AsyncOperation operation;
     private bool isDone = false;
 
     string[] facts = new string[]
     {
-        "The 81-day battle at Quang Tri Citadel became a symbol of resilience.",
-        "Many soldiers fighting in Quang Tri were young students and volunteers.",
-        "Every inch of Quang Tri Citadel witnessed immense sacrifice.",
-        "The intensity of bombing in Quang Tri was among the heaviest in the war.",
+        "The firepower poured into Quang Tri Citadel equaled the destructive force of seven Hiroshima atomic bombs.",
+        "Many defenders were university students from Hanoi who left their studies to join the fight in 1971.",
+        "The Thach Han River was the only supply line. Crossing it at night under enemy flare light was a deadly mission.",
         "Quang Tri Citadel stands as a symbol of courage and endurance.",
-        "The Thach Han River was crossed by countless soldiers during the battle.",
-        "Young soldiers played a crucial role in the 81-day defense.",
-        "Many fighters went to war at a very young age.",
-        "The sacrifices at Quang Tri helped shape the course of the war.",
-        "Quang Tri Citadel represents the bravery of an entire generation."
+        "Despite being only 500x500 meters in size, the Citadel became the bloodiest focal point of the 1972 offensive."
     };
 
     void Start()
@@ -105,7 +103,7 @@ public class LoadingController : MonoBehaviour
                 yield return null;
             }
 
-            yield return new WaitForSeconds(3f);
+            yield return new WaitForSeconds(factDisplayDuration);
         }
     }
 

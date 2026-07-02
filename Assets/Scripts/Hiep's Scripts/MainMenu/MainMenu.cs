@@ -27,7 +27,7 @@ public class MainMenu : MonoBehaviour
     public void StartButton()
     {
         audioSource.PlayOneShot(selectSound);
-        SceneManager.LoadScene("Hiep's TestScene");
+        SceneManager.LoadScene("Loading Screen 1");
     } 
     public void SettingButton()
     {
