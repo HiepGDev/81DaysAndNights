@@ -7,7 +7,6 @@ public class TeammateSO : ScriptableObject
     public float maxHealth = 100f; 
 
     [Header("AI & Detection Settings")]
-    public TeammateAI.AIMode defaultAiMode = TeammateAI.AIMode.Follower;
     public float detectionRadius = 15.0f;
     public float rotationSpeed = 8f;
 
@@ -22,20 +21,20 @@ public class TeammateSO : ScriptableObject
 
     [Header("Weapon Stats")]
     public TeammateShooting.FireMode fireMode = TeammateShooting.FireMode.SemiAuto;
-    public float autoFireRate = 0.12f;
-    public float semiFireRateMin = 0.3f;
-    public float semiFireRateMax = 0.6f;
+    public float autoFireRate = 0.3f;
+    public float semiFireRateMin = 0.5f;
+    public float semiFireRateMax = 1f;
     public float fireDistance = 25.0f;
-    public int damagePerShot = 15;
+    public int damagePerShot = 4;
 
     [Header("Ammo Settings")]
-    public int magazineSize = 30;
+    public int magazineSize = 1;
     public float reloadTime = 2.5f;
 
     [Header("Bloom (Recoil) Settings")]
-    public float minSpread = 0.01f;
-    public float maxSpread = 0.08f;
-    public float bloomIncrease = 0.01f;
+    public float minSpread = 0.03f;
+    public float maxSpread = 0.15f;
+    public float bloomIncrease = 0.025f;
 
     [Header("Cover Settings")]
     public float coverSearchRadius = 25f;
