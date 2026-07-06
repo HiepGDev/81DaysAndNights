@@ -67,6 +67,13 @@ public class EnemyShooting : MonoBehaviour
             shootVolume = enemyData.shootVolume;
         }
         currentAmmo = magazineSize;
+
+        // Exclude the "Invisible wall" layer from being hit by enemy bullets
+        int invisibleWallLayer = LayerMask.NameToLayer("Invisible wall");
+        if (invisibleWallLayer != -1)
+        {
+            hitLayers &= ~(1 << invisibleWallLayer);
+        }
     }
 
     private IEnumerator Start()

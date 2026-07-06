@@ -47,15 +47,8 @@ public class EnemyHealth : MonoBehaviour
         
         Debug.Log($"{gameObject.name} triggering physical death.");
         
-        // 1. Untag the root and all child components previously tagged as "Enemy"
-        gameObject.tag = "Untagged"; 
-        foreach (Transform child in GetComponentsInChildren<Transform>())
-        {
-            if (child.CompareTag("Enemy"))
-            {
-                child.gameObject.tag = "Untagged";
-            }
-        }
+        // 1. Untag the root GameObject
+        gameObject.tag = "Untagged";
 
         // 2. Disable Main AI Components
         UnityEngine.AI.NavMeshAgent agent = GetComponent<UnityEngine.AI.NavMeshAgent>();
