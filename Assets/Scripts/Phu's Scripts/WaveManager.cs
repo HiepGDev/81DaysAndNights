@@ -1,7 +1,7 @@
-using System;
+using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
+using PurrNet;
 
 namespace PhuScene
 {
@@ -14,7 +14,7 @@ namespace PhuScene
         GameOver        // Player has died
     }
 
-    [Serializable]
+    [System.Serializable]
     public struct WaveStatusReport
     {
         public int currentWave;
@@ -28,19 +28,19 @@ namespace PhuScene
         public float difficultyMultiplier;
     }
 
-    public class WaveManager : MonoBehaviour
+    public class WaveManager : NetworkBehaviour
     {
         public static WaveManager Instance { get; private set; }
 
         [Header("Wave State")]
-        [SerializeField] private int currentWave = 0;
-        [SerializeField] private WaveState currentState = WaveState.Preparing;
+        [SerializeField] private SyncVar<int> currentWave = new(0);
+        [SerializeField] private SyncVar<WaveState> currentState = new(WaveState.Preparing);
         [SerializeField] private int totalWaves = 10; // Capped at 10 (set to 0 for endless)
 
         [Header("Timers")]
         [SerializeField] private float prepDuration = 8f;      // Preparation time before first wave
         [SerializeField] private float cooldownDuration = 5f;  // Cooldown time between waves
-        private float countdownTimer = 0f;
+        private SyncVar<float> countdownTimer = new(0f);
 
         [Header("Enemy Configurations")]
         [SerializeField] private GameObject[] enemyPrefabs;    // List of actual enemy prefabs
@@ -71,19 +71,20 @@ namespace PhuScene
 
         // Runtime Tracking
         private List<GameObject> activeEnemies = new List<GameObject>();
-        private int totalEnemiesToSpawn = 0;
-        private int spawnedEnemiesCount = 0;
-        private bool isSpawningCompleted = false;
+        private SyncVar<int> totalEnemiesToSpawn = new(0);
+        private SyncVar<int> spawnedEnemiesCount = new(0);
+        private SyncVar<bool> isSpawningCompleted = new(false);
+        private SyncVar<int> remainingEnemies = new(0);
         private Coroutine gameLoopCoroutine;
         private Coroutine deathMonitorCoroutine;
 
-        // --- Frontend API Events (Instance level for better architecture) ---
-        public event Action<WaveState> OnWaveStateChanged;
-        public event Action<int> OnWaveStarted;
-        public event Action<int> OnWaveCompleted;
-        public event Action<int, int> OnEnemyCountChanged; // (remaining, total)
-        public event Action<float> OnCountdownTick;        // remaining seconds
-        public event Action<bool> OnSpawningStatusChanged; // fires when spawning finishes
+        // --- Frontend API Events ---
+        public event System.Action<WaveState> OnWaveStateChanged;
+        public event System.Action<int> OnWaveStarted;
+        public event System.Action<int> OnWaveCompleted;
+        public event System.Action<int, int> OnEnemyCountChanged; // (remaining, total)
+        public event System.Action<float> OnCountdownTick;        // remaining seconds
+        public event System.Action<bool> OnSpawningStatusChanged; // fires when spawning finishes
 
         private void Awake()
         {
@@ -100,7 +101,6 @@ namespace PhuScene
 
         private void Start()
         {
-            // Find player automatically if not explicitly assigned
             if (playerTransform == null)
             {
                 GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
@@ -110,8 +110,32 @@ namespace PhuScene
                 }
             }
 
-            // Start game loop
-            gameLoopCoroutine = StartCoroutine(GameLoop());
+            // Start game loop locally if offline
+            if (!isSpawned)
+            {
+                gameLoopCoroutine = StartCoroutine(GameLoop());
+            }
+        }
+
+        protected override void OnSpawned()
+        {
+            if (isServer)
+            {
+                gameLoopCoroutine = StartCoroutine(GameLoop());
+            }
+
+            if (isClient && !isServer)
+            {
+                currentState.onChanged += (state) => OnWaveStateChanged?.Invoke(state);
+                currentWave.onChangedWithOld += (oldWave, newWave) => {
+                    if (newWave > oldWave) OnWaveStarted?.Invoke(newWave);
+                };
+                countdownTimer.onChanged += (time) => OnCountdownTick?.Invoke(time);
+                isSpawningCompleted.onChanged += (comp) => OnSpawningStatusChanged?.Invoke(comp);
+                
+                remainingEnemies.onChanged += (rem) => OnEnemyCountChanged?.Invoke(rem, totalEnemiesToSpawn.value);
+                totalEnemiesToSpawn.onChanged += (tot) => OnEnemyCountChanged?.Invoke(remainingEnemies.value, tot);
+            }
         }
 
         private void CleanUpDeadEnemies()
@@ -121,34 +145,32 @@ namespace PhuScene
             
             if (activeEnemies.Count != previousCount)
             {
-                OnEnemyCountChanged?.Invoke(activeEnemies.Count, totalEnemiesToSpawn);
-                Debug.Log($"[WaveManager] Enemies remaining: {activeEnemies.Count}/{totalEnemiesToSpawn}");
+                remainingEnemies.value = activeEnemies.Count;
+                OnEnemyCountChanged?.Invoke(activeEnemies.Count, totalEnemiesToSpawn.value);
+                Debug.Log($"[WaveManager] Enemies remaining: {activeEnemies.Count}/{totalEnemiesToSpawn.value}");
             }
         }
 
-        // --- Optimized Death Monitoring Coroutine (Eliminates Update Overhead) ---
         private IEnumerator MonitorEnemyDeaths()
         {
-            // Cache wait delay to avoid recurring GC allocation
             WaitForSeconds waitDelay = new WaitForSeconds(deathCheckInterval);
 
-            while (currentState == WaveState.WaveActive)
+            while (currentState.value == WaveState.WaveActive)
             {
                 CleanUpDeadEnemies();
                 yield return waitDelay;
             }
         }
 
-        // --- Core Game Loop ---
         private IEnumerator GameLoop()
         {
-            currentWave = 0;
+            currentWave.value = 0;
 
             while (true)
             {
                 // 1. Preparation Phase (Countdown to next wave)
-                currentWave++;
-                if (totalWaves > 0 && currentWave > totalWaves)
+                currentWave.value++;
+                if (totalWaves > 0 && currentWave.value > totalWaves)
                 {
                     SetState(WaveState.Victory);
                     Debug.Log("[WaveManager] Game Victory! Completed all waves.");
@@ -156,9 +178,9 @@ namespace PhuScene
                 }
 
                 SetState(WaveState.Preparing);
-                countdownTimer = currentWave == 1 ? prepDuration : cooldownDuration;
+                countdownTimer.value = currentWave.value == 1 ? prepDuration : cooldownDuration;
                 
-                while (countdownTimer > 0f)
+                while (countdownTimer.value > 0f)
                 {
                     if (IsPlayerDead())
                     {
@@ -166,24 +188,27 @@ namespace PhuScene
                         yield break;
                     }
 
-                    OnCountdownTick?.Invoke(countdownTimer);
+                    OnCountdownTick?.Invoke(countdownTimer.value);
                     yield return new WaitForSeconds(1.0f);
-                    countdownTimer -= 1.0f;
+                    countdownTimer.value -= 1.0f;
                 }
                 OnCountdownTick?.Invoke(0f);
 
                 // 2. Wave Active Phase (Combat starts and spawning begins)
                 SetState(WaveState.WaveActive);
-                OnWaveStarted?.Invoke(currentWave);
+                OnWaveStarted?.Invoke(currentWave.value);
                 
-                CalculateWaveParameters(out totalEnemiesToSpawn, out float spawnInterval);
-                spawnedEnemiesCount = 0;
-                isSpawningCompleted = false;
+                int count;
+                float spawnInterval;
+                CalculateWaveParameters(out count, out spawnInterval);
+                totalEnemiesToSpawn.value = count;
+                spawnedEnemiesCount.value = 0;
+                isSpawningCompleted.value = false;
                 OnSpawningStatusChanged?.Invoke(false);
                 activeEnemies.Clear();
-                OnEnemyCountChanged?.Invoke(0, totalEnemiesToSpawn);
+                remainingEnemies.value = 0;
+                OnEnemyCountChanged?.Invoke(0, totalEnemiesToSpawn.value);
 
-                // Start the optimized death monitoring coroutine
                 if (deathMonitorCoroutine != null)
                 {
                     StopCoroutine(deathMonitorCoroutine);
@@ -191,32 +216,30 @@ namespace PhuScene
                 deathMonitorCoroutine = StartCoroutine(MonitorEnemyDeaths());
 
                 // Batch spawning loop
-                while (spawnedEnemiesCount < totalEnemiesToSpawn)
+                while (spawnedEnemiesCount.value < totalEnemiesToSpawn.value)
                 {
                     if (IsPlayerDead())
-                      {
+                    {
                         SetState(WaveState.GameOver);
                         yield break;
                     }
 
-                    // Spawn current batch
-                    int currentBatchSize = Mathf.Min(enemiesPerBatch, totalEnemiesToSpawn - spawnedEnemiesCount);
+                    int currentBatchSize = Mathf.Min(enemiesPerBatch, totalEnemiesToSpawn.value - spawnedEnemiesCount.value);
                     for (int i = 0; i < currentBatchSize; i++)
                     {
                         SpawnSingleEnemy();
-                        spawnedEnemiesCount++;
-                        OnEnemyCountChanged?.Invoke(activeEnemies.Count, totalEnemiesToSpawn);
+                        spawnedEnemiesCount.value++;
+                        remainingEnemies.value = activeEnemies.Count;
+                        OnEnemyCountChanged?.Invoke(activeEnemies.Count, totalEnemiesToSpawn.value);
 
-                        // Quick delay between individual spawns inside the same batch
                         yield return new WaitForSeconds(spawnInterval);
                     }
 
-                    if (spawnedEnemiesCount >= totalEnemiesToSpawn)
+                    if (spawnedEnemiesCount.value >= totalEnemiesToSpawn.value)
                     {
                         break;
                     }
 
-                    // Delay between batches
                     float elapsedBatchTime = 0f;
                     while (elapsedBatchTime < timeBetweenBatches)
                     {
@@ -230,10 +253,9 @@ namespace PhuScene
                     }
                 }
 
-                isSpawningCompleted = true;
+                isSpawningCompleted.value = true;
                 OnSpawningStatusChanged?.Invoke(true);
 
-                // Wait for all spawned enemies to die
                 while (activeEnemies.Count > 0)
                 {
                     if (IsPlayerDead())
@@ -242,27 +264,22 @@ namespace PhuScene
                         yield break;
                     }
 
-                    // Let the MonitorEnemyDeaths coroutine do the cleanup checks, we just check count
                     yield return new WaitForSeconds(0.2f);
                 }
 
-                // Stop the death monitor coroutine once combat ends
                 if (deathMonitorCoroutine != null)
                 {
                     StopCoroutine(deathMonitorCoroutine);
                     deathMonitorCoroutine = null;
                 }
 
-                // 3. Wave Completed Phase
                 SetState(WaveState.WaveCompleted);
-                OnWaveCompleted?.Invoke(currentWave);
+                OnWaveCompleted?.Invoke(currentWave.value);
                 
-                // Extra short delay for visual satisfaction before the transition countdown starts
                 yield return new WaitForSeconds(1.5f);
             }
         }
 
-        // --- Enemy Spawning & Configuration ---
         private void SpawnSingleEnemy()
         {
             Vector3 spawnPos = Vector3.zero;
@@ -276,7 +293,6 @@ namespace PhuScene
             }
             else
             {
-                // Fallback to random spot near origin
                 spawnPos = new Vector3(UnityEngine.Random.Range(-10f, 10f), 0f, UnityEngine.Random.Range(-10f, 10f));
             }
 
@@ -284,30 +300,40 @@ namespace PhuScene
 
             if (enemyPrefabs != null && enemyPrefabs.Length > 0)
             {
-                // Spawn real enemy
                 GameObject prefab = enemyPrefabs[UnityEngine.Random.Range(0, enemyPrefabs.Length)];
                 spawnedObj = Instantiate(prefab, spawnPos, spawnRot);
                 spawnedObj.SetActive(true);
             }
             else
             {
-                // Spawn mock enemy procedurally
-                spawnedObj = CreateProceduralMockEnemy(spawnPos, spawnRot);
+                if (isSpawned)
+                {
+                    Debug.LogError("[WaveManager] Cannot spawn procedural capsules in multiplayer. Please assign enemy prefabs in the inspector.");
+                }
+                else
+                {
+                    spawnedObj = CreateProceduralMockEnemy(spawnPos, spawnRot);
+                }
             }
 
             if (spawnedObj != null)
             {
                 activeEnemies.Add(spawnedObj);
                 ApplyDifficultyScaling(spawnedObj);
+
+                if (isSpawned)
+                {
+                    NetworkManager.main.Spawn(spawnedObj);
+                }
             }
         }
 
         private GameObject CreateProceduralMockEnemy(Vector3 position, Quaternion rotation)
         {
-            EnemyType type = ChooseEnemyTypeForWave(currentWave);
+            EnemyType type = ChooseEnemyTypeForWave(currentWave.value);
 
             GameObject mock = GameObject.CreatePrimitive(PrimitiveType.Capsule);
-            mock.name = $"MockEnemy_{type}_Wave{currentWave}_{spawnedEnemiesCount}";
+            mock.name = $"MockEnemy_{type}_Wave{currentWave.value}_{spawnedEnemiesCount.value}";
             mock.transform.position = position + Vector3.up * 1f;
             mock.transform.rotation = rotation;
             mock.tag = "Enemy";
@@ -338,18 +364,17 @@ namespace PhuScene
             if (mock != null)
             {
                 mock.ScaleStats(
-                    1f + (currentWave - 1) * healthScalePerWave,
-                    1f + (currentWave - 1) * damageScalePerWave,
-                    Mathf.Min(2.0f, 1f + (currentWave - 1) * speedScalePerWave)
+                    1f + (currentWave.value - 1) * healthScalePerWave,
+                    1f + (currentWave.value - 1) * damageScalePerWave,
+                    Mathf.Min(2.0f, 1f + (currentWave.value - 1) * speedScalePerWave)
                 );
             }
         }
 
-        // --- Difficulty & Wave Calculations ---
         private void CalculateWaveParameters(out int count, out float interval)
         {
-            count = baseEnemyCount + (currentWave - 1) * enemiesPerWaveIncrease;
-            interval = Mathf.Max(minSpawnInterval, baseSpawnInterval - (currentWave - 1) * spawnIntervalDecreasePerWave);
+            count = baseEnemyCount + (currentWave.value - 1) * enemiesPerWaveIncrease;
+            interval = Mathf.Max(minSpawnInterval, baseSpawnInterval - (currentWave.value - 1) * spawnIntervalDecreasePerWave);
         }
 
         public float GetDifficultyMultiplierForWave(int wave)
@@ -357,18 +382,15 @@ namespace PhuScene
             return 1.0f + (wave - 1) * 0.25f;
         }
 
-        // --- Decoupled Health/Death Detection ---
         private bool IsEnemyDead(GameObject enemy)
         {
             if (enemy == null) return true;
 
-            // Indicator A: Target GameObject tag changed from "Enemy" to "Untagged" (Phat's death logic)
             if (!enemy.CompareTag("Enemy"))
             {
                 return true;
             }
 
-            // Indicator B: NavMeshAgent disabled upon death (Phat's death logic)
             UnityEngine.AI.NavMeshAgent navAgent = enemy.GetComponent<UnityEngine.AI.NavMeshAgent>();
             if (navAgent != null && !navAgent.enabled)
             {
@@ -383,51 +405,63 @@ namespace PhuScene
             if (activeEnemies.Contains(mockEnemy))
             {
                 activeEnemies.Remove(mockEnemy);
-                OnEnemyCountChanged?.Invoke(activeEnemies.Count, totalEnemiesToSpawn);
+                remainingEnemies.value = activeEnemies.Count;
+                OnEnemyCountChanged?.Invoke(activeEnemies.Count, totalEnemiesToSpawn.value);
             }
         }
 
         private bool IsPlayerDead()
         {
-            if (playerTransform == null) return false;
-            PlayerHealth playerHealth = playerTransform.GetComponent<PlayerHealth>();
-            return playerHealth != null && playerHealth.IsDead;
+            if (isSpawned)
+            {
+                var players = FindObjectsByType<NetworkPlayerHealth>(FindObjectsSortMode.None);
+                if (players.Length == 0) return false;
+                foreach (var p in players)
+                {
+                    if (!p.IsDead) return false;
+                }
+                return true;
+            }
+            else
+            {
+                if (playerTransform == null) return false;
+                PlayerHealth playerHealth = playerTransform.GetComponent<PlayerHealth>();
+                return playerHealth != null && playerHealth.IsDead;
+            }
         }
 
         private void SetState(WaveState newState)
         {
-            if (currentState != newState)
+            if (currentState.value != newState)
             {
-                currentState = newState;
-                OnWaveStateChanged?.Invoke(currentState);
-                Debug.Log($"[WaveManager] State transitioned to: {currentState}");
+                currentState.value = newState;
+                OnWaveStateChanged?.Invoke(currentState.value);
+                Debug.Log($"[WaveManager] State transitioned to: {currentState.value}");
             }
         }
 
-        // --- Frontend API Snapshot Endpoint (Active Retrieval) ---
         public WaveStatusReport GetWaveStatus()
         {
             return new WaveStatusReport
             {
-                currentWave = this.currentWave,
+                currentWave = this.currentWave.value,
                 totalWaves = this.totalWaves,
-                state = this.currentState,
-                remainingEnemies = this.activeEnemies.Count,
-                totalEnemies = this.totalEnemiesToSpawn,
-                spawnedEnemies = this.spawnedEnemiesCount,
-                isSpawningCompleted = this.isSpawningCompleted,
-                countdownTime = this.countdownTimer,
+                state = this.currentState.value,
+                remainingEnemies = this.remainingEnemies.value,
+                totalEnemies = this.totalEnemiesToSpawn.value,
+                spawnedEnemies = this.spawnedEnemiesCount.value,
+                isSpawningCompleted = this.isSpawningCompleted.value,
+                countdownTime = this.countdownTimer.value,
                 difficultyMultiplier = this.DifficultyMultiplier
             };
         }
 
-        // Keep individual property getters for retrocompatibility
-        public int CurrentWave => currentWave;
+        public int CurrentWave => currentWave.value;
         public int TotalWaves => totalWaves;
-        public WaveState CurrentState => currentState;
-        public int RemainingEnemiesCount => activeEnemies.Count;
-        public int TotalEnemiesInWave => totalEnemiesToSpawn;
-        public float NextWaveCountdown => countdownTimer;
-        public float DifficultyMultiplier => GetDifficultyMultiplierForWave(currentWave);
+        public WaveState CurrentState => currentState.value;
+        public int RemainingEnemiesCount => remainingEnemies.value;
+        public int TotalEnemiesInWave => totalEnemiesToSpawn.value;
+        public float NextWaveCountdown => countdownTimer.value;
+        public float DifficultyMultiplier => GetDifficultyMultiplierForWave(currentWave.value);
     }
 }

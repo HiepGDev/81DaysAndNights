@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.AI;
+using PurrNet;
 
 namespace PhuScene
 {
@@ -10,12 +11,12 @@ namespace PhuScene
         Boss
     }
 
-    public class MockEnemy : MonoBehaviour
+    public class MockEnemy : NetworkBehaviour
     {
         [Header("Stats")]
         [SerializeField] private EnemyType enemyType = EnemyType.Basic;
         [SerializeField] private float maxHealth = 50f;
-        [SerializeField] private float currentHealth;
+        [SerializeField] private SyncVar<float> currentHealth = new(50f);
         [SerializeField] private float speed = 3.5f;
         [SerializeField] private float damage = 10f;
         [SerializeField] private float attackRange = 1.8f;
@@ -37,7 +38,6 @@ namespace PhuScene
             this.enemyType = type;
             this.targetPlayer = player;
 
-            // Define base stats based on type
             switch (type)
             {
                 case EnemyType.Basic:
@@ -56,22 +56,19 @@ namespace PhuScene
                     maxHealth = 250f;
                     speed = 2.5f;
                     damage = 40f;
-                    // Make Boss visually larger
                     transform.localScale = new Vector3(1.8f, 1.8f, 1.8f);
                     SetColor(Color.red);
                     break;
             }
 
-            currentHealth = maxHealth;
-
-            // Setup floating status text
+            currentHealth.value = maxHealth;
             CreateFloatingText();
         }
 
         public void ScaleStats(float healthMult, float damageMult, float speedMult)
         {
             maxHealth *= healthMult;
-            currentHealth = maxHealth;
+            currentHealth.value = maxHealth;
             damage *= damageMult;
             speed *= speedMult;
 
@@ -85,7 +82,11 @@ namespace PhuScene
 
         private void Start()
         {
-            // Setup NavMeshAgent dynamically
+            if (isSpawned && !isServer)
+            {
+                return;
+            }
+
             agent = GetComponent<NavMeshAgent>();
             if (agent == null)
             {
@@ -100,12 +101,73 @@ namespace PhuScene
                 hasNavMeshAgent = true;
             }
 
+            if (!isSpawned)
+            {
+                currentHealth.onChanged += OnHealthChanged;
+            }
+
             UpdateFloatingText();
+        }
+
+        protected override void OnSpawned()
+        {
+            currentHealth.onChanged += OnHealthChanged;
+            UpdateFloatingText();
+        }
+
+        protected override void OnDespawned()
+        {
+            currentHealth.onChanged -= OnHealthChanged;
+        }
+
+        private void OnHealthChanged(float newHealth)
+        {
+            UpdateFloatingText();
+            StartCoroutine(FlashWhiteOnDamage());
+
+            if (newHealth <= 0f)
+            {
+                if (!isSpawned || isServer)
+                {
+                    Die();
+                }
+            }
+        }
+
+        private void TargetNearestPlayer()
+        {
+            if (isSpawned)
+            {
+                var players = FindObjectsByType<NetworkPlayerHealth>(FindObjectsSortMode.None);
+                float minDistance = float.MaxValue;
+                Transform nearestPlayer = null;
+                foreach (var p in players)
+                {
+                    if (p.IsDead) continue;
+                    float dist = Vector3.Distance(transform.position, p.transform.position);
+                    if (dist < minDistance)
+                    {
+                        minDistance = dist;
+                        nearestPlayer = p.transform;
+                    }
+                }
+                targetPlayer = nearestPlayer;
+            }
         }
 
         private void Update()
         {
-            // Move toward player
+            if (isSpawned && !isServer)
+            {
+                if (floatingText != null && Camera.main != null)
+                {
+                    floatingText.transform.rotation = Quaternion.LookRotation(floatingText.transform.position - Camera.main.transform.position);
+                }
+                return;
+            }
+
+            TargetNearestPlayer();
+
             if (targetPlayer != null)
             {
                 float distanceToPlayer = Vector3.Distance(transform.position, targetPlayer.position);
@@ -116,9 +178,8 @@ namespace PhuScene
                 }
                 else
                 {
-                    // Fallback move directly
                     Vector3 direction = (targetPlayer.position - transform.position).normalized;
-                    direction.y = 0; // Keep on flat ground
+                    direction.y = 0;
                     transform.position += direction * speed * Time.deltaTime;
                     
                     if (direction != Vector3.zero)
@@ -127,7 +188,6 @@ namespace PhuScene
                     }
                 }
 
-                // Attack logic
                 if (distanceToPlayer <= attackRange)
                 {
                     if (Time.time >= lastAttackTime + attackCooldown)
@@ -138,7 +198,6 @@ namespace PhuScene
                 }
             }
 
-            // Keep floating text facing camera
             if (floatingText != null && Camera.main != null)
             {
                 floatingText.transform.rotation = Quaternion.LookRotation(floatingText.transform.position - Camera.main.transform.position);
@@ -149,29 +208,29 @@ namespace PhuScene
         {
             if (targetPlayer == null) return;
 
+            var netHealth = targetPlayer.GetComponent<NetworkPlayerHealth>();
+            if (netHealth != null)
+            {
+                Debug.Log($"[MockEnemy] {gameObject.name} attacks networked player for {damage} damage!");
+                netHealth.TakeDamage(damage);
+                return;
+            }
+
             PlayerHealth playerHealth = targetPlayer.GetComponent<PlayerHealth>();
             if (playerHealth != null)
             {
-                Debug.Log($"[MockEnemy] {gameObject.name} attacks player for {damage} damage!");
+                Debug.Log($"[MockEnemy] {gameObject.name} attacks local player for {damage} damage!");
                 playerHealth.TakeDamage(damage);
             }
         }
 
         public void TakeDamage(float damageAmount)
         {
-            currentHealth -= damageAmount;
-            currentHealth = Mathf.Max(0f, currentHealth);
-            Debug.Log($"[MockEnemy] {gameObject.name} took {damageAmount} damage! Current HP: {currentHealth}/{maxHealth}");
+            if (isSpawned && !isServer) return;
 
-            UpdateFloatingText();
-
-            // Simple visual damage feedback: momentarily change color to white
-            StartCoroutine(FlashWhiteOnDamage());
-
-            if (currentHealth <= 0f)
-            {
-                Die();
-            }
+            currentHealth.value -= damageAmount;
+            currentHealth.value = Mathf.Max(0f, currentHealth.value);
+            Debug.Log($"[MockEnemy] {gameObject.name} took {damageAmount} damage! Current HP: {currentHealth.value}/{maxHealth}");
         }
 
         private System.Collections.IEnumerator FlashWhiteOnDamage()
@@ -182,7 +241,7 @@ namespace PhuScene
                 Color originalColor = renderer.material.color;
                 renderer.material.color = Color.white;
                 yield return new WaitForSeconds(0.12f);
-                if (renderer != null) // check in case destroyed
+                if (renderer != null)
                 {
                     renderer.material.color = originalColor;
                 }
@@ -193,13 +252,11 @@ namespace PhuScene
         {
             Debug.Log($"[MockEnemy] {gameObject.name} died!");
             
-            // Notify WaveManager
             if (WaveManager.Instance != null)
             {
                 WaveManager.Instance.ReportMockEnemyDeath(gameObject);
             }
 
-            // Play a small particle-like effect or sound if desired, then destroy
             Destroy(gameObject);
         }
 
@@ -217,7 +274,7 @@ namespace PhuScene
         {
             GameObject textObj = new GameObject("FloatingText");
             textObj.transform.SetParent(this.transform);
-            textObj.transform.localPosition = new Vector3(0, 1.3f, 0); // Above the capsule
+            textObj.transform.localPosition = new Vector3(0, 1.3f, 0);
 
             floatingText = textObj.AddComponent<TextMesh>();
             floatingText.characterSize = 0.12f;
@@ -232,11 +289,10 @@ namespace PhuScene
             if (floatingText != null)
             {
                 string nameColor = enemyType == EnemyType.Boss ? "red" : (enemyType == EnemyType.Elite ? "orange" : "green");
-                floatingText.text = $"[{enemyType}]\nHP: {Mathf.CeilToInt(currentHealth)}/{Mathf.CeilToInt(maxHealth)}";
+                floatingText.text = $"[{enemyType}]\nHP: {Mathf.CeilToInt(currentHealth.value)}/{Mathf.CeilToInt(maxHealth)}";
             }
         }
 
-        // Support standard damage messages (e.g. if hit by bullet scripts that call TakeDamage with int)
         public void TakeDamage(int damageAmount)
         {
             TakeDamage((float)damageAmount);
