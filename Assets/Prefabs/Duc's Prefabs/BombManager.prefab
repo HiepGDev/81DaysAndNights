@@ -25,7 +25,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1767420601545030890}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0.3659973, y: 0.43, z: 16.258606}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -45,15 +45,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BombSpawner
   explosionPrefab: {fileID: 5254670365419051377, guid: e76e5331f24d1d74780b04f7381755f1, type: 3}
-  rangeX: 40
-  rangeZ: 40
+  rangeX: 64
+  rangeZ: 70
   groundLayer:
     serializedVersion: 2
     m_Bits: 4294967295
-  infiniteSpawn: 0
+  infiniteSpawn: 1
   spawnDuration: 20
-  minBurstCount: 2
-  maxBurstCount: 6
+  minBurstCount: 5
+  maxBurstCount: 10
   minTimeBetweenBombs: 0.05
   maxTimeBetweenBombs: 0.15
   minTimeBetweenBursts: 0.12

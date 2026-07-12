@@ -269,5 +269,22 @@ public class PlayerGun : MonoBehaviour
     {
         defaultFOV = newFOV;
     }
+    
+    public void AddAmmo(int amount)
+    {
+        if (gunData != null)
+        {
+            gunData.reserveAmmo += amount;
+            
+            // Clamp the ammo so it doesn't exceed the max reserve limit
+            if (gunData.reserveAmmo > gunData.maxReserveAmmo)
+            {
+                gunData.reserveAmmo = gunData.maxReserveAmmo;
+            }
+            
+            UpdateAmmoUI();
+            Debug.Log($"Ammo picked up! Current Reserve: {gunData.reserveAmmo}");
+        }
+    }
 }
 

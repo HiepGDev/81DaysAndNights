@@ -65,7 +65,7 @@ public class PlayerMovement : MonoBehaviour
     }
     void Start()
     {
-        if (playerGun == null) playerGun = GetComponentInChildren<PlayerGun>();
+        if (playerGun == null) playerGun = GetComponentInChildren<PlayerGun>(true);
         if (playerCamera != null) originalCamPos = playerCamera.localPosition;
         lookSensitivity = PlayerPrefs.GetFloat("MouseSensitivity", 10f);
     }
@@ -119,7 +119,7 @@ public class PlayerMovement : MonoBehaviour
         bool isMoving = moveValue.magnitude > 0.1f;
         bool isWalking = isMoving && !isSprinting;
         bool isRunning = isMoving && isSprinting;
-
+        
         // only set walk/run to true if NOT aiming.
         // if aiming, the animator will naturally fall back to "Idle".
         bool Walk = isWalking && (playerGun == null || !playerGun.isAiming);

@@ -12,11 +12,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d690b49afd5fe004d98d41ea5bd77115, type: 3}
   m_Name: AK47
   m_EditorClassIdentifier: Assembly-CSharp::WeaponSO
+  weaponID: 
   Damage: 30
   MaxDistance: 100
   currentAmmo: 30
-  reserveAmmo: 999
-  maxReserveAmmo: 999
+  reserveAmmo: 120
+  maxReserveAmmo: 180
   magazineSize: 30
   fireRate: 0.2
   reloadTime: 2.3

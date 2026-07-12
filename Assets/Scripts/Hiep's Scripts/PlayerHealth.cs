@@ -192,10 +192,11 @@ public class PlayerHealth : MonoBehaviour
     private void Die()
     {
         isDead = true;
-        if (playerGun != null)
+        PlayerGun activeGun = GetComponentInChildren<PlayerGun>();
+        if (activeGun != null)
         {
-            playerGun.enabled = false;
-            playerGun.gameObject.SetActive(false);
+            activeGun.enabled = false;
+            activeGun.gameObject.SetActive(false);
         }
         // Disable movement/physics
         if (playerMovement != null) playerMovement.enabled = false;
