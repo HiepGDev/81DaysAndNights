@@ -10,30 +10,30 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1e9e30a5bf6a04d49a37e94f3b8b15d9, type: 3}
-  m_Name: EnemyTest2_1
+  m_Name: EnemySniper
   m_EditorClassIdentifier: Assembly-CSharp::EnemySO
-  maxHealth: 100
-  detectionRadius: 15
-  defaultMode: 1
-  wanderRadius: 15
-  idleTime: 2
-  ambushShootRange: 15
-  minEngagementDist: 15
-  rangeSpread: 15
-  destinationSpread: 15
-  fireRate: 0.1
-  fireDistance: 50
-  damagePerShot: 5
-  magazineSize: 30
-  reloadTime: 5
-  minSpread: 0.3
-  maxSpread: 0.8
-  bloomIncrease: 0.01
-  coverSearchRadius: 10
-  peekDistance: 1.2
+  maxHealth: 80
+  detectionRadius: 80
+  defaultMode: 2
+  wanderRadius: 5
+  idleTime: 3
+  ambushShootRange: 40
+  minEngagementDist: 25
+  rangeSpread: 5
+  destinationSpread: 2
+  fireRate: 1.5
+  fireDistance: 60
+  damagePerShot: 40
+  magazineSize: 5
+  reloadTime: 3.5
+  minSpread: 0.001
+  maxSpread: 0.005
+  bloomIncrease: 0.002
+  coverSearchRadius: 35
+  peekDistance: 0.8
   enemyPrefab: {fileID: 100100000, guid: fa5bd4966e1d52f4984a4d751608e009, type: 3}
   impactVfxPrefab: {fileID: 0}
   muzzleFlashPrefab: {fileID: 4123609111075997096, guid: 4852900e4ffebde4db129e3f5f9acbbf, type: 3}
   tracerPrefab: {fileID: 7048567237833717488, guid: b951bfa1a90276e4b94fe9511357e939, type: 3}
-  shootSound: {fileID: 8300000, guid: e8776a34720384a43aab1f3bcf8dcba8, type: 3}
-  shootVolume: 0.1
+  shootSound: {fileID: 8300000, guid: 713d4fd38cd38cd4c908f30b1d56d546, type: 3}
+  shootVolume: 0.2
