@@ -182,11 +182,11 @@ This workflow handles packaging and sending logs to the server when the player f
 
 #### 2. `AISyncService.cs`
 * **`Start()`** (instance, private)
-  * *Role*: Dispatches the configuration downloading coroutine.
-* **`FetchLatestAIConfig()`** (instance, private IEnumerator)
-  * *Role*: Dispatches `GET /api/aiconfig?playerId=PLAYER_ID` and parses the JSON response into Scriptable Objects.
-* **`ApplyConfig(AiGenerationConfigData data)`** (instance, private)
-  * *Role*: Updates the health, spread, and behavior probabilities in the `EnemySO` assets.
+  * *Role*: Dispatches configuration downloading coroutines for each role-specific Enemy SO config.
+* **`FetchConfigForRole(EnemySO enemySO)`** (instance, private IEnumerator)
+  * *Role*: Dispatches `GET /api/aiconfig?playerId=PLAYER_ID&enemyType=ROLE` and parses the JSON response.
+* **`ApplyConfig(EnemySO enemySO, AiGenerationConfigData data)`** (instance, private)
+  * *Role*: Updates the health, spread, cover, and peeking timer variables inside the targeted role's `EnemySO` asset.
 
 #### 3. `GameOverManager.cs`
 * **`OnEnable()`** (instance, private)
@@ -203,6 +203,14 @@ This workflow handles packaging and sending logs to the server when the player f
   * *Role*: Applies the dynamically synced `detectionRadius` from `EnemySO`.
 * **`GetClosestTarget()`** (instance, private) -> `Transform`
   * *Role*: Queries targets. Restricts detection radius checks *specifically* to `Sniper` mode to prevent breaking global lock-ons in `Ambush` mode.
+
+#### 6. `EnemyTacticalPeek.cs`
+* **`Update()`** (instance, private)
+  * *Role*: Manages cover hiding cooldowns and maximum firing peek duration limits.
+* **`StartPeek()`** (instance, private)
+  * *Role*: Triggers peeking navigation pathing towards cover edge spots, and resets exposure timers.
+* **`ReturnToCover()`** (instance, private)
+  * *Role*: Triggers pull-back navigation commands to safe hide spots and sets wait cooldowns.
 
 ---
 
