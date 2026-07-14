@@ -89,9 +89,9 @@ public class AIEvaluationTracker : MonoBehaviour
         }
     }
 
-    private void RegisterLog(bool died)
+    private void RegisterLog(bool died, bool force = false)
     {
-        if (sessionEnded) return;
+        if (sessionEnded && !force) return;
         logRegistered = true;
         
         int damageTaken = health != null ? (initialHealth - health.CurrentHealth) : 0;
@@ -136,7 +136,7 @@ public class AIEvaluationTracker : MonoBehaviour
         {
             if (!tracker.logRegistered)
             {
-                tracker.RegisterLog(false);
+                tracker.RegisterLog(false, true);
             }
         }
 
