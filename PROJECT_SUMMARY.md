@@ -209,24 +209,24 @@ This workflow handles packaging and sending logs to the server when the player f
 ### B. C# Web Service Scripts
 
 #### 1. `AIConfigController.cs`
-* **`GetConfig(string? playerId)`** (`GET /api/aiconfig`) -> `ActionResult<AiGenerationConfigDto>`
-  * *Role*: Queries the latest generation configuration for the requested `playerId` (defaults to `"default"` if null).
+* **`GetConfig(string? playerId, string? enemyType)`** (`GET /api/aiconfig`) -> `ActionResult<AiGenerationConfigDto>`
+  * *Role*: Queries the latest generation configuration for the requested `playerId` and `enemyType` (defaults to `"default"` if null).
 
 #### 2. `AIStatsController.cs`
 * **`SubmitSessionResults(List<AiCombatLogDto> dtos)`** (`POST /api/aistats/session-results`) -> `IActionResult`
-  * *Role*: Deserializes the combat logs array, maps `player_id`, and passes them to the evolutionary engine.
+  * *Role*: Deserializes the combat logs array, maps `player_id` and `enemy_type`, and passes them to the evolutionary engine.
 
 #### 3. `AdminController.cs`
 * **`GetLogs()`** (`GET /api/admin/logs`) -> `IActionResult`
   * *Role*: Retrieves the last 100 historical combat logs for the dashboard.
 * **`GetPlayersList()`** (`GET /api/admin/players`) -> `IActionResult`
-  * *Role*: Queries all config rows in the database, groups them by unique Player ID, and returns the latest generation config for each player.
+  * *Role*: Queries all config rows in the database, groups them by unique combination of Player ID and Enemy Type, and returns the latest generation config for each role.
 * **`TweakAI(TweakRequest request)`** (`POST /api/admin/tweak`) -> `IActionResult`
-  * *Role*: Validates JWT token and forces manual configuration overrides for the specified `PlayerId`.
+  * *Role*: Validates JWT token and forces manual configuration overrides for the specified `PlayerId` and `EnemyType`.
 
 #### 4. `SupabaseService.cs`
-* **`GetLatestConfigAsync(string playerId)`** -> `Task<AiGenerationConfig>`
-  * *Role*: Queries the database for the highest generation number matching that player. Seeds a new default config if it's their first time.
+* **`GetLatestConfigAsync(string playerId, string enemyType)`** -> `Task<AiGenerationConfig>`
+  * *Role*: Queries the database for the highest generation number matching that player ID and enemy role. Seeds a new default config (with role-specific baseline variables, e.g. Sniper settings) if it's their first time.
 
 #### 5. `OptimizationEngine.cs`
 * **`ProcessCombatBatchAsync(List<AiCombatLog> batchLogs)`** -> `Task`
