@@ -12,12 +12,23 @@ public class AISyncService : MonoBehaviour
 
     private void Start()
     {
-        StartCoroutine(FetchLatestAIConfig());
+        if (enemyConfigs != null)
+        {
+            foreach (var enemySO in enemyConfigs)
+            {
+                if (enemySO != null)
+                {
+                    StartCoroutine(FetchConfigForRole(enemySO));
+                }
+            }
+        }
     }
 
-    private IEnumerator FetchLatestAIConfig()
+    private IEnumerator FetchConfigForRole(EnemySO enemySO)
     {
-        string requestUrl = $"{configUrl}?playerId={AIEvaluationTracker.GetPlayerId()}";
+        string enemyType = enemySO.defaultMode.ToString();
+        string requestUrl = $"{configUrl}?playerId={AIEvaluationTracker.GetPlayerId()}&enemyType={enemyType}";
+        
         using (UnityWebRequest webRequest = UnityWebRequest.Get(requestUrl))
         {
             yield return webRequest.SendWebRequest();
@@ -25,35 +36,27 @@ public class AISyncService : MonoBehaviour
             if (webRequest.result == UnityWebRequest.Result.Success)
             {
                 string jsonResponse = webRequest.downloadHandler.text;
-                Debug.Log("[AISyncService] Successfully loaded latest AI configuration: " + jsonResponse);
+                Debug.Log($"[AISyncService] Successfully loaded latest AI config for {enemyType}: {jsonResponse}");
                 
                 AiGenerationConfigData data = JsonUtility.FromJson<AiGenerationConfigData>(jsonResponse);
-                ApplyConfig(data);
+                ApplyConfig(enemySO, data);
             }
             else
             {
-                Debug.LogWarning("[AISyncService] Failed to load config from server, using default local assets. Error: " + webRequest.error);
+                Debug.LogWarning($"[AISyncService] Failed to load config for {enemyType} from server. Using local assets. Error: {webRequest.error}");
             }
         }
     }
 
-    private void ApplyConfig(AiGenerationConfigData data)
+    private void ApplyConfig(EnemySO enemySO, AiGenerationConfigData data)
     {
-        if (enemyConfigs == null) return;
+        enemySO.maxHealth = data.base_health;
+        enemySO.minSpread = data.min_spread;
+        enemySO.maxSpread = data.max_spread;
+        enemySO.pushProbability = data.push_probability;
+        enemySO.coverProbability = data.cover_probability;
 
-        foreach (var enemySO in enemyConfigs)
-        {
-            if (enemySO == null) continue;
-
-            // Apply the globally evolved traits to the ScriptableObject instances
-            enemySO.maxHealth = data.base_health;
-            enemySO.minSpread = data.min_spread;
-            enemySO.maxSpread = data.max_spread;
-            enemySO.pushProbability = data.push_probability;
-            enemySO.coverProbability = data.cover_probability;
-
-            Debug.Log($"[AISyncService] Applied dynamic DNA (Gen {data.generation_number}) to {enemySO.name}: Health={enemySO.maxHealth}, MinSpread={enemySO.minSpread}, MaxSpread={enemySO.maxSpread}, PushWeight={enemySO.pushProbability}");
-        }
+        Debug.Log($"[AISyncService] Applied dynamic DNA (Gen {data.generation_number}) to {enemySO.name} ({enemySO.defaultMode}): Health={enemySO.maxHealth}, MinSpread={enemySO.minSpread}, MaxSpread={enemySO.maxSpread}, PushWeight={enemySO.pushProbability}");
     }
 
     [System.Serializable]
