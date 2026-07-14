@@ -146,3 +146,86 @@ This workflow handles packaging and sending logs to the server when the player f
 7. **HTTP Post**: Sends the JSON data (including the unique `player_id`) to `POST /api/aistats/session-results`.
 8. **Server Database Save**: `AIStatsController.SubmitSessionResults()` receives the array, maps the `player_id`, and saves the logs to the `ai_combat_logs` table.
 9. **Evolutionary Optimization**: Passes the logs to `OptimizationEngine.ProcessCombatBatchAsync()`. If a new generation is ready, it mutates the weights specifically for that player, and saves the new DNA configuration under their `player_id` to the `ai_generation_configs` table.
+
+---
+
+## 6. Function & Method Dictionary
+
+### A. Unity Client Scripts
+
+#### 1. `AIEvaluationTracker.cs`
+* **`InitializeSceneEvents()`** (static, private)
+  * *Role*: Binds callback listeners to Unity's `sceneLoaded` and `sceneUnloaded` events at runtime launch.
+* **`OnSceneLoaded(Scene, LoadSceneMode)`** (static, private)
+  * *Role*: Resets the `sessionEnded` static flag back to `false` when a new stage loads.
+* **`OnSceneUnloaded(Scene)`** (static, private)
+  * *Role*: Triggers a victory log upload when transitioning to a new scene (if the queue is populated).
+* **`GetPlayerId()`** (static, public) -> `string`
+  * *Role*: Retrieves the unique Player ID. If not cached, generates a new UUID and persists it in `PlayerPrefs` under `"AI_PlayerID"`.
+* **`Awake()`** (instance, private)
+  * *Role*: Caches local references to `EnemyHealth`, `EnemyShooting`, and `EnemyBehaviorAgent`.
+* **`Start()`** (instance, private)
+  * *Role*: Stores the initial maximum health from the enemy profile.
+* **`Update()`** (instance, private)
+  * *Role*: Accumulates `timeAlive` via `Time.deltaTime` and registers a death log if health drops to `<= 0`.
+* **`OnDestroy()`** (instance, private)
+  * *Role*: Registers survivors in the combat queue when the level is unloaded/reloaded.
+* **`RegisterLog(bool died)`** (instance, private)
+  * *Role*: Extracts survival time, cover states, and damage statistics, then pushes the resulting log to the static list.
+* **`SubmitSessionLogs(bool playerDied, int stageNumber, string submitUrl)`** (static, public)
+  * *Role*: Closes the logging window (`sessionEnded = true`), loops through alive enemies, flushes the queue, and spawns the `LogDispatcher` GameObject.
+* **`LogDispatcherComponent.StartSubmit(string url, List<AiCombatLogData> data)`** (instance, public)
+  * *Role*: Initiates the async upload coroutine.
+* **`LogDispatcherComponent.PostLogs(string url, List<AiCombatLogData> data)`** (instance, private IEnumerator)
+  * *Role*: Serializes the logs to JSON, configures a raw `UnityWebRequest` POST, sends it, and prints the response status in the console.
+
+#### 2. `AISyncService.cs`
+* **`Start()`** (instance, private)
+  * *Role*: Dispatches the configuration downloading coroutine.
+* **`FetchLatestAIConfig()`** (instance, private IEnumerator)
+  * *Role*: Dispatches `GET /api/aiconfig?playerId=PLAYER_ID` and parses the JSON response into Scriptable Objects.
+* **`ApplyConfig(AiGenerationConfigData data)`** (instance, private)
+  * *Role*: Updates the health, spread, and behavior probabilities in the `EnemySO` assets.
+
+#### 3. `GameOverManager.cs`
+* **`OnEnable()`** (instance, private)
+  * *Role*: Triggers `SubmitSessionLogs(playerDied: true, activeSceneIndex)`, chooses a random quote, and starts the scene reload timer.
+* **`ReloadScene()`** (instance, private IEnumerator)
+  * *Role*: Performs `SceneManager.LoadScene` after the respawn delay.
+
+#### 4. `PlayerHealth.cs`
+* **`Die()`** (instance, private)
+  * *Role*: Flags `isDead = true`, disables gun mechanics, movement controllers, physics, and turns on the `gameOverCanvas`.
+
+#### 5. `EnemyBehaviorAgent.cs`
+* **`Awake()`** (instance, private)
+  * *Role*: Applies the dynamically synced `detectionRadius` from `EnemySO`.
+* **`GetClosestTarget()`** (instance, private) -> `Transform`
+  * *Role*: Queries targets. Restricts detection radius checks *specifically* to `Sniper` mode to prevent breaking global lock-ons in `Ambush` mode.
+
+---
+
+### B. C# Web Service Scripts
+
+#### 1. `AIConfigController.cs`
+* **`GetConfig(string? playerId)`** (`GET /api/aiconfig`) -> `ActionResult<AiGenerationConfigDto>`
+  * *Role*: Queries the latest generation configuration for the requested `playerId` (defaults to `"default"` if null).
+
+#### 2. `AIStatsController.cs`
+* **`SubmitSessionResults(List<AiCombatLogDto> dtos)`** (`POST /api/aistats/session-results`) -> `IActionResult`
+  * *Role*: Deserializes the combat logs array, maps `player_id`, and passes them to the evolutionary engine.
+
+#### 3. `AdminController.cs`
+* **`GetLogs()`** (`GET /api/admin/logs`) -> `IActionResult`
+  * *Role*: Retrieves the last 100 historical combat logs for the dashboard.
+* **`TweakAI(TweakRequest request)`** (`POST /api/admin/tweak`) -> `IActionResult`
+  * *Role*: Validates JWT token and forces manual configuration overrides for the specified `PlayerId`.
+
+#### 4. `SupabaseService.cs`
+* **`GetLatestConfigAsync(string playerId)`** -> `Task<AiGenerationConfig>`
+  * *Role*: Queries the database for the highest generation number matching that player. Seeds a new default config if it's their first time.
+
+#### 5. `OptimizationEngine.cs`
+* **`ProcessCombatBatchAsync(List<AiCombatLog> batchLogs)`** -> `Task`
+  * *Role*: Calculates the batch's player death rate and cover-seeking behaviors, runs genetic heuristics, and saves the new DNA parameters for that player.
+
