@@ -57,8 +57,9 @@ public class AISyncService : MonoBehaviour
         enemySO.coverProbability = data.cover_probability;
         enemySO.peekCooldown = data.peek_cooldown;
         enemySO.peekDuration = data.peek_duration;
+        enemySO.flankProbability = data.flank_probability;
 
-        Debug.Log($"[AISyncService] Applied dynamic DNA (Gen {data.generation_number}) to {enemySO.name} ({enemySO.defaultMode}): Health={enemySO.maxHealth}, MinSpread={enemySO.minSpread}, MaxSpread={enemySO.maxSpread}, PushWeight={enemySO.pushProbability}, PeekCooldown={enemySO.peekCooldown}, PeekDuration={enemySO.peekDuration}");
+        Debug.Log($"[AISyncService] Applied dynamic DNA (Gen {data.generation_number}) to {enemySO.name} ({enemySO.defaultMode}): Health={enemySO.maxHealth}, MinSpread={enemySO.minSpread}, MaxSpread={enemySO.maxSpread}, PushWeight={enemySO.pushProbability}, PeekCooldown={enemySO.peekCooldown}, PeekDuration={enemySO.peekDuration}, FlankWeight={enemySO.flankProbability}");
     }
 
     [System.Serializable]
@@ -72,5 +73,6 @@ public class AISyncService : MonoBehaviour
         public float cover_probability;
         public float peek_cooldown;
         public float peek_duration;
+        public float flank_probability;
     }
 }

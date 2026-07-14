@@ -274,9 +274,21 @@ public class EnemyBehaviorAgent : MonoBehaviour
             {
                 if (agent.isStopped) agent.isStopped = false;
                 
+                // Determine flanking angle dynamically based on evolved weights
+                float targetFlankAngle = 0f;
+                if (currentMode != EnemyMode.Sniper && enemyData != null)
+                {
+                    bool shouldFlank = (UnityEngine.Random.value <= enemyData.flankProbability);
+                    if (shouldFlank)
+                    {
+                        // Flank wide: either left 65 degrees or right 65 degrees
+                        targetFlankAngle = (UnityEngine.Random.value < 0.5f) ? -65f : 65f;
+                    }
+                }
+
                 Vector3 dirFromTarget = (transform.position - target.position).normalized;
                 if (dirFromTarget == Vector3.zero) dirFromTarget = Vector3.forward;
-                Vector3 flankingDir = Quaternion.Euler(0, personalFlankingAngle, 0) * dirFromTarget;
+                Vector3 flankingDir = Quaternion.Euler(0, targetFlankAngle, 0) * dirFromTarget;
                 Vector3 tacticalPos = target.position + flankingDir * (CurrentEngagementDist - 1.0f); 
 
                 NavMeshHit hit;
