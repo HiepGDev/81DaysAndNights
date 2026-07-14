@@ -39,6 +39,8 @@ public class EnemySO : ScriptableObject
 
     [Header("Peek Settings")]
     public float peekDistance = 0.7f;
+    public float peekCooldown = 1.0f;
+    public float peekDuration = 3.0f;
 
     [Header("Evolutionary AI Weights")]
     [Range(0, 1)] public float pushProbability = 0.5f;

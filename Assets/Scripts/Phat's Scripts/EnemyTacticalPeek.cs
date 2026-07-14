@@ -12,10 +12,16 @@ public class EnemyTacticalPeek : MonoBehaviour
 
     [Header("Peek Settings")]
     [SerializeField] private float peekDistance = 0.7f; 
+    [SerializeField] private float peekCooldown = 1.0f;
+    [SerializeField] private float peekDuration = 3.0f;
 
     private Vector3 originalCoverPos;
     private Vector3 peekPos;
     private bool isCurrentlyPeeking = false;
+    
+    private float peekTimer = 0f;
+    private float cooldownTimer = 0f;
+    private bool isWaitingOnCooldown = false;
 
     public bool IsPeeking => isCurrentlyPeeking;
 
@@ -32,6 +38,8 @@ public class EnemyTacticalPeek : MonoBehaviour
         if (enemyData != null)
         {
             peekDistance = enemyData.peekDistance;
+            peekCooldown = enemyData.peekCooldown;
+            peekDuration = enemyData.peekDuration;
         }
     }
 
@@ -40,6 +48,7 @@ public class EnemyTacticalPeek : MonoBehaviour
         if (behaviorAgent == null || !behaviorAgent.IsInCover) 
         {
             if (isCurrentlyPeeking) isCurrentlyPeeking = false;
+            isWaitingOnCooldown = false;
             // THE LOCK FIX: If we aren't at a wall, the safety MUST be OFF.
             if (shooting != null) shooting.allowFiring = true;
             return;
@@ -47,12 +56,22 @@ public class EnemyTacticalPeek : MonoBehaviour
 
         if (shooting == null || agent == null) return;
 
+        // Handle Cooldown Timer
+        if (isWaitingOnCooldown)
+        {
+            cooldownTimer += Time.deltaTime;
+            if (cooldownTimer >= peekCooldown)
+            {
+                isWaitingOnCooldown = false;
+            }
+        }
+
         // THE AMBUSH FIX: Determine if we have a target (Sensor OR Ambush)
         bool hasTarget = (detection != null && detection.IsTargetDetected) || 
                          (behaviorAgent.currentMode == EnemyBehaviorAgent.EnemyMode.Ambush && behaviorAgent.CurrentAmbushTarget != null);
 
-        // TRIGGER PEEK: Ammo full and ready and we see someone
-        if (!shooting.IsOutOfAmmo && !shooting.IsReloading && !isCurrentlyPeeking && hasTarget)
+        // TRIGGER PEEK: Ammo full and ready, we see someone, and not waiting on cooldown
+        if (!shooting.IsOutOfAmmo && !shooting.IsReloading && !isCurrentlyPeeking && hasTarget && !isWaitingOnCooldown)
         {
             // If the Agent is stopped at the hide spot, start the peek
             if (agent.isStopped || agent.remainingDistance < 0.4f)
@@ -61,13 +80,7 @@ public class EnemyTacticalPeek : MonoBehaviour
             }
         }
 
-        // TRIGGER STOP: Empty or target lost
-        if ((shooting.IsOutOfAmmo || !hasTarget) && isCurrentlyPeeking)
-        {
-            ReturnToCover();
-        }
-
-        // 3. SHOOT CONTROL: 
+        // TRIGGER STOP / SHOOT CONTROL: 
         if (isCurrentlyPeeking)
         {
             // THE FIX: Use flat distance (ignore Y) so ground height doesn't break the trigger
@@ -76,7 +89,19 @@ public class EnemyTacticalPeek : MonoBehaviour
             float distToPeek = Vector3.Distance(flatSelf, flatTarget);
 
             // Allow firing if we are roughly at the peek spot (Loosened to 0.6m)
-            shooting.allowFiring = (distToPeek <= 0.6f);
+            bool atPeekSpot = (distToPeek <= 0.6f);
+            shooting.allowFiring = atPeekSpot;
+
+            if (atPeekSpot)
+            {
+                peekTimer += Time.deltaTime;
+            }
+
+            // Return to cover if out of ammo, target lost, or peek duration exceeded
+            if (shooting.IsOutOfAmmo || !hasTarget || peekTimer >= peekDuration)
+            {
+                ReturnToCover();
+            }
         }
         else
         {
@@ -98,6 +123,7 @@ public class EnemyTacticalPeek : MonoBehaviour
         {
             peekPos = hit.position;
             isCurrentlyPeeking = true;
+            peekTimer = 0f; // Reset peek duration timer
             agent.isStopped = false;
             agent.SetDestination(peekPos);
             Debug.Log("[Tactical] Peeking out...");
@@ -107,6 +133,8 @@ public class EnemyTacticalPeek : MonoBehaviour
     private void ReturnToCover()
     {
         isCurrentlyPeeking = false;
+        isWaitingOnCooldown = true;
+        cooldownTimer = 0f; // Reset cooldown wait timer
         if (agent.isOnNavMesh)
         {
             agent.isStopped = false;
