@@ -31,6 +31,7 @@ This file serves as a quick reference map for developers and AI coding assistant
 * **[Models/SupabaseModels.cs](file:///G:/Capstone/81DaysAndNights_AIService/Models/SupabaseModels.cs)**: Maps to Supabase database tables using `postgrest-csharp`. Uses nullable `DateTime? CreatedAt` to support real-time timezone offsets.
 * **[Services/SupabaseService.cs](file:///G:/Capstone/81DaysAndNights_AIService/Services/SupabaseService.cs)**: Wrapper for database inserts/queries.
 * **[Services/OptimizationEngine.cs](file:///G:/Capstone/81DaysAndNights_AIService/Services/OptimizationEngine.cs)**: Implements Heuristic Evolutionary mutations. Modifies push/cover weights and bloom based on win rates.
+* **[Services/ServerLogAccumulator.cs](file:///G:/Capstone/81DaysAndNights_AIService/Services/ServerLogAccumulator.cs)**: Intercepts, filters, and retains internal Web Service diagnostics event logs in a circular memory buffer.
 * **[wwwroot/index.html](file:///G:/Capstone/81DaysAndNights_AIService/wwwroot/index.html)**: Admin panel featuring dark-mode glassmorphism. Shows real-time tickers and lets you manually tweak weights.
 
 ### B. Unity Client Scripts (`81DaysAndNights/Assets/Scripts/`)
