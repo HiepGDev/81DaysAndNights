@@ -111,7 +111,8 @@ public class AIEvaluationTracker : MonoBehaviour
             died_in_cover = diedInCover,
             stage_number = 1, // Default stage 1, can be overridden globally
             player_died = false, // Will be updated by SubmitLogs
-            player_id = GetPlayerId()
+            player_id = GetPlayerId(),
+            config_id = (behavior != null && behavior.EnemyData != null) ? behavior.EnemyData.configId : 0
         };
 
         lock (collectedLogs)
@@ -170,6 +171,7 @@ public class AIEvaluationTracker : MonoBehaviour
         public int stage_number;
         public bool player_died;
         public string player_id;
+        public int config_id;
     }
 
     private class LogDispatcherComponent : MonoBehaviour

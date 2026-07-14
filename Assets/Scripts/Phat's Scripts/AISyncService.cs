@@ -58,13 +58,15 @@ public class AISyncService : MonoBehaviour
         enemySO.peekCooldown = data.peek_cooldown;
         enemySO.peekDuration = data.peek_duration;
         enemySO.flankProbability = data.flank_probability;
+        enemySO.configId = data.id;
 
-        Debug.Log($"[AISyncService] Applied dynamic DNA (Gen {data.generation_number}) to {enemySO.name} ({enemySO.defaultMode}): Health={enemySO.maxHealth}, MinSpread={enemySO.minSpread}, MaxSpread={enemySO.maxSpread}, PushWeight={enemySO.pushProbability}, PeekCooldown={enemySO.peekCooldown}, PeekDuration={enemySO.peekDuration}, FlankWeight={enemySO.flankProbability}");
+        Debug.Log($"[AISyncService] Applied dynamic DNA (Gen {data.generation_number}, ConfigID {data.id}) to {enemySO.name} ({enemySO.defaultMode}): Health={enemySO.maxHealth}, MinSpread={enemySO.minSpread}, MaxSpread={enemySO.maxSpread}, PushWeight={enemySO.pushProbability}, PeekCooldown={enemySO.peekCooldown}, PeekDuration={enemySO.peekDuration}, FlankWeight={enemySO.flankProbability}");
     }
 
     [System.Serializable]
     private class AiGenerationConfigData
     {
+        public int id;
         public int generation_number;
         public int base_health;
         public float min_spread;

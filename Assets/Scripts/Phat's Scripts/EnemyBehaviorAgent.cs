@@ -53,6 +53,7 @@ public class EnemyBehaviorAgent : MonoBehaviour
     public float CurrentEngagementDist { get; private set; } 
     public Transform CurrentAmbushTarget { get; private set; }
     public Transform PlayerTransform => playerTransform;
+    public EnemySO EnemyData => enemyData;
 
     private void Awake()
     {

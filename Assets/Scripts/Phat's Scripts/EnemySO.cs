@@ -5,6 +5,7 @@ public class EnemySO : ScriptableObject
 {
     [Header("Base Stats")]
     public int maxHealth = 100;
+    public int configId = 0;
 
     [Header("Detection Settings")]
     public float detectionRadius = 15.0f;
