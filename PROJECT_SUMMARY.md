@@ -1,0 +1,148 @@
+# 81 Days & Nights - AI Evolutionary System Map
+
+This file serves as a quick reference map for developers and AI coding assistants working on the AI optimization loop of **81 Days & Nights**.
+
+---
+
+## 1. System Architecture Flow
+
+```
+[ Unity Client ] ---------------------> [ ASP.NET Core API ] (Port 5093)
+   - AISyncService (Pulls DNA)              - Receives session logs (DTO -> Model)
+   - AIEvaluationTracker (Logs stats)       - Runs Heuristic Genetic Optimizer
+   - GameOverManager (Upload hook)          - Hosts Admin Panel (wwwroot/index.html)
+          |                                               |
+          v                                               v
+[ Local SQLite / PlayerPrefs ]                    [ Supabase Database ]
+   - Config cache (Fallback)                        - ai_generation_configs (Stats DNA)
+                                                    - ai_combat_logs (History)
+                                                    - admins (Hashed credentials)
+```
+
+---
+
+## 2. Directory & Script Registry
+
+### A. ASP.NET Core API Service (`81DaysAndNights_AIService/`)
+* **[Controllers/AIConfigController.cs](file:///G:/Capstone/81DaysAndNights_AIService/Controllers/AIConfigController.cs)**: Exposes `GET /api/aiconfig` to serve the latest evolved parameters.
+* **[Controllers/AIStatsController.cs](file:///G:/Capstone/81DaysAndNights_AIService/Controllers/AIStatsController.cs)**: Exposes `POST /api/aistats/session-results` (accepts `List<AiCombatLogDto>` in snake_case and translates them to database models).
+* **[Controllers/AdminController.cs](file:///G:/Capstone/81DaysAndNights_AIService/Controllers/AdminController.cs)**: Authenticates admin credentials, handles JWT generation, logs queries, and handles manual weights override (`tweak`).
+* **[Models/Dtos.cs](file:///G:/Capstone/81DaysAndNights_AIService/Models/Dtos.cs)**: Holds the snake_case Data Transfer Objects (`AiGenerationConfigDto`, `AiCombatLogDto`) to map 1-to-1 to Unity's serializer.
+* **[Models/SupabaseModels.cs](file:///G:/Capstone/81DaysAndNights_AIService/Models/SupabaseModels.cs)**: Maps to Supabase database tables using `postgrest-csharp`. Uses nullable `DateTime? CreatedAt` to support real-time timezone offsets.
+* **[Services/SupabaseService.cs](file:///G:/Capstone/81DaysAndNights_AIService/Services/SupabaseService.cs)**: Wrapper for database inserts/queries.
+* **[Services/OptimizationEngine.cs](file:///G:/Capstone/81DaysAndNights_AIService/Services/OptimizationEngine.cs)**: Implements Heuristic Evolutionary mutations. Modifies push/cover weights and bloom based on win rates.
+* **[wwwroot/index.html](file:///G:/Capstone/81DaysAndNights_AIService/wwwroot/index.html)**: Admin panel featuring dark-mode glassmorphism. Shows real-time tickers and lets you manually tweak weights.
+
+### B. Unity Client Scripts (`81DaysAndNights/Assets/Scripts/`)
+* **[Phat's Scripts/AISyncService.cs](file:///G:/Capstone/81DaysAndNights/Assets/Scripts/Phat's Scripts/AISyncService.cs)**: Syncs `EnemySO` scriptable objects with the latest server generation weights.
+* **[Phat's Scripts/AIEvaluationTracker.cs](file:///G:/Capstone/81DaysAndNights/Assets/Scripts/Phat's Scripts/AIEvaluationTracker.cs)**:
+  * Records individual enemy lifespans, damage dealt, and cover states.
+  * Uses a local `timeAlive` accumulator in `Update()` (`Time.deltaTime`) to prevent negative values during transitions.
+  * Employs a static `sessionEnded` lock to block double submissions.
+  * Uses `DontDestroyOnLoad` on `LogDispatcher` to ensure uploads finish during scene reloads.
+* **[Phat's Scripts/EnemyBehaviorAgent.cs](file:///G:/Capstone/81DaysAndNights/Assets/Scripts/Phat's Scripts/EnemyBehaviorAgent.cs)**: Exposes low-health ($< 30\%$) dynamic branch (Push vs. Cover decision). Restricted lock range checks in `GetClosestTarget` to `Sniper` mode to preserve Ambush mode locking.
+* **[Phat's Scripts/EnemySO.cs](file:///G:/Capstone/81DaysAndNights/Assets/Scripts/Phat's Scripts/EnemySO.cs)** / **[EnemyDetection.cs](file:///G:/Capstone/81DaysAndNights/Assets/Scripts/Phat's Scripts/EnemyDetection.cs)**: Holds the `detectionRadius` attribute.
+* **[Hiep's Scripts/GameOverManager.cs](file:///G:/Capstone/81DaysAndNights/Assets/Scripts/Hiep's Scripts/GameOverManager.cs)**: Activates on player death; contains the trigger call: `AIEvaluationTracker.SubmitSessionLogs(true, SceneManager.GetActiveScene().buildIndex);`
+* **[Hiep's Scripts/PlayerHealth.cs](file:///G:/Capstone/81DaysAndNights/Assets/Scripts/Hiep's Scripts/PlayerHealth.cs)**: Disables movement, locks camera, and sets the Game Over Canvas active upon death.
+
+---
+
+## 3. Database Schema Reference (Supabase)
+
+```sql
+-- 1. Evolved AI Configurations
+CREATE TABLE ai_generation_configs (
+    id SERIAL PRIMARY KEY,
+    generation_number INT UNIQUE NOT NULL,
+    base_health INT DEFAULT 100,
+    min_spread FLOAT DEFAULT 0.01,
+    max_spread FLOAT DEFAULT 0.08,
+    push_probability FLOAT DEFAULT 0.5,
+    cover_probability FLOAT DEFAULT 0.5,
+    player_id VARCHAR(100) DEFAULT 'default',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 2. Combat Session Logs
+CREATE TABLE ai_combat_logs (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    session_id VARCHAR(100) NOT NULL,
+    enemy_type VARCHAR(50) NOT NULL,
+    damage_dealt INT NOT NULL,
+    damage_taken INT NOT NULL,
+    time_alive FLOAT NOT NULL,
+    died_in_cover BOOLEAN NOT NULL,
+    stage_number INT NOT NULL,
+    player_died BOOLEAN NOT NULL,
+    player_id VARCHAR(100) DEFAULT 'default',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 3. Admin Credentials
+CREATE TABLE admins (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    username VARCHAR(50) UNIQUE NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+---
+
+## 4. Run & Test Instructions
+
+### Running C# Web Service
+```bash
+cd G:\Capstone\81DaysAndNights_AIService
+dotnet run --urls=http://localhost:5093
+```
+* **Admin Dashboard URL**: `http://localhost:5093`
+* **Localhost Bypass**: Unity scripts point to `http://127.0.0.1:5093` to prevent IPv6/DNS lookup delays.
+
+### Testing Cycle
+1. Press **Play** in Unity. The console should log `Successfully loaded latest AI configuration`.
+2. Play the game and fight enemies.
+3. **To test Defeat**: Let the player die. The game over screen will automatically upload the session combat stats.
+4. **To test Victory**: Win the stage, change the scene, or press `T` (manual key simulation).
+5. **Verify**: Open `http://localhost:5093` and look at the logs table. You will see real-time records at the top of the table.
+
+---
+
+## 5. Core Data & Communication Flows
+
+### Flow A: Startup AI Configuration Sync
+This workflow updates the enemy properties inside the Unity Editor when you enter Play mode:
+
+1. **Unity Start**: `AISyncService.Start()` initiates the sync.
+2. **HTTP Fetch**: Calls `GetLatestAIConfig()` coroutine to request `GET /api/aiconfig?playerId=PLAYER_ID` (retrieving the unique player ID from Local PlayerPrefs).
+3. **API Logic**: `AIConfigController.GetLatestConfig()` calls `SupabaseService.GetLatestGenerationConfigAsync(playerId)` to fetch the newest row from the `ai_generation_configs` table matching that specific player.
+4. **Local Update**: Unity receives the JSON payload, converts it, and calls `AISyncService.UpdateScriptableObjects()`.
+5. **DNA Tweak**: Writes the new values (`baseHealth`, `minSpread`, `maxSpread`, `pushProbability`, `coverProbability`) into the respective `EnemySO` Scriptable Objects.
+6. **Agent Init**: Spawned enemies read these configurations in their `Awake()` and `Start()` calls.
+
+---
+
+### Flow B: Combat Logging & Accumulation
+This workflow tracks combat metrics in real-time during gameplay:
+
+1. **Damage Taken**: Player shoots enemy -> Calls `EnemyHealth.TakeDamage(amount)`.
+2. **Damage Dealt**: Enemy shoots player -> Calls `EnemyShooting.ShootManual()`, which increments `totalDamageDealt` by bullet damage.
+3. **Survival Clock**: `AIEvaluationTracker.Update()` increments local `timeAlive` by `Time.deltaTime` each frame.
+4. **Enemy Death Event**: If `EnemyHealth.CurrentHealth <= 0`:
+   * Triggers `AIEvaluationTracker.RegisterLog(died: true)`.
+   * Saves the snapshot of survival time, damage dealt, and cover state in the static queue `collectedLogs`.
+
+---
+
+### Flow C: Session Logs Submission (Player Defeat)
+This workflow handles packaging and sending logs to the server when the player fails:
+
+1. **Player Death**: `PlayerHealth.Die()` calls `gameOverCanvas.SetActive(true)`.
+2. **Canvas Activation**: Triggers `GameOverManager.OnEnable()`.
+3. **Trigger upload**: Calls static `AIEvaluationTracker.SubmitSessionLogs(playerDied: true, stageNumber)`.
+4. **Lock Activation**: Sets static `sessionEnded = true` to reject any further log updates during level reloading.
+5. **Remaining Gather**: Loops through all remaining alive enemies in the scene and registers them as survived (`died: false`).
+6. **Upload Dispatch**: Spawns the `LogDispatcher` GameObject, calls `DontDestroyOnLoad()`, and starts `PostLogs()` coroutine.
+7. **HTTP Post**: Sends the JSON data (including the unique `player_id`) to `POST /api/aistats/session-results`.
+8. **Server Database Save**: `AIStatsController.SubmitSessionResults()` receives the array, maps the `player_id`, and saves the logs to the `ai_combat_logs` table.
+9. **Evolutionary Optimization**: Passes the logs to `OptimizationEngine.ProcessCombatBatchAsync()`. If a new generation is ready, it mutates the weights specifically for that player, and saves the new DNA configuration under their `player_id` to the `ai_generation_configs` table.
