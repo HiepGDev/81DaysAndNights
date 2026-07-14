@@ -201,6 +201,8 @@ This workflow handles packaging and sending logs to the server when the player f
 #### 5. `EnemyBehaviorAgent.cs`
 * **`Awake()`** (instance, private)
   * *Role*: Applies the dynamically synced `detectionRadius` from `EnemySO`.
+* **`Update()`** (instance, private)
+  * *Role*: Evaluates engagement ranges and target detection. Implements dynamic flanking checks: if the role is a non-sniper, rolls a random check against `flankProbability` weight to either direct-charge the target (0 degrees) or flank-circle wide (+/- 65 degrees).
 * **`GetClosestTarget()`** (instance, private) -> `Transform`
   * *Role*: Queries targets. Restricts detection radius checks *specifically* to `Sniper` mode to prevent breaking global lock-ons in `Ambush` mode.
 
