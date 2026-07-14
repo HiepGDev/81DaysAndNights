@@ -219,6 +219,8 @@ This workflow handles packaging and sending logs to the server when the player f
 #### 3. `AdminController.cs`
 * **`GetLogs()`** (`GET /api/admin/logs`) -> `IActionResult`
   * *Role*: Retrieves the last 100 historical combat logs for the dashboard.
+* **`GetPlayersList()`** (`GET /api/admin/players`) -> `IActionResult`
+  * *Role*: Queries all config rows in the database, groups them by unique Player ID, and returns the latest generation config for each player.
 * **`TweakAI(TweakRequest request)`** (`POST /api/admin/tweak`) -> `IActionResult`
   * *Role*: Validates JWT token and forces manual configuration overrides for the specified `PlayerId`.
 
