@@ -6005,6 +6005,54 @@ Transform:
   - {fileID: 400001313}
   m_Father: {fileID: 1078523904}
   m_LocalEulerAnglesHint: {x: 8.298272, y: -0.002274135, z: -0.0008460607}
+--- !u!1 &357796002
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 357796004}
+  - component: {fileID: 357796003}
+  m_Layer: 0
+  m_Name: ' AISyncManager'
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &357796003
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 357796002}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9df9ca03528e4204299ddff00d893691, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AISyncService
+  configUrl: http://127.0.0.1:5093/api/aiconfig
+  enemyConfigs:
+  - {fileID: 11400000, guid: 3a4b9c1f2e3d4c5b6a7b8c9d0e1f2a3b, type: 2}
+  - {fileID: 11400000, guid: 81d99a9b9c9d9e9f9a9b9c9d9e9f81d9, type: 2}
+--- !u!4 &357796004
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 357796002}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 419.4554, y: 104.33289, z: 391.92004}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &372748062
 GameObject:
   m_ObjectHideFlags: 0
@@ -24807,6 +24855,7 @@ MonoBehaviour:
   magazineSize: 30
   reloadTime: 5
   allowFiring: 1
+  totalDamageDealt: 0
 --- !u!114 &1432577895
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -44110,6 +44159,7 @@ MonoBehaviour:
   magazineSize: 30
   reloadTime: 5
   allowFiring: 1
+  totalDamageDealt: 0
 --- !u!4 &2880946604758266912
 Transform:
   m_ObjectHideFlags: 0
@@ -63285,3 +63335,4 @@ SceneRoots:
   - {fileID: 141960527}
   - {fileID: 2095963509}
   - {fileID: 1093087799}
+  - {fileID: 357796004}

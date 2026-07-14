@@ -40,6 +40,10 @@ public class EnemySO : ScriptableObject
     [Header("Peek Settings")]
     public float peekDistance = 0.7f;
 
+    [Header("Evolutionary AI Weights")]
+    [Range(0, 1)] public float pushProbability = 0.5f;
+    [Range(0, 1)] public float coverProbability = 0.5f;
+
     [Header("Asset References")]
     public GameObject enemyPrefab;
     public GameObject impactVfxPrefab;

@@ -40,6 +40,9 @@ public class GameOverManager : MonoBehaviour
     }
     private void OnEnable()
     {
+        // Automatically submit combat logs indicating player death
+        AIEvaluationTracker.SubmitSessionLogs(true, SceneManager.GetActiveScene().buildIndex);
+
         // Trigger random quote + pop-up on every activation (death)
         ShowRandomQuote();
         StartCoroutine(ReloadScene());

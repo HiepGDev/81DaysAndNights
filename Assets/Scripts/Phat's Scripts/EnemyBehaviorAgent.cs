@@ -13,6 +13,9 @@ public class EnemyBehaviorAgent : MonoBehaviour
     private EnemyTacticalPeek peek;
     private Animator animator;
     [SerializeField] private EnemySO enemyData;
+    private EnemyHealth enemyHealth;
+    private bool hasDecidedLowHealthBehavior = false;
+    private bool shouldPushAtLowHealth = false;
 
     [Header("Ambush Settings")]
     public EnemyMode currentMode = EnemyMode.Wander;
@@ -59,6 +62,7 @@ public class EnemyBehaviorAgent : MonoBehaviour
         cover = GetComponent<EnemyCover>();
         peek = GetComponent<EnemyTacticalPeek>();
         animator = GetComponentInChildren<Animator>();
+        enemyHealth = GetComponent<EnemyHealth>();
 
         if (enemyData != null)
         {
@@ -198,6 +202,43 @@ public class EnemyBehaviorAgent : MonoBehaviour
             if (!isInCover) FindAndGoToCover();
             else HandleCoverLogic(inShootingRange);
             return;
+        }
+
+        // Reset low health decision when target is lost
+        if (!isDetected)
+        {
+            hasDecidedLowHealthBehavior = false;
+        }
+
+        // Low health decision branch
+        if (enemyHealth != null && isDetected && target != null && enemyHealth.CurrentHealth <= enemyHealth.MaxHealth * 0.3f)
+        {
+            if (!hasDecidedLowHealthBehavior)
+            {
+                hasDecidedLowHealthBehavior = true;
+                float pushWeight = (enemyData != null) ? enemyData.pushProbability : 0.5f;
+                shouldPushAtLowHealth = (UnityEngine.Random.value <= pushWeight);
+            }
+
+            if (!shouldPushAtLowHealth)
+            {
+                // Run away to cover
+                if (!isInCover) FindAndGoToCover();
+                else HandleCoverLogic(inShootingRange);
+                return;
+            }
+            else
+            {
+                // Push/rush the player!
+                if (agent.isStopped) agent.isStopped = false;
+                agent.SetDestination(target.position);
+                FaceTarget();
+                if (distToTarget <= maxGunRange)
+                {
+                    IsReadyToShoot = true;
+                }
+                return;
+            }
         }
 
         if (currentMode == EnemyMode.Sniper && isDetected && target != null)
