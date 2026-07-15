@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d690b49afd5fe004d98d41ea5bd77115, type: 3}
+  m_Name: M1911
+  m_EditorClassIdentifier: Assembly-CSharp::WeaponSO
+  Damage: 10
+  MaxDistance: 50
+  currentAmmo: 9
+  reserveAmmo: 37
+  maxReserveAmmo: 45
+  magazineSize: 9
+  fireRate: 0.3
+  reloadTime: 2
+  reloading: 0
+  isAutomatic: 0
+  canZoom: 1
+  zoomAmount: 30
+  useScopeOverlay: 0
+  scopeDelay: 0.15
+  GunSound: {fileID: 8300000, guid: 0e64d8855f6830c4b8ac083999ade2a2, type: 3}
+  reloadSound: {fileID: 8300000, guid: 1fabc9e388a0829459effc0c9c0f5243, type: 3}
+  HitVfxPrefab: {fileID: 6937745106237518484, guid: b8a152f6cad1821469b12ed36594fc8b, type: 3}
