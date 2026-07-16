@@ -36,10 +36,9 @@ public class ExplosionDamageNoCover : MonoBehaviour
         // Tâm nổ được nâng lên
         Vector3 explosionCenter =
             transform.position + Vector3.up * upwardOffset;
-
+        
         // Quét collider trong vùng nổ
-        Collider[] hits =
-            Physics.OverlapSphere(explosionCenter, radius, damageLayer);
+        Collider[] hits = Physics.OverlapSphere(explosionCenter, radius);
 
         foreach (Collider hit in hits)
         {

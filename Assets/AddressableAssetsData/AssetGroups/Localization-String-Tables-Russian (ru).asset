@@ -15,8 +15,20 @@ MonoBehaviour:
   m_GroupName: Localization-String-Tables-Russian (ru)
   m_GUID: 7aca7bd25212da94f97ea60192894097
   m_SerializeEntries:
+  - m_GUID: 0d2f7511c3ff52e47bc49b4da62364ae
+    m_Address: Other Labels_ru
+    m_ReadOnly: 1
+    m_SerializedLabels:
+    - Locale-ru
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 4cf0b9fe26e1a9245b2e40cdd4a7a423
     m_Address: Menu Labels_ru
+    m_ReadOnly: 1
+    m_SerializedLabels:
+    - Locale-ru
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c79741da832790942a05b669a368c6c3
+    m_Address: CutsceneSubtitles_ru
     m_ReadOnly: 1
     m_SerializedLabels:
     - Locale-ru

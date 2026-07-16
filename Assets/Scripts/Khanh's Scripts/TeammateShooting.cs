@@ -62,17 +62,17 @@ public class TeammateShooting : MonoBehaviour
 
         if (teammateData != null)
         {
-            currentFireMode = teammateData.fireMode;
-            autoFireRate = teammateData.autoFireRate;
-            semiFireRateMin = teammateData.semiFireRateMin;
-            semiFireRateMax = teammateData.semiFireRateMax;
-            fireDistance = teammateData.fireDistance;
-            damagePerShot = teammateData.damagePerShot;
-            magazineSize = teammateData.magazineSize;
-            reloadTime = teammateData.reloadTime;
-            minSpread = teammateData.minSpread;
-            maxSpread = teammateData.maxSpread;
-            bloomIncrease = teammateData.bloomIncrease;
+            //currentFireMode = teammateData.fireMode;
+            //autoFireRate = teammateData.autoFireRate;
+            //semiFireRateMin = teammateData.semiFireRateMin;
+            //semiFireRateMax = teammateData.semiFireRateMax;
+            //fireDistance = teammateData.fireDistance;
+            //damagePerShot = teammateData.damagePerShot;
+            //magazineSize = teammateData.magazineSize;
+            //reloadTime = teammateData.reloadTime;
+            //minSpread = teammateData.minSpread;
+            //maxSpread = teammateData.maxSpread;
+            //bloomIncrease = teammateData.bloomIncrease;
 
             if (teammateData.impactVfxPrefab != null) impactVfxPrefab = teammateData.impactVfxPrefab;
             if (teammateData.muzzleFlashPrefab != null) muzzleFlashPrefab = teammateData.muzzleFlashPrefab;
@@ -267,40 +267,33 @@ public class TeammateShooting : MonoBehaviour
     {
         isReloading = true;
         isShootingInProgress = false;
-        currentBloom = 0f; 
+        currentBloom = 0f;
 
-        if(audioSource != null && reloadSound != null)
+        if (audioSource != null && reloadSound != null)
             audioSource.PlayOneShot(reloadSound, shootVolume);
 
         TeammateAI behavior = GetComponent<TeammateAI>();
         bool inCover = (behavior != null && behavior.CurrentState == TeammateAI.TeammateState.SeekingCover);
-        bool shouldCrouchReload = isCrouched || inCover;
 
         if (animator != null)
         {
             if (HasParameter("isShooting", animator)) animator.SetBool("isShooting", false);
+
             if (HasParameter("isCrouching", animator)) animator.SetBool("isCrouching", false);
             if (HasParameter("isReloading", animator)) animator.SetBool("isReloading", true);
 
-            if (shouldCrouchReload)
-            {
-                animator.CrossFade("crouching_reload", 0.1f);
-                float animDuration = 3.2f;
-                yield return new WaitForSeconds(animDuration);
+            animator.CrossFade("crouching_reload", 0.1f);
 
-                if (isReloading && inCover)
-                {
-                    animator.CrossFade("Cover_Crouching", 0.2f);
-                }
+            float animDuration = 2.5f;
+            yield return new WaitForSeconds(animDuration);
 
-                float remaining = Mathf.Max(0, reloadTime - animDuration);
-                if (remaining > 0) yield return new WaitForSeconds(remaining);
-            }
-            else
+            if (isReloading && inCover)
             {
-                animator.CrossFade("reload_standing", 0.1f);
-                yield return new WaitForSeconds(reloadTime);
+                animator.CrossFade("Cover_Crouching", 0.2f);
             }
+
+            float remaining = Mathf.Max(0, reloadTime - animDuration);
+            if (remaining > 0) yield return new WaitForSeconds(remaining);
         }
         else
         {
@@ -321,7 +314,7 @@ public class TeammateShooting : MonoBehaviour
             }
         }
 
-        Debug.Log("[Teammate Weapon] Reload Complete.");
+        Debug.Log("[Teammate Weapon] Tactical Crouch Reload Complete.");
     }
 
     private bool HasParameter(string paramName, Animator anim)
