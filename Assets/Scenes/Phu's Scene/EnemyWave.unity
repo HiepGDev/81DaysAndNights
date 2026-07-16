@@ -5740,7 +5740,6 @@ MonoBehaviour:
   movement: {fileID: 0}
   gun: {fileID: 0}
   controller: {fileID: 4004789506798079247}
-  weaponManager: {fileID: 0}
 --- !u!1 &1637814905445372110
 GameObject:
   m_ObjectHideFlags: 0
@@ -13360,16 +13359,16 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5313326788818930001}
+  - component: {fileID: 4004789506798079247}
+  - component: {fileID: 7992567303823337236}
+  - component: {fileID: 7247469447290023714}
   - component: {fileID: 9123921407495049217}
   - component: {fileID: 9123921407495049216}
-  - component: {fileID: 4004789506798079247}
-  - component: {fileID: 6250797797978200698}
-  - component: {fileID: 7247469447290023714}
-  - component: {fileID: 7992567303823337236}
   - component: {fileID: 9123921407495049215}
-  - component: {fileID: 5257900339925041236}
   - component: {fileID: 6228274949979504544}
   - component: {fileID: 7088240144424574163}
+  - component: {fileID: 5257900339925041236}
+  - component: {fileID: 6250797797978200698}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -13630,7 +13629,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 17ea36f25b9a709449e8a2428b777433, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Headbob
-  playerMovement: {fileID: 0}
+  campaignMovement: {fileID: 0}
+  survivalMovement: {fileID: 0}
   characterController: {fileID: 0}
   walkAmplitude: 0.06
   sprintAmplitude: 0.1
@@ -14014,14 +14014,22 @@ MonoBehaviour:
   m_GameObject: {fileID: 670163996986325079}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5f501b313ffd5f943870b2d7e19d3148, type: 3}
+  m_Script: {fileID: 11500000, guid: 94550478c58fa814fb03ef61cc961b47, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PlayerGun
+  m_EditorClassIdentifier: Assembly-CSharp::SurvivalPlayerGun
+  _networkRules: {fileID: 0}
+  _visitiblityRules: {fileID: 0}
+  _isSetup: 0
+  _prefabId: -2147483648
+  _componentIndex: -2147483648
+  _shouldBePooled: 0
+  _parent: {fileID: 0}
+  _invertedPathToNearestParent: 
+  _directChildren: []
   gunData: {fileID: 11400000, guid: 9c261834df3c7a84ea7aa95d3c05723c, type: 2}
   recoil: {fileID: 8435767819488901037}
   crosshair: {fileID: 1635355713269047573}
   isAiming: 0
-  emptyClipSound: {fileID: 8300000, guid: d1886e7667720ab44b9ee57af3ddaa59, type: 3}
   interactionLayers:
     serializedVersion: 2
     m_Bits: 183
@@ -14036,6 +14044,7 @@ MonoBehaviour:
   aimSpeed: 10
   kickBackAmount: 0.04
   kickUpAmount: 1.5
+  emptyClipSound: {fileID: 8300000, guid: d1886e7667720ab44b9ee57af3ddaa59, type: 3}
 --- !u!114 &8435767819488901037
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -14432,11 +14441,23 @@ MonoBehaviour:
   m_GameObject: {fileID: 7060386072779690655}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bf732b63f4fc9d648b1d4f8a08d0143b, type: 3}
+  m_Script: {fileID: 11500000, guid: 9e7946871ed075d46a54506495197233, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PlayerHealth
+  m_EditorClassIdentifier: Assembly-CSharp::SurvivalPlayerHealth
+  _networkRules: {fileID: 0}
+  _visitiblityRules: {fileID: 0}
+  _isSetup: 0
+  _prefabId: -2147483648
+  _componentIndex: -2147483648
+  _shouldBePooled: 0
+  _parent: {fileID: 0}
+  _invertedPathToNearestParent: 
+  _directChildren: []
   maxHealth: 100
-  currentHealth: 0
+  currentHealth:
+    _value: 100
+    _ownerAuth: 0
+    _sendIntervalInSeconds: 0
   regenRate: 10
   regenDelay: 2
   healthBar: {fileID: 3650089022368782684}
@@ -14460,9 +14481,18 @@ MonoBehaviour:
   m_GameObject: {fileID: 7060386072779690655}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9cb858c4807e1684f8239b8d6e1e6f8e, type: 3}
+  m_Script: {fileID: 11500000, guid: 7d358f21a1ee6d843bf045a5678f28d5, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PlayerMovement
+  m_EditorClassIdentifier: Assembly-CSharp::SurvivalPlayerMovement
+  _networkRules: {fileID: 0}
+  _visitiblityRules: {fileID: 0}
+  _isSetup: 0
+  _prefabId: -2147483648
+  _componentIndex: -2147483648
+  _shouldBePooled: 0
+  _parent: {fileID: 0}
+  _invertedPathToNearestParent: 
+  _directChildren: []
   animator: {fileID: 2352464091218344279, guid: ba4ad7ea0d312b141ada6cdb0fa36df3, type: 3}
   playerCamera: {fileID: 8953099946700379736}
   walkSpeed: 5
