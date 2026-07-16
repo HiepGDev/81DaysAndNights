@@ -1,6 +1,7 @@
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.Localization;
 
 public class PlayerInteraction : MonoBehaviour
 {
@@ -8,6 +9,7 @@ public class PlayerInteraction : MonoBehaviour
     [SerializeField] private TextMeshProUGUI interactUI; // "Press E" text
     // [SerializeField] private GameObject riceInHand;
     [SerializeField] private Animator riceAnimator;
+    [SerializeField] private LocalizedString localizedPressTemplate;
     private InputAction interactAction;
     private string currentKeyName = "E";
     void Awake()
@@ -27,10 +29,10 @@ public class PlayerInteraction : MonoBehaviour
             if (hit.collider.TryGetComponent(out IInteractable interactable))
             {
                 // Only show UI if the NPC hasn't been fed yet
-                string text = interactable.GetInteractText();
-                if (!string.IsNullOrEmpty(text))
+                string actionText = interactable.GetInteractText();
+                if (!string.IsNullOrEmpty(actionText))
                 {
-                    interactUI.text = $"Press {currentKeyName} to {text}";
+                    interactUI.text = localizedPressTemplate.GetLocalizedString(currentKeyName, actionText);
                     interactUI.gameObject.SetActive(true);
 
                     if (interactAction != null && interactAction.WasPressedThisFrame())
@@ -38,7 +40,7 @@ public class PlayerInteraction : MonoBehaviour
                         //  NPC to play "Receive" animation
                         interactable.Interact();
                         //  Tell the Player's hand to play the "Give" animation
-                        if (riceAnimator != null)
+                        if (riceAnimator != null && !hit.collider.TryGetComponent(out AmmoBox _))
                         {
                             riceAnimator.SetTrigger("GiveFood");
                         }

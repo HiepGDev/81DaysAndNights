@@ -21,6 +21,18 @@ MonoBehaviour:
     m_SerializedLabels:
     - Locale-vi-VN
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 70c9eef04cc47404fbf7ab4ef60ec469
+    m_Address: CutsceneSubtitles_vi-VN
+    m_ReadOnly: 1
+    m_SerializedLabels:
+    - Locale-vi-VN
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ec091d0cd5da03a4eaacaf4e1331d604
+    m_Address: Other Labels_vi-VN
+    m_ReadOnly: 1
+    m_SerializedLabels:
+    - Locale-vi-VN
+    FlaggedDuringContentUpdateRestriction: 0
   m_ReadOnly: 1
   m_Settings: {fileID: 11400000, guid: 886118d0ce774cd48b8aa2fa502b39c5, type: 2}
   m_SchemaSet:

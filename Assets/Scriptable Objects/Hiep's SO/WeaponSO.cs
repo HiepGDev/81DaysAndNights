@@ -3,7 +3,6 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "WeaponSO", menuName = "Scriptable Objects/WeaponSO")]
 public class WeaponSO : ScriptableObject
 {
-    public string weaponID;
     [Header("Stats")]
     public int  Damage;
     public float MaxDistance;
@@ -17,6 +16,8 @@ public class WeaponSO : ScriptableObject
     public bool isAutomatic;
     public bool canZoom;
     public float zoomAmount;
+    public bool useScopeOverlay;       // TICK THIS BOX IF THE GUN IS A SNIPER
+    public float scopeDelay = 0.15f;
 
     [Header("Asset References")]
     public AudioClip GunSound; 
