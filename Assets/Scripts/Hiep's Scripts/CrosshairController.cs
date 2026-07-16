@@ -20,7 +20,6 @@ public class CrosshairController : MonoBehaviour
     [SerializeField] private PlayerMovement movement;
     [SerializeField] private PlayerGun gun;
     [SerializeField] private CharacterController controller;
-    [SerializeField] private WeaponSwitchManager weaponManager;
     void Awake()
     {
         moveAction = InputSystem.actions.FindAction("Move");
@@ -30,7 +29,6 @@ public class CrosshairController : MonoBehaviour
         if (movement == null) movement = FindFirstObjectByType<PlayerMovement>(FindObjectsInactive.Include);
         if (gun == null) gun = FindFirstObjectByType<PlayerGun>(FindObjectsInactive.Include);
         if (controller == null) controller = FindFirstObjectByType<CharacterController>();
-        if (weaponManager == null) weaponManager = FindFirstObjectByType<WeaponSwitchManager>(FindObjectsInactive.Include);
         if (movement == null || gun == null || controller == null)
         {
             Debug.LogWarning($"[Crosshair] Missing Player references in {gameObject.name}!");
@@ -49,10 +47,11 @@ public class CrosshairController : MonoBehaviour
             targetSize = movement.isSprinting ? sprintSize : walkSize;
         }
 
+        PlayerGun activeGun = GetActiveGun();
         // Hide crosshair if aiming (ADS) or if the player is holding the rice arm
-        bool isAiming = gun != null && gun.isAiming;
-        bool holdingRice = weaponManager != null && (weaponManager.IsHoldingRice || weaponManager.IsUnarmed);
-        float targetAlpha = (isAiming || holdingRice) ? 0f : 1f;
+        bool isAiming = activeGun != null && activeGun.isAiming;
+        bool isUnarmed = activeGun == null;
+        float targetAlpha = (isAiming ||  isUnarmed) ? 0f : 1f;
         UpdateAlpha(targetAlpha);
 
         //  Smoothly move toward the target size
@@ -82,5 +81,14 @@ public class CrosshairController : MonoBehaviour
         {
             group.alpha = Mathf.Lerp(group.alpha, alpha, Time.deltaTime * lerpSpeed);
         }
+    }
+    private PlayerGun GetActiveGun()
+    {
+        if (gun == null || !gun.gameObject.activeInHierarchy)
+        {
+            // Find the active gun in the scene
+            gun = Object.FindFirstObjectByType<PlayerGun>(); 
+        }
+        return gun;
     }
 }

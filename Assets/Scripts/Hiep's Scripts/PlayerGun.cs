@@ -37,6 +37,9 @@ public class PlayerGun : MonoBehaviour
     [SerializeField] private float kickBackAmount = 0.04f;  // How far the gun moves back
     [SerializeField] private float kickUpAmount = 1.5f;     // How much the barrel tips up
     // [SerializeField] private float recoilReturnSpeed = 20f;
+    [Header("Sniper Scope Overlay")]
+    [SerializeField] private GameObject scopeOverlayUI; // Drag Scope UI Image here
+    private bool isScoped = false;
 
     private void Awake() {
       shootAction = InputSystem.actions.FindAction("Player/Shoot");
@@ -102,10 +105,13 @@ public class PlayerGun : MonoBehaviour
         {
             weaponCamera.fieldOfView = defaultFOV;
         }
+
+        if (scopeOverlayUI != null) scopeOverlayUI.SetActive(false);
     }
     private void OnDisable()
     {
         StopAllCoroutines();
+        Unscope();
         if (gunData != null) gunData.reloading = false;
         if (virtualCamera != null) virtualCamera.Lens.FieldOfView = defaultFOV;
         if (weaponCamera != null) weaponCamera.fieldOfView = defaultFOV;
@@ -233,6 +239,7 @@ public class PlayerGun : MonoBehaviour
         if (!gunData.canZoom)
         {
             isAiming = false;
+            if (isScoped) Unscope();
             return;
         }
 
@@ -240,8 +247,13 @@ public class PlayerGun : MonoBehaviour
 
         if (aimAction.IsPressed() && !isSprinting && !gunData.reloading) {
             isAiming = true;
+            if (gunData.useScopeOverlay && !isScoped) 
+            {
+                StartCoroutine(OnScoped());
+            }
         } else {
             isAiming = false;
+            if (isScoped) Unscope();
         }
 
         // Move the Gun Transform
@@ -261,6 +273,34 @@ public class PlayerGun : MonoBehaviour
             weaponCamera.fieldOfView = Mathf.Lerp(weaponCamera.fieldOfView, targetFOV, Time.deltaTime * aimSpeed);
         }
     }
+    IEnumerator OnScoped()
+    {
+        isScoped = true;
+        
+        // Wait a fraction of a second for the gun to reach the center of the screen
+        yield return new WaitForSeconds(gunData.scopeDelay);
+
+        // Double check that the player didn't let go of the right mouse button early (Quick-scoping)
+        if (isAiming)
+        {
+            if (scopeOverlayUI != null) scopeOverlayUI.SetActive(true);
+            // Turn off the weapon camera so the 3D gun model disappears
+            if (weaponCamera != null) weaponCamera.enabled = false; 
+            // Hide the standard crosshair while using the sniper scope
+            if (crosshair != null) crosshair.gameObject.SetActive(false); 
+        }
+    }
+
+    void Unscope()
+    {
+        isScoped = false;
+        // Turn off the UI Image
+        if (scopeOverlayUI != null) scopeOverlayUI.SetActive(false);
+        // Turn the weapon camera back on so we can see the 3D gun lower back to hip-fire
+        if (weaponCamera != null) weaponCamera.enabled = true; 
+        // Turn the standard crosshair back on
+        if (crosshair != null) crosshair.gameObject.SetActive(true);
+    }
     void UpdateAmmoUI()
     {
         ammoText.text = $"{gunData.currentAmmo:D2} / {gunData.reserveAmmo:D3}";
@@ -268,6 +308,23 @@ public class PlayerGun : MonoBehaviour
     public void UpdateDefaultFOV(float newFOV)
     {
         defaultFOV = newFOV;
+    }
+
+    public void AddAmmo(int amount)
+    {
+        if (gunData != null)
+        {
+            gunData.reserveAmmo += amount;
+            
+            // Clamp the ammo so it doesn't exceed the max reserve limit
+            if (gunData.reserveAmmo > gunData.maxReserveAmmo)
+            {
+                gunData.reserveAmmo = gunData.maxReserveAmmo;
+            }
+            
+            UpdateAmmoUI();
+            Debug.Log($"Ammo picked up! Current Reserve: {gunData.reserveAmmo}");
+        }
     }
 }
 

@@ -15,6 +15,18 @@ MonoBehaviour:
   m_GroupName: Localization-String-Tables-German (Germany) (de-DE)
   m_GUID: 01678a966782c24429cdbb735f8bb400
   m_SerializeEntries:
+  - m_GUID: 8b55b2a4abb99f04f93efa7267a3e551
+    m_Address: Other Labels_de-DE
+    m_ReadOnly: 1
+    m_SerializedLabels:
+    - Locale-de-DE
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a4d6eacd33234fb4db6f493f31f25332
+    m_Address: CutsceneSubtitles_de-DE
+    m_ReadOnly: 1
+    m_SerializedLabels:
+    - Locale-de-DE
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: cf20a09820397a84c8bdc87973f372ca
     m_Address: Menu Labels_de-DE
     m_ReadOnly: 1

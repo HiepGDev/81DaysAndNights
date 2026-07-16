@@ -43,6 +43,9 @@ public class PlayerHealth : MonoBehaviour
     [SerializeField] private float injuredThreshold = 40f;
     [SerializeField] private float maxInjuredAlpha = 0.35f;
     [SerializeField] private float effectTransitionSpeed = 1.5f;
+    [Header("Weapon Disabling")]
+    [Tooltip("Drag WeaponCamera here to disable all guns/arms on death")]
+    [SerializeField] private GameObject weaponCameraObject;
     private void Awake()
     {
         playerMovement = GetComponent<PlayerMovement>();
@@ -73,8 +76,18 @@ public class PlayerHealth : MonoBehaviour
             Color c = injuredOverlay.color;
             injuredOverlay.color = new Color(c.r, c.g, c.b, 0f);
         }
+        // Find all cameras in the player's hierarchy (the 'true' includes inactive objects)
+        Camera[] playerCameras = GetComponentsInChildren<Camera>(true);
+        foreach (Camera cam in playerCameras)
+        {
+            if (cam.name.Contains("Weapon"))
+            {
+                weaponCameraObject = cam.gameObject;
+                Debug.Log("PlayerHealth automatically found: " + weaponCameraObject.name);
+                break; // Stop searching once we find it
+            }
+        }
     }
-
     void Start()
     {
         if (gameOverCanvas != null)
@@ -192,11 +205,19 @@ public class PlayerHealth : MonoBehaviour
     private void Die()
     {
         isDead = true;
-        if (playerGun != null)
+        // Disable the entire WeaponCamera (This hides all arms, guns, and stops their scripts)
+        if (weaponCameraObject != null)
         {
-            playerGun.enabled = false;
-            playerGun.gameObject.SetActive(false);
+            weaponCameraObject.SetActive(false);
         }
+
+        // PlayerGun activeGun = GetComponentInChildren<PlayerGun>();
+        // if (activeGun != null)
+        // {
+        //     activeGun.enabled = false;
+        //     activeGun.gameObject.SetActive(false);
+        // }
+        
         // Disable movement/physics
         if (playerMovement != null) playerMovement.enabled = false;
         if (characterController != null) characterController.enabled = false;
