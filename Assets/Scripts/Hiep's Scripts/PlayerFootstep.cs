@@ -18,18 +18,32 @@ public class PlayerFootstep : MonoBehaviour
     private float stepTimer = 0f;
     // private float lastStepTime = 0f;
     private CharacterController controller;
-    private PlayerMovement movement;
+    private PlayerMovement campaignMovement;
+    private SurvivalPlayerMovement survivalMovement;
     private InputAction moveAction;
     private void Awake()
     {
         controller = GetComponent<CharacterController>();
-        movement = GetComponent<PlayerMovement>();
+        campaignMovement = GetComponent<PlayerMovement>();
+        survivalMovement = GetComponent<SurvivalPlayerMovement>();
         moveAction = InputSystem.actions.FindAction("Move");
         moveAction.Enable();
         if (controller == null) Debug.LogError("PlayerFootstep: CharacterController not found on this GameObject!");
-        if (movement == null) Debug.LogError("PlayerFootstep: PlayerMovement not found on this GameObject!");
+        if (campaignMovement == null && survivalMovement == null) Debug.LogError("PlayerFootstep: PlayerMovement not found on this GameObject!");
     }
-
+    // Smart Helpers
+    private bool IsSprinting()
+    {
+        if (campaignMovement != null) return campaignMovement.isSprinting;
+        if (survivalMovement != null) return survivalMovement.isSprinting;
+        return false;
+    }
+    private bool IsCrouching()
+    {
+        if (campaignMovement != null) return campaignMovement.isCrouching;
+        if (survivalMovement != null) return survivalMovement.isCrouching;
+        return false;
+    }
     void Update()
     {
         HandleFootsteps();
@@ -42,8 +56,8 @@ public class PlayerFootstep : MonoBehaviour
         if (isMoving)
         {
             float interval;
-            if (movement.isSprinting) interval = sprintStepInterval;
-            else if (movement.isCrouching) interval = crouchStepInterval;
+            if (IsSprinting()) interval = sprintStepInterval;
+            else if (IsCrouching()) interval = crouchStepInterval;
             else interval = walkStepInterval;
             stepTimer -= Time.deltaTime;
             if (stepTimer <= 0f)

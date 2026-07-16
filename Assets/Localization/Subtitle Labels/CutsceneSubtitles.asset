@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5be51871efa6c3e4eae1703925c8f5ac, type: 3}
+  m_Name: CutsceneSubtitles
+  m_EditorClassIdentifier: Unity.Localization.Editor::UnityEditor.Localization.StringTableCollection
+  m_SharedTableData: {fileID: 11400000, guid: 64b69f49f69c2bb41ad81d4d7469d2b9, type: 2}
+  m_Tables:
+  - {fileID: 11400000, guid: 463ef8f1a1f39d84ba616fce715535c9, type: 2}
+  - {fileID: 11400000, guid: a4d6eacd33234fb4db6f493f31f25332, type: 2}
+  - {fileID: 11400000, guid: fe92ec0e89638a5429ce878991bb6ed8, type: 2}
+  - {fileID: 11400000, guid: c79741da832790942a05b669a368c6c3, type: 2}
+  - {fileID: 11400000, guid: 70c9eef04cc47404fbf7ab4ef60ec469, type: 2}
+  m_Extensions: []
+  m_Group: String Table
+  references:
+    version: 2
+    RefIds: []
