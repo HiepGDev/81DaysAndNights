@@ -37,9 +37,13 @@ namespace PhuScene
         [SerializeField] private SyncVar<WaveState> currentState = new(WaveState.Preparing);
         [SerializeField] private int totalWaves = 10; // Capped at 10 (set to 0 for endless)
 
+        [Header("Economy System")]
+        [SerializeField] private SyncVar<int> money = new(0);
+        [SerializeField] private SyncVar<int> points = new(0);
+
         [Header("Timers")]
-        [SerializeField] private float prepDuration = 8f;      // Preparation time before first wave
-        [SerializeField] private float cooldownDuration = 5f;  // Cooldown time between waves
+        [SerializeField] private float prepDuration = 15f;      // Preparation time before first wave
+        [SerializeField] private float cooldownDuration = 30f;  // Cooldown time between waves
         private SyncVar<float> countdownTimer = new(0f);
 
         [Header("Enemy Configurations")]
@@ -85,6 +89,8 @@ namespace PhuScene
         public event System.Action<int, int> OnEnemyCountChanged; // (remaining, total)
         public event System.Action<float> OnCountdownTick;        // remaining seconds
         public event System.Action<bool> OnSpawningStatusChanged; // fires when spawning finishes
+        public event System.Action<int> OnMoneyChanged;
+        public event System.Action<int> OnPointsChanged;
 
         private void Awake()
         {
@@ -124,30 +130,80 @@ namespace PhuScene
                 gameLoopCoroutine = StartCoroutine(GameLoop());
             }
 
-            if (isClient && !isServer)
+            if (isClient)
             {
-                currentState.onChanged += (state) => OnWaveStateChanged?.Invoke(state);
-                currentWave.onChangedWithOld += (oldWave, newWave) => {
-                    if (newWave > oldWave) OnWaveStarted?.Invoke(newWave);
-                };
-                countdownTimer.onChanged += (time) => OnCountdownTick?.Invoke(time);
-                isSpawningCompleted.onChanged += (comp) => OnSpawningStatusChanged?.Invoke(comp);
-                
-                remainingEnemies.onChanged += (rem) => OnEnemyCountChanged?.Invoke(rem, totalEnemiesToSpawn.value);
-                totalEnemiesToSpawn.onChanged += (tot) => OnEnemyCountChanged?.Invoke(remainingEnemies.value, tot);
+                if (!isServer)
+                {
+                    currentState.onChanged += (state) => OnWaveStateChanged?.Invoke(state);
+                    currentWave.onChangedWithOld += (oldWave, newWave) => {
+                        if (newWave > oldWave) OnWaveStarted?.Invoke(newWave);
+                    };
+                    countdownTimer.onChanged += (time) => OnCountdownTick?.Invoke(time);
+                    isSpawningCompleted.onChanged += (comp) => OnSpawningStatusChanged?.Invoke(comp);
+                    
+                    remainingEnemies.onChanged += (rem) => OnEnemyCountChanged?.Invoke(rem, spawnedEnemiesCount.value);
+                    spawnedEnemiesCount.onChanged += (spawned) => OnEnemyCountChanged?.Invoke(remainingEnemies.value, spawned);
+
+                    money.onChanged += (val) => OnMoneyChanged?.Invoke(val);
+                    points.onChanged += (val) => OnPointsChanged?.Invoke(val);
+                }
+
+                // Trigger initial events for all clients (including host) so UI initializes state correctly on spawn
+                OnWaveStateChanged?.Invoke(currentState.value);
+                OnCountdownTick?.Invoke(countdownTimer.value);
+                OnEnemyCountChanged?.Invoke(remainingEnemies.value, spawnedEnemiesCount.value);
+                OnMoneyChanged?.Invoke(money.value);
+                OnPointsChanged?.Invoke(points.value);
             }
         }
 
         private void CleanUpDeadEnemies()
         {
             int previousCount = activeEnemies.Count;
+
+            if (!isSpawned || isServer)
+            {
+                foreach (var enemy in activeEnemies)
+                {
+                    if (enemy != null && IsEnemyDead(enemy))
+                    {
+                        MockEnemy mock = enemy.GetComponent<MockEnemy>();
+                        if (mock != null)
+                        {
+                            int moneyAwarded = 10;
+                            int pointsAwarded = 50;
+                            switch (mock.Type)
+                            {
+                                case EnemyType.Basic:
+                                    moneyAwarded = 10;
+                                    pointsAwarded = 50;
+                                    break;
+                                case EnemyType.Elite:
+                                    moneyAwarded = 25;
+                                    pointsAwarded = 150;
+                                    break;
+                                case EnemyType.Boss:
+                                    moneyAwarded = 100;
+                                    pointsAwarded = 500;
+                                    break;
+                            }
+                            AddMoneyAndPoints(moneyAwarded, pointsAwarded);
+                        }
+                        else
+                        {
+                            AddMoneyAndPoints(10, 50);
+                        }
+                    }
+                }
+            }
+
             activeEnemies.RemoveAll(enemy => IsEnemyDead(enemy));
             
             if (activeEnemies.Count != previousCount)
             {
                 remainingEnemies.value = activeEnemies.Count;
-                OnEnemyCountChanged?.Invoke(activeEnemies.Count, totalEnemiesToSpawn.value);
-                Debug.Log($"[WaveManager] Enemies remaining: {activeEnemies.Count}/{totalEnemiesToSpawn.value}");
+                OnEnemyCountChanged?.Invoke(activeEnemies.Count, spawnedEnemiesCount.value);
+                Debug.Log($"[WaveManager] Enemies remaining: {activeEnemies.Count}/{spawnedEnemiesCount.value}");
             }
         }
 
@@ -178,6 +234,7 @@ namespace PhuScene
                 }
 
                 SetState(WaveState.Preparing);
+                OnWaveStarted?.Invoke(currentWave.value);
                 countdownTimer.value = currentWave.value == 1 ? prepDuration : cooldownDuration;
                 
                 while (countdownTimer.value > 0f)
@@ -189,14 +246,23 @@ namespace PhuScene
                     }
 
                     OnCountdownTick?.Invoke(countdownTimer.value);
-                    yield return new WaitForSeconds(1.0f);
-                    countdownTimer.value -= 1.0f;
+
+                    float elapsed = 0f;
+                    while (elapsed < 1.0f && countdownTimer.value > 0f)
+                    {
+                        yield return new WaitForSeconds(0.05f);
+                        elapsed += 0.05f;
+                    }
+
+                    if (countdownTimer.value > 0f)
+                    {
+                        countdownTimer.value -= 1.0f;
+                    }
                 }
                 OnCountdownTick?.Invoke(0f);
 
                 // 2. Wave Active Phase (Combat starts and spawning begins)
                 SetState(WaveState.WaveActive);
-                OnWaveStarted?.Invoke(currentWave.value);
                 
                 int count;
                 float spawnInterval;
@@ -207,7 +273,7 @@ namespace PhuScene
                 OnSpawningStatusChanged?.Invoke(false);
                 activeEnemies.Clear();
                 remainingEnemies.value = 0;
-                OnEnemyCountChanged?.Invoke(0, totalEnemiesToSpawn.value);
+                OnEnemyCountChanged?.Invoke(0, spawnedEnemiesCount.value);
 
                 if (deathMonitorCoroutine != null)
                 {
@@ -230,7 +296,7 @@ namespace PhuScene
                         SpawnSingleEnemy();
                         spawnedEnemiesCount.value++;
                         remainingEnemies.value = activeEnemies.Count;
-                        OnEnemyCountChanged?.Invoke(activeEnemies.Count, totalEnemiesToSpawn.value);
+                        OnEnemyCountChanged?.Invoke(activeEnemies.Count, spawnedEnemiesCount.value);
 
                         yield return new WaitForSeconds(spawnInterval);
                     }
@@ -274,6 +340,10 @@ namespace PhuScene
                 }
 
                 SetState(WaveState.WaveCompleted);
+                if (!isSpawned || isServer)
+                {
+                    AddMoneyAndPoints(100 * currentWave.value, 500 * currentWave.value);
+                }
                 OnWaveCompleted?.Invoke(currentWave.value);
                 
                 yield return new WaitForSeconds(1.5f);
@@ -404,9 +474,35 @@ namespace PhuScene
         {
             if (activeEnemies.Contains(mockEnemy))
             {
+                if (!isSpawned || isServer)
+                {
+                    MockEnemy enemy = mockEnemy.GetComponent<MockEnemy>();
+                    if (enemy != null)
+                    {
+                        int moneyAwarded = 10;
+                        int pointsAwarded = 50;
+                        switch (enemy.Type)
+                        {
+                            case EnemyType.Basic:
+                                moneyAwarded = 10;
+                                pointsAwarded = 50;
+                                break;
+                            case EnemyType.Elite:
+                                moneyAwarded = 25;
+                                pointsAwarded = 150;
+                                break;
+                            case EnemyType.Boss:
+                                moneyAwarded = 100;
+                                pointsAwarded = 500;
+                                break;
+                        }
+                        AddMoneyAndPoints(moneyAwarded, pointsAwarded);
+                    }
+                }
+
                 activeEnemies.Remove(mockEnemy);
                 remainingEnemies.value = activeEnemies.Count;
-                OnEnemyCountChanged?.Invoke(activeEnemies.Count, totalEnemiesToSpawn.value);
+                OnEnemyCountChanged?.Invoke(activeEnemies.Count, spawnedEnemiesCount.value);
             }
         }
 
@@ -463,5 +559,44 @@ namespace PhuScene
         public int TotalEnemiesInWave => totalEnemiesToSpawn.value;
         public float NextWaveCountdown => countdownTimer.value;
         public float DifficultyMultiplier => GetDifficultyMultiplierForWave(currentWave.value);
+        public int Money => money.value;
+        public int Points => points.value;
+
+        public void AddMoneyAndPoints(int moneyAwarded, int pointsAwarded)
+        {
+            money.value += moneyAwarded;
+            points.value += pointsAwarded;
+            if (!isSpawned || isServer)
+            {
+                OnMoneyChanged?.Invoke(money.value);
+                OnPointsChanged?.Invoke(points.value);
+            }
+        }
+
+        public void SkipCountdownEarly()
+        {
+            if (isSpawned)
+            {
+                SkipCountdown();
+            }
+            else
+            {
+                if (currentState.value == WaveState.Preparing)
+                {
+                    countdownTimer.value = 0f;
+                    Debug.Log("[WaveManager] Offline SkipCountdown: countdown set to 0.");
+                }
+            }
+        }
+
+        [ServerRpc(requireOwnership: false)]
+        private void SkipCountdown()
+        {
+            if (currentState.value == WaveState.Preparing)
+            {
+                countdownTimer.value = 0f;
+                Debug.Log("[WaveManager] SkipCountdown requested: countdown set to 0 on server.");
+            }
+        }
     }
 }

@@ -6,20 +6,37 @@ namespace PhuScene
 {
     public class WaveUI : MonoBehaviour
     {
-        [Header("UI Text Components")]
-        [SerializeField] private TextMeshProUGUI waveText;
-        [SerializeField] private TextMeshProUGUI stateText;
-        [SerializeField] private TextMeshProUGUI enemyCountText;
-        [SerializeField] private TextMeshProUGUI countdownText;
-        [SerializeField] private TextMeshProUGUI difficultyText;
+        [Header("HUD Components")]
+        [SerializeField] private TextMeshProUGUI waveNumberText;      // format is "WAVE %d"
+        [SerializeField] private TextMeshProUGUI waveStatusText;      // format is "%s"; for PREPARING, it is "%s (%d)"
+        [SerializeField] private TextMeshProUGUI enemiesRemainingText;// format is "%d/%d"
+        [SerializeField] private TextMeshProUGUI moneyText;           // format is "%d"
+        [SerializeField] private TextMeshProUGUI pointsText;          // format is "%d"
 
-        [Header("Banner Settings")]
+        [Header("Skip Button Components")]
+        [SerializeField] private UnityEngine.UI.Button skipButton; // button for starting the round early
+        [SerializeField] private float skip_SlideDuration = 0.3f;
+        [SerializeField] private float skip_SlideDistance = 120f;
+
+        [Header("Banner Components")]
         [SerializeField] private TextMeshProUGUI bannerText; // Fullscreen warning/welcome text
-        [SerializeField] private float bannerDuration = 2.0f;
+        [SerializeField] private float banner_SlideDuration = 2.0f;
 
         [Header("Retrieval Mode")]
         [Tooltip("If true, the UI will actively poll state from the backend WaveManager in its Update loop using GetWaveStatus(). If false, it relies on event subscriptions.")]
         [SerializeField] private bool usePolling = false;
+
+
+        private Coroutine skip_SlideCoroutine;
+        private Vector2 skip_SlideOutPosition;
+        private Vector2 skip_SlideInPosition;
+        
+
+        private Coroutine banner_SlideCoroutine;
+        private Vector2 banner_SlideOutPosition;
+        private Vector2 banner_SlideInPosition;
+
+        private bool isButtonPositionsInitialized = false;
 
         // Event-driven state caching & subscription state
         private bool isSubscribed = false;
@@ -29,8 +46,10 @@ namespace PhuScene
 
         private void Awake()
         {
+            TryAssignNewUIElements();
+
             // If text fields are not assigned in the inspector, build a modern fallback overlay Canvas programmatically
-            if (waveText == null || stateText == null || enemyCountText == null || countdownText == null || difficultyText == null)
+            if (waveNumberText == null || waveStatusText == null || enemiesRemainingText == null || moneyText == null || pointsText == null)
             {
                 CreateFallbackUI();
             }
@@ -38,6 +57,13 @@ namespace PhuScene
 
         private void Start()
         {
+            TryAssignNewUIElements();
+            if (skipButton != null)
+            {
+                skipButton.onClick.RemoveListener(onSkipClicked);
+                skipButton.onClick.AddListener(onSkipClicked);
+            }
+
             // Subscribe here if Instance wasn't ready during Awake/OnEnable
             TrySubscribeEvents();
 
@@ -67,49 +93,51 @@ namespace PhuScene
         // --- Active Retrieval: Polling (Backend to Frontend) ---
         private void RetrieveStateFromBackendPoll()
         {
+            TryAssignNewUIElements();
             // Pull a snapshot struct of current state
             WaveStatusReport report = WaveManager.Instance.GetWaveStatus();
 
-            // Apply to UI fields
-            if (waveText != null)
+            // --- New UI System Updates ---
+            if (waveNumberText != null)
             {
-                waveText.text = $"WAVE {report.currentWave}";
+                waveNumberText.text = $"WAVE {report.currentWave}";
             }
 
-            if (stateText != null)
-            {
-                stateText.text = FormatStateString(report.state);
-            }
-
-            if (enemyCountText != null)
-            {
-                if (report.state == WaveState.Preparing || report.state == WaveState.Victory)
-                {
-                    enemyCountText.text = "ENEMIES: -- / --";
-                }
-                else
-                {
-                    string spawnLabel = report.isSpawningCompleted ? "" : " (Spawning...)";
-                    enemyCountText.text = $"ENEMIES: {report.remainingEnemies} / {report.totalEnemies}{spawnLabel}";
-                }
-            }
-
-            if (countdownText != null)
+            if (waveStatusText != null)
             {
                 if (report.state == WaveState.Preparing)
                 {
-                    countdownText.text = $"NEXT WAVE IN: {Mathf.CeilToInt(report.countdownTime)}s";
+                    waveStatusText.text = $"PREPARING ({Mathf.CeilToInt(report.countdownTime)})";
                 }
                 else
                 {
-                    countdownText.text = "";
+                    waveStatusText.text = FormatStateString(report.state);
                 }
             }
 
-            if (difficultyText != null)
+            if (enemiesRemainingText != null)
             {
-                difficultyText.text = $"DIFFICULTY: {report.difficultyMultiplier:F2}x";
+                if (report.state == WaveState.Preparing || report.state == WaveState.Victory)
+                {
+                    enemiesRemainingText.text = "0/0";
+                }
+                else
+                {
+                    enemiesRemainingText.text = $"{report.remainingEnemies}/{report.spawnedEnemies}";
+                }
             }
+
+            if (moneyText != null)
+            {
+                moneyText.text = WaveManager.Instance.Money.ToString();
+            }
+
+            if (pointsText != null)
+            {
+                pointsText.text = WaveManager.Instance.Points.ToString();
+            }
+
+            UpdateSkipButtonState(report.state);
         }
 
         // --- Event Subscription Management ---
@@ -124,6 +152,8 @@ namespace PhuScene
             WaveManager.Instance.OnEnemyCountChanged += HandleEnemyCountChanged;
             WaveManager.Instance.OnCountdownTick += HandleCountdownTick;
             WaveManager.Instance.OnSpawningStatusChanged += HandleSpawningStatusChanged;
+            WaveManager.Instance.OnMoneyChanged += HandleMoneyChanged;
+            WaveManager.Instance.OnPointsChanged += HandlePointsChanged;
 
             isSubscribed = true;
             Debug.Log("[WaveUI] Successfully subscribed to WaveManager instance events.");
@@ -139,6 +169,8 @@ namespace PhuScene
             WaveManager.Instance.OnEnemyCountChanged -= HandleEnemyCountChanged;
             WaveManager.Instance.OnCountdownTick -= HandleCountdownTick;
             WaveManager.Instance.OnSpawningStatusChanged -= HandleSpawningStatusChanged;
+            WaveManager.Instance.OnMoneyChanged -= HandleMoneyChanged;
+            WaveManager.Instance.OnPointsChanged -= HandlePointsChanged;
 
             isSubscribed = false;
             Debug.Log("[WaveUI] Successfully unsubscribed from WaveManager instance events.");
@@ -147,44 +179,45 @@ namespace PhuScene
         // --- Passive Retrieval: Event Callbacks ---
         private void HandleWaveStateChanged(WaveState state)
         {
-            if (stateText != null)
+            // --- New UI System Updates ---
+            if (waveStatusText != null)
             {
-                stateText.text = FormatStateString(state);
+                if (state == WaveState.Preparing && WaveManager.Instance != null)
+                {
+                    waveStatusText.text = $"PREPARING ({Mathf.CeilToInt(WaveManager.Instance.NextWaveCountdown)})";
+                }
+                else
+                {
+                    waveStatusText.text = FormatStateString(state);
+                }
             }
 
             if (state == WaveState.Preparing)
             {
-                if (enemyCountText != null) enemyCountText.text = "ENEMIES: -- / --";
+                if (enemiesRemainingText != null) enemiesRemainingText.text = "0/0";
             }
             else if (state == WaveState.Victory)
             {
                 ShowBanner("VICTORY!", Color.yellow);
-                if (countdownText != null) countdownText.text = "";
-                if (enemyCountText != null) enemyCountText.text = "ALL THREATS ELIMINATED";
             }
             else if (state == WaveState.GameOver)
             {
                 ShowBanner("GAME OVER", Color.red);
-                if (countdownText != null) countdownText.text = "";
             }
+
+            UpdateSkipButtonState(state);
         }
 
         private void HandleWaveStarted(int waveNum)
         {
-            if (waveText != null)
-            {
-                waveText.text = $"WAVE {waveNum}";
-            }
-            if (difficultyText != null && WaveManager.Instance != null)
-            {
-                // Active query inside event handler
-                difficultyText.text = $"DIFFICULTY: {WaveManager.Instance.DifficultyMultiplier:F2}x";
-            }
-            if (countdownText != null)
-            {
-                countdownText.text = "";
-            }
             ShowBanner($"WAVE {waveNum} START!", Color.white);
+
+            if (waveNumberText != null)
+            {
+                waveNumberText.text = $"WAVE {waveNum}";
+            }
+
+            UpdateSkipButtonState(WaveState.WaveActive);
         }
 
         private void HandleWaveCompleted(int waveNum)
@@ -207,42 +240,50 @@ namespace PhuScene
 
         private void UpdateEnemyCountUI(int remaining, int total)
         {
-            if (enemyCountText != null)
+
+            if (enemiesRemainingText != null)
             {
-                string spawnLabel = isSpawningCompletedEvent ? "" : " (Spawning...)";
-                enemyCountText.text = $"ENEMIES: {remaining} / {total}{spawnLabel}";
+                enemiesRemainingText.text = $"{remaining}/{total}";
             }
         }
 
         private void HandleCountdownTick(float secondsRemaining)
         {
-            if (countdownText != null)
+            if (waveStatusText != null && WaveManager.Instance != null && WaveManager.Instance.CurrentState == WaveState.Preparing)
             {
                 if (secondsRemaining > 0f)
                 {
-                    countdownText.text = $"NEXT WAVE IN: {Mathf.CeilToInt(secondsRemaining)}s";
+                    waveStatusText.text = $"PREPARING ({Mathf.CeilToInt(secondsRemaining)})";
                 }
                 else
                 {
-                    countdownText.text = "";
+                    waveStatusText.text = "PREPARING (0)";
                 }
+            }
+
+            if (WaveManager.Instance != null)
+            {
+                UpdateSkipButtonState(WaveManager.Instance.CurrentState);
             }
         }
 
         // --- Initial & Helper Methods ---
         private void UpdateUI()
         {
+            TryAssignNewUIElements();
             if (WaveManager.Instance != null)
             {
                 RetrieveStateFromBackendPoll();
             }
             else
             {
-                if (waveText != null) waveText.text = "WAVE --";
-                if (stateText != null) stateText.text = "WAITING FOR STATE...";
-                if (enemyCountText != null) enemyCountText.text = "ENEMIES: -- / --";
-                if (countdownText != null) countdownText.text = "";
-                if (difficultyText != null) difficultyText.text = "DIFFICULTY: 1.00x";
+
+                if (waveNumberText != null) waveNumberText.text = "WAVE --";
+                if (waveStatusText != null) waveStatusText.text = "WAITING FOR STATE...";
+                if (enemiesRemainingText != null) enemiesRemainingText.text = "0/0";
+                if (moneyText != null) moneyText.text = "0";
+                if (pointsText != null) pointsText.text = "0";
+                UpdateSkipButtonState(WaveState.WaveActive);
             }
         }
 
@@ -286,7 +327,7 @@ namespace PhuScene
             }
             bannerText.transform.localScale = Vector3.one;
 
-            yield return new WaitForSeconds(bannerDuration);
+            yield return new WaitForSeconds(banner_SlideDuration);
 
             elapsed = 0f;
             float fadeDuration = 0.5f;
@@ -304,7 +345,7 @@ namespace PhuScene
         private void CreateFallbackUI()
         {
             Debug.Log("[WaveUI] Building fallback HUD Canvas procedurally...");
-
+ 
             GameObject canvasObj = new GameObject("WaveHUD_Canvas");
             Canvas canvas = canvasObj.AddComponent<Canvas>();
             canvas.renderMode = RenderMode.ScreenSpaceOverlay;
@@ -312,7 +353,7 @@ namespace PhuScene
             
             canvasObj.AddComponent<UnityEngine.UI.CanvasScaler>();
             canvasObj.AddComponent<UnityEngine.UI.GraphicRaycaster>();
-
+ 
             GameObject panelObj = new GameObject("HUD_Panel");
             panelObj.transform.SetParent(canvasObj.transform, false);
             
@@ -321,22 +362,55 @@ namespace PhuScene
             panelRect.anchorMax = new Vector2(1, 1);
             panelRect.pivot = new Vector2(1, 1);
             panelRect.anchoredPosition = new Vector2(-20, -20);
-            panelRect.sizeDelta = new Vector2(250, 180);
-
+            panelRect.sizeDelta = new Vector2(250, 210);
+ 
             UnityEngine.UI.Image bgImage = panelObj.AddComponent<UnityEngine.UI.Image>();
             bgImage.color = new Color(0.1f, 0.1f, 0.1f, 0.75f);
-
-            if (waveText == null)
-                waveText = CreateTextElement("WaveText", panelObj.transform, "WAVE 1", 22, new Vector2(15, -15), true);
-            if (stateText == null)
-                stateText = CreateTextElement("StateText", panelObj.transform, "PREPARING", 12, new Vector2(15, -45), false, new Color(0.7f, 0.7f, 1f));
-            if (enemyCountText == null)
-                enemyCountText = CreateTextElement("EnemyCountText", panelObj.transform, "ENEMIES: -- / --", 14, new Vector2(15, -75), false);
-            if (countdownText == null)
-                countdownText = CreateTextElement("CountdownText", panelObj.transform, "NEXT WAVE IN: --s", 14, new Vector2(15, -105), false, new Color(1f, 0.8f, 0.2f));
-            if (difficultyText == null)
-                difficultyText = CreateTextElement("DifficultyText", panelObj.transform, "DIFFICULTY: 1.0x", 12, new Vector2(15, -135), false, new Color(0.7f, 0.7f, 0.7f));
-
+ 
+            if (waveNumberText == null)
+                waveNumberText = CreateTextElement("Wave_Num", panelObj.transform, "WAVE --", 20, new Vector2(15, -15), true);
+            if (waveStatusText == null)
+                waveStatusText = CreateTextElement("Wave_Status", panelObj.transform, "PREPARING (8)", 12, new Vector2(15, -45), false, new Color(0.7f, 0.7f, 1f));
+            if (enemiesRemainingText == null)
+                enemiesRemainingText = CreateTextElement("Enemies_Num", panelObj.transform, "0/0", 14, new Vector2(15, -75), false);
+            if (moneyText == null)
+                moneyText = CreateTextElement("Money_Num", panelObj.transform, "0", 14, new Vector2(15, -105), false, new Color(0.2f, 1f, 0.2f));
+            if (pointsText == null)
+                pointsText = CreateTextElement("Points_Num", panelObj.transform, "0", 14, new Vector2(15, -135), false, new Color(1f, 0.8f, 0.2f));
+ 
+            if (skipButton == null)
+            {
+                GameObject btnObj = new GameObject("WaveStart");
+                btnObj.transform.SetParent(panelObj.transform, false);
+                
+                RectTransform btnRect = btnObj.AddComponent<RectTransform>();
+                btnRect.anchorMin = new Vector2(0, 1);
+                btnRect.anchorMax = new Vector2(0, 1);
+                btnRect.pivot = new Vector2(0, 1);
+                btnRect.anchoredPosition = new Vector2(15, -230);
+                btnRect.sizeDelta = new Vector2(220, 30);
+ 
+                UnityEngine.UI.Image btnImg = btnObj.AddComponent<UnityEngine.UI.Image>();
+                btnImg.color = new Color(0.2f, 0.6f, 0.2f, 1f);
+ 
+                skipButton = btnObj.AddComponent<UnityEngine.UI.Button>();
+                skipButton.onClick.AddListener(onSkipClicked);
+                
+                GameObject labelObj = new GameObject("Label");
+                labelObj.transform.SetParent(btnObj.transform, false);
+                RectTransform lblRect = labelObj.AddComponent<RectTransform>();
+                lblRect.anchorMin = Vector2.zero;
+                lblRect.anchorMax = Vector2.one;
+                lblRect.sizeDelta = Vector2.zero;
+ 
+                TextMeshProUGUI labelText = labelObj.AddComponent<TextMeshProUGUI>();
+                labelText.text = "START EARLY";
+                labelText.fontSize = 12;
+                labelText.alignment = TextAlignmentOptions.Center;
+                labelText.color = Color.white;
+                labelText.fontStyle = FontStyles.Bold;
+            }
+ 
             if (bannerText == null)
             {
                 GameObject bannerObj = new GameObject("BannerText");
@@ -348,7 +422,7 @@ namespace PhuScene
                 bannerRect.pivot = new Vector2(0.5f, 0.5f);
                 bannerRect.anchoredPosition = new Vector2(0, 120);
                 bannerRect.sizeDelta = new Vector2(600, 100);
-
+ 
                 bannerText = bannerObj.AddComponent<TextMeshProUGUI>();
                 bannerText.alignment = TextAlignmentOptions.Center;
                 bannerText.fontSize = 42;
@@ -357,6 +431,121 @@ namespace PhuScene
                 bannerText.outlineWidth = 0.25f;
                 bannerText.outlineColor = Color.black;
             }
+        }
+
+        private void TryAssignNewUIElements()
+        {
+            bool hadButton = skipButton != null;
+            
+            if (waveNumberText == null) waveNumberText = FindComponentByNameInHierarchy<TextMeshProUGUI>("Wave_Num");
+            if (waveStatusText == null) waveStatusText = FindComponentByNameInHierarchy<TextMeshProUGUI>("Wave_Status");
+            if (enemiesRemainingText == null) enemiesRemainingText = FindComponentByNameInHierarchy<TextMeshProUGUI>("Enemies_Num");
+            if (moneyText == null) moneyText = FindComponentByNameInHierarchy<TextMeshProUGUI>("Money_Num");
+            if (pointsText == null) pointsText = FindComponentByNameInHierarchy<TextMeshProUGUI>("Points_Num");
+            if (skipButton == null) skipButton = FindComponentByNameInHierarchy<UnityEngine.UI.Button>("WaveStart");
+
+            if (!hadButton && skipButton != null)
+            {
+                skipButton.onClick.RemoveListener(onSkipClicked);
+                skipButton.onClick.AddListener(onSkipClicked);
+            }
+        }
+
+        private T FindComponentByNameInHierarchy<T>(string name) where T : Component
+        {
+            T comp = FindInChildRecursive<T>(transform.root, name);
+            return comp;
+        }
+
+        private T FindInChildRecursive<T>(Transform parent, string name) where T : Component
+        {
+            if (parent.name == name)
+            {
+                T comp = parent.GetComponent<T>();
+                if (comp != null) return comp;
+            }
+
+            for (int i = 0; i < parent.childCount; i++)
+            {
+                T found = FindInChildRecursive<T>(parent.GetChild(i), name);
+                if (found != null) return found;
+            }
+
+            return null;
+        }
+
+        private void onSkipClicked()
+        {
+            if (WaveManager.Instance != null)
+            {
+                WaveManager.Instance.SkipCountdownEarly();
+            }
+        }
+
+        private void HandleMoneyChanged(int value)
+        {
+            if (moneyText != null)
+            {
+                moneyText.text = value.ToString();
+            }
+        }
+
+        private void HandlePointsChanged(int value)
+        {
+            if (pointsText != null)
+            {
+                pointsText.text = value.ToString();
+            }
+        }
+
+        private void InitializeButtonPositions()
+        {
+            if (isButtonPositionsInitialized) return;
+            TryAssignNewUIElements();
+            if (skipButton != null)
+            {
+                RectTransform rect = skipButton.GetComponent<RectTransform>();
+                skip_SlideOutPosition = rect.anchoredPosition;
+                skip_SlideInPosition = skip_SlideOutPosition + new Vector2(0, skip_SlideDistance);
+                isButtonPositionsInitialized = true;
+                Debug.Log($"[WaveUI] Initialized button positions: Out = {skip_SlideOutPosition}, In = {skip_SlideInPosition}");
+            }
+        }
+
+        private IEnumerator SkipSlideCoroutine(bool show)
+        {
+            RectTransform rect = skipButton.GetComponent<RectTransform>();
+            Vector2 startPos = rect.anchoredPosition;
+            Vector2 targetPos = show ? skip_SlideOutPosition : skip_SlideInPosition;
+            
+            skipButton.gameObject.SetActive(true);
+
+            float elapsed = 0f;
+            while (elapsed < skip_SlideDuration)
+            {
+                elapsed += Time.deltaTime;
+                float t = elapsed / skip_SlideDuration;
+                t = t * t * (3f - 2f * t); // Smooth ease-in-ease-out curve
+                rect.anchoredPosition = Vector2.Lerp(startPos, targetPos, t);
+                yield return null;
+            }
+
+            rect.anchoredPosition = targetPos;
+            skipButton.interactable = show;
+        }
+
+        private void UpdateSkipButtonState(WaveState state)
+        {
+            bool show = (state == WaveState.Preparing) && (WaveManager.Instance != null); //&& WaveManager.Instance.isSpawned
+
+            InitializeButtonPositions();
+            if (skipButton == null || !isButtonPositionsInitialized) return;
+
+            if (skip_SlideCoroutine != null)
+            {
+                StopCoroutine(skip_SlideCoroutine);
+            }
+            skip_SlideCoroutine = StartCoroutine(SkipSlideCoroutine(show));
         }
 
         private TextMeshProUGUI CreateTextElement(string name, Transform parent, string initialText, float fontSize, Vector2 anchoredPos, bool bold, Color? textColor = null)

@@ -15,6 +15,7 @@ namespace PhuScene
     {
         [Header("Stats")]
         [SerializeField] private EnemyType enemyType = EnemyType.Basic;
+        public EnemyType Type => enemyType;
         [SerializeField] private float maxHealth = 50f;
         [SerializeField] private SyncVar<float> currentHealth = new(50f);
         [SerializeField] private float speed = 3.5f;

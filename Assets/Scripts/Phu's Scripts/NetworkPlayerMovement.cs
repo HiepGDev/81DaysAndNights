@@ -92,6 +92,21 @@ namespace PhuScene
         {
             if (isSpawned && !isOwner) return;
 
+            // Toggle cursor lock state when pressing Alt (Left or Right)
+            if (Input.GetKeyDown(KeyCode.LeftAlt) || Input.GetKeyDown(KeyCode.RightAlt))
+            {
+                if (Cursor.lockState == CursorLockMode.Locked)
+                {
+                    Cursor.visible = true;
+                    Cursor.lockState = CursorLockMode.None;
+                }
+                else
+                {
+                    Cursor.visible = false;
+                    Cursor.lockState = CursorLockMode.Locked;
+                }
+            }
+
             HandleMove();
             HandleLook();
             HandleJump();
@@ -152,6 +167,9 @@ namespace PhuScene
         
         void HandleLook()
         {
+            // If the cursor is not locked, do not process look input to prevent camera swinging when clicking UI
+            if (Cursor.lockState != CursorLockMode.Locked) return;
+
             // Read the mouse delta
             Vector2 lookValue = lookAction.ReadValue<Vector2>();
 
