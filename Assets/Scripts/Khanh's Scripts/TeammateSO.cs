@@ -17,7 +17,7 @@ public class TeammateSO : ScriptableObject
     [Header("Patrol Settings")]
     public float waypointStopDistance = 0.5f;
     public float waypointWaitTime = 1.5f;
-    public bool loopPatrol = true;
+    public bool loopPatrol = false;
 
     [Header("Weapon Stats")]
     public TeammateShooting.FireMode fireMode = TeammateShooting.FireMode.SemiAuto;
