@@ -11,30 +11,45 @@ public class WaveUI : MonoBehaviour
     [SerializeField] private TextMeshProUGUI moneyText;           // format is "%d"
     [SerializeField] private TextMeshProUGUI pointsText;          // format is "%d"
 
-    [Header("Skip Button Components")]
-    [SerializeField] private UnityEngine.UI.Button skipButton; // button for starting the round early
-    [SerializeField] private float skip_SlideDuration = 0.3f;
-    [SerializeField] private float skip_SlideDistance = 120f;
+    [Header("Countdown UI Components & Animations")]
+    [SerializeField] private RectTransform waveCountdownPanel;
+    [SerializeField] private UnityEngine.UI.Button waveStartButton;
+    [SerializeField] private TextMeshProUGUI countdownNumberText;
+    [SerializeField] private float countdown_SlideDistance = 120f;
+    [SerializeField] private float waveStart_SlideDistance = 120f;
+    [SerializeField] private float slideDuration = 0.3f;
+    [SerializeField] private float pulseScaleAmount = 1.5f;
+    [SerializeField] private float pulseDuration = 0.25f;
 
-    [Header("Banner Components")]
-    [SerializeField] private TextMeshProUGUI bannerText; // Fullscreen warning/welcome text
-    [SerializeField] private float banner_SlideDuration = 2.0f;
+    [Header("WaveCleared Components")]
+    [SerializeField] private RectTransform waveClearedPanel;
+    [SerializeField] private float waveCleared_SlideDuration = 0.5f;
+    [SerializeField] private float waveCleared_HoldDuration = 2.0f;
+    [SerializeField] private float waveCleared_SlideDistance = 800f;
+    [SerializeField] private float waveCleared_CreepDistance = 40f;
 
     [Header("Retrieval Mode")]
     [Tooltip("If true, the UI will actively poll state from the backend WaveManager in its Update loop using GetWaveStatus(). If false, it relies on event subscriptions.")]
     [SerializeField] private bool usePolling = false;
 
+    [Header("Hint List References")]
+    [SerializeField] private HintUI hintList;
 
-    private Coroutine skip_SlideCoroutine;
-    private Vector2 skip_SlideOutPosition;
-    private Vector2 skip_SlideInPosition;
-    
 
-    private Coroutine banner_SlideCoroutine;
-    private Vector2 banner_SlideOutPosition;
-    private Vector2 banner_SlideInPosition;
+    private Coroutine transitionCoroutine;
+    private Vector2 countdown_SlideOutPosition;
+    private Vector2 countdown_SlideInPosition;
+    private Vector2 waveStart_SlideOutPosition;
+    private Vector2 waveStart_SlideInPosition;
+    private Coroutine punchScaleCoroutine;
+    private int lastCountdownInt = -1;
 
-    private bool isButtonPositionsInitialized = false;
+    private Coroutine waveClearedCoroutine;
+
+    private bool isPositionsInitialized = false;
+    private bool isCountdownUIVisible = false;
+    private bool hasInitializedVisibility = false;
+    private bool hasShownMouseUnlockHint = false;
 
     // Event-driven state caching & subscription state
     private bool isSubscribed = false;
@@ -56,10 +71,10 @@ public class WaveUI : MonoBehaviour
     private void Start()
     {
         TryAssignNewUIElements();
-        if (skipButton != null)
+        if (waveStartButton != null)
         {
-            skipButton.onClick.RemoveListener(onSkipClicked);
-            skipButton.onClick.AddListener(onSkipClicked);
+            waveStartButton.onClick.RemoveListener(onSkipClicked);
+            waveStartButton.onClick.AddListener(onSkipClicked);
         }
 
         // Subscribe here if Instance wasn't ready during Awake/OnEnable
@@ -105,7 +120,7 @@ public class WaveUI : MonoBehaviour
         {
             if (report.state == WaveState.Preparing)
             {
-                waveStatusText.text = $"PREPARING ({Mathf.CeilToInt(report.countdownTime)})";
+                waveStatusText.text = "PREPARING";
             }
             else
             {
@@ -135,7 +150,16 @@ public class WaveUI : MonoBehaviour
             pointsText.text = WaveManager.Instance.Points.ToString();
         }
 
-        UpdateSkipButtonState(report.state);
+        CheckMouseUnlockHint(report.state, report.currentWave);
+
+        if (report.state == WaveState.Preparing)
+        {
+            HandleCountdownTick(report.countdownTime);
+        }
+        else
+        {
+            UpdateCountdownUIState(report.state);
+        }
     }
 
     // --- Event Subscription Management ---
@@ -180,9 +204,9 @@ public class WaveUI : MonoBehaviour
         // --- New UI System Updates ---
         if (waveStatusText != null)
         {
-            if (state == WaveState.Preparing && WaveManager.Instance != null)
+            if (state == WaveState.Preparing)
             {
-                waveStatusText.text = $"PREPARING ({Mathf.CeilToInt(WaveManager.Instance.NextWaveCountdown)})";
+                waveStatusText.text = "PREPARING";
             }
             else
             {
@@ -196,31 +220,27 @@ public class WaveUI : MonoBehaviour
         }
         else if (state == WaveState.Victory)
         {
-            ShowBanner("VICTORY!", Color.yellow);
-        }
-        else if (state == WaveState.GameOver)
-        {
-            ShowBanner("GAME OVER", Color.red);
+            ShowWaveCleared("VICTORY!", Color.yellow);
         }
 
-        UpdateSkipButtonState(state);
+        CheckMouseUnlockHint(state, WaveManager.Instance != null ? WaveManager.Instance.CurrentWave : -1);
+
+        UpdateCountdownUIState(state);
     }
 
     private void HandleWaveStarted(int waveNum)
     {
-        ShowBanner($"WAVE {waveNum} START!", Color.white);
-
         if (waveNumberText != null)
         {
             waveNumberText.text = $"WAVE {waveNum}";
         }
 
-        UpdateSkipButtonState(WaveState.WaveActive);
+        UpdateCountdownUIState(WaveState.WaveActive);
     }
 
     private void HandleWaveCompleted(int waveNum)
     {
-        ShowBanner($"WAVE {waveNum} CLEAR!", Color.green);
+        ShowWaveCleared($"WAVE {waveNum} CLEAR!", Color.green);
     }
 
     private void HandleEnemyCountChanged(int remaining, int total)
@@ -247,22 +267,83 @@ public class WaveUI : MonoBehaviour
 
     private void HandleCountdownTick(float secondsRemaining)
     {
+        int currentSec = Mathf.CeilToInt(secondsRemaining);
+
+        // Update wave status text (without the countdown number)
         if (waveStatusText != null && WaveManager.Instance != null && WaveManager.Instance.CurrentState == WaveState.Preparing)
+        {
+            waveStatusText.text = "PREPARING";
+        }
+
+        if (countdownNumberText != null)
         {
             if (secondsRemaining > 0f)
             {
-                waveStatusText.text = $"PREPARING ({Mathf.CeilToInt(secondsRemaining)})";
+                countdownNumberText.text = currentSec.ToString();
+                
+                // Trigger pulse effect if 10 seconds or less remain, and the second has changed
+                if (currentSec <= 10 && currentSec != lastCountdownInt)
+                {
+                    lastCountdownInt = currentSec;
+                    if (punchScaleCoroutine != null)
+                    {
+                        StopCoroutine(punchScaleCoroutine);
+                    }
+                    punchScaleCoroutine = StartCoroutine(PunchCountdownTextScale());
+                }
             }
             else
             {
-                waveStatusText.text = "PREPARING (0)";
+                countdownNumberText.text = "0";
             }
+        }
+
+        // Reset lastCountdownInt if timer goes above 10 or stops
+        if (currentSec > 10)
+        {
+            lastCountdownInt = -1;
         }
 
         if (WaveManager.Instance != null)
         {
-            UpdateSkipButtonState(WaveManager.Instance.CurrentState);
+            UpdateCountdownUIState(WaveManager.Instance.CurrentState);
         }
+    }
+
+    private IEnumerator PunchCountdownTextScale()
+    {
+        if (countdownNumberText == null) yield break;
+
+        RectTransform rect = countdownNumberText.GetComponent<RectTransform>();
+        Vector3 originalScale = Vector3.one;
+        Vector3 targetScale = Vector3.one * pulseScaleAmount;
+
+        float elapsed = 0f;
+        // Half duration to scale up, half to scale down
+        float halfDuration = pulseDuration / 2f;
+
+        // Scale Up
+        while (elapsed < halfDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = elapsed / halfDuration;
+            rect.localScale = Vector3.Lerp(originalScale, targetScale, t);
+            yield return null;
+        }
+
+        rect.localScale = targetScale;
+        elapsed = 0f;
+
+        // Scale Down
+        while (elapsed < halfDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = elapsed / halfDuration;
+            rect.localScale = Vector3.Lerp(targetScale, originalScale, t);
+            yield return null;
+        }
+
+        rect.localScale = originalScale;
     }
 
     // --- Initial & Helper Methods ---
@@ -281,7 +362,7 @@ public class WaveUI : MonoBehaviour
             if (enemiesRemainingText != null) enemiesRemainingText.text = "0/0";
             if (moneyText != null) moneyText.text = "0";
             if (pointsText != null) pointsText.text = "0";
-            UpdateSkipButtonState(WaveState.WaveActive);
+            UpdateCountdownUIState(WaveState.WaveActive);
         }
     }
 
@@ -298,46 +379,66 @@ public class WaveUI : MonoBehaviour
         }
     }
 
-    private void ShowBanner(string message, Color color)
+    private void ShowWaveCleared(string message, Color color)
     {
-        if (bannerText != null)
+        if (waveClearedPanel != null)
         {
-            StopAllCoroutines();
-            StartCoroutine(BannerDisplayRoutine(message, color));
+            if (waveClearedCoroutine != null)
+            {
+                StopCoroutine(waveClearedCoroutine);
+            }
+            waveClearedCoroutine = StartCoroutine(WaveClearedDisplayRoutine());
         }
     }
 
-    private IEnumerator BannerDisplayRoutine(string message, Color color)
+    private IEnumerator WaveClearedDisplayRoutine()
     {
-        bannerText.text = message;
-        bannerText.color = color;
-        bannerText.gameObject.SetActive(true);
+        waveClearedPanel.gameObject.SetActive(true);
 
-        bannerText.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
+        RectTransform rect = waveClearedPanel;
+        float posY = rect.anchoredPosition.y;
+
+        float startX = -waveCleared_SlideDistance;
+        float centerStart = -waveCleared_CreepDistance / 2f;
+        float centerEnd = waveCleared_CreepDistance / 2f;
+        float endX = waveCleared_SlideDistance;
+
+        // 1. Slide In (Left to Center Start): Ease out (fast to slow)
         float elapsed = 0f;
-        float scaleDuration = 0.2f;
-        while (elapsed < scaleDuration)
+        while (elapsed < waveCleared_SlideDuration)
         {
             elapsed += Time.deltaTime;
-            float progress = elapsed / scaleDuration;
-            bannerText.transform.localScale = Vector3.Lerp(new Vector3(0.5f, 0.5f, 0.5f), Vector3.one, progress);
+            float t = elapsed / waveCleared_SlideDuration;
+            float ease = 1f - (1f - t) * (1f - t); // Quadratic ease-out (fast to slow)
+            rect.anchoredPosition = new Vector2(Mathf.Lerp(startX, centerStart, ease), posY);
             yield return null;
         }
-        bannerText.transform.localScale = Vector3.one;
+        rect.anchoredPosition = new Vector2(centerStart, posY);
 
-        yield return new WaitForSeconds(banner_SlideDuration);
-
+        // 2. Slow Creep (Center Start to Center End): Linear creep over hold duration
         elapsed = 0f;
-        float fadeDuration = 0.5f;
-        while (elapsed < fadeDuration)
+        while (elapsed < waveCleared_HoldDuration)
         {
             elapsed += Time.deltaTime;
-            float progress = elapsed / fadeDuration;
-            bannerText.color = new Color(color.r, color.g, color.b, Mathf.Lerp(1f, 0f, progress));
+            float t = elapsed / waveCleared_HoldDuration;
+            rect.anchoredPosition = new Vector2(Mathf.Lerp(centerStart, centerEnd, t), posY);
             yield return null;
         }
+        rect.anchoredPosition = new Vector2(centerEnd, posY);
 
-        bannerText.gameObject.SetActive(false);
+        // 3. Slide Out (Center End to Right): Ease in (slow to fast)
+        elapsed = 0f;
+        while (elapsed < waveCleared_SlideDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = elapsed / waveCleared_SlideDuration;
+            float ease = t * t; // Quadratic ease-in (slow to fast)
+            rect.anchoredPosition = new Vector2(Mathf.Lerp(centerEnd, endX, ease), posY);
+            yield return null;
+        }
+        rect.anchoredPosition = new Vector2(endX, posY);
+
+        waveClearedPanel.gameObject.SetActive(false);
     }
 
     private void CreateFallbackUI()
@@ -364,6 +465,35 @@ public class WaveUI : MonoBehaviour
 
         UnityEngine.UI.Image bgImage = panelObj.AddComponent<UnityEngine.UI.Image>();
         bgImage.color = new Color(0.1f, 0.1f, 0.1f, 0.75f);
+        if (waveClearedPanel == null)
+        {
+            GameObject bannerObj = new GameObject("WaveCleared");
+            bannerObj.transform.SetParent(canvasObj.transform, false);
+            
+            waveClearedPanel = bannerObj.AddComponent<RectTransform>();
+            waveClearedPanel.anchorMin = new Vector2(0.5f, 0.5f);
+            waveClearedPanel.anchorMax = new Vector2(0.5f, 0.5f);
+            waveClearedPanel.pivot = new Vector2(0.5f, 0.5f);
+            waveClearedPanel.anchoredPosition = new Vector2(0, 120);
+            waveClearedPanel.sizeDelta = new Vector2(600, 100);
+
+            UnityEngine.UI.Image img = bannerObj.AddComponent<UnityEngine.UI.Image>();
+            img.color = new Color(0.1f, 0.1f, 0.1f, 0.85f);
+            
+            GameObject txtObj = new GameObject("Text");
+            txtObj.transform.SetParent(bannerObj.transform, false);
+            RectTransform txtRect = txtObj.AddComponent<RectTransform>();
+            txtRect.anchorMin = Vector2.zero;
+            txtRect.anchorMax = Vector2.one;
+            txtRect.sizeDelta = Vector2.zero;
+            TextMeshProUGUI label = txtObj.AddComponent<TextMeshProUGUI>();
+            label.text = "WAVE CLEAR";
+            label.alignment = TextAlignmentOptions.Center;
+            label.fontSize = 36;
+            label.fontStyle = FontStyles.Bold;
+            
+            bannerObj.SetActive(false);
+        }
 
         if (waveNumberText == null)
             waveNumberText = CreateTextElement("Wave_Num", panelObj.transform, "WAVE --", 20, new Vector2(15, -15), true);
@@ -376,76 +506,32 @@ public class WaveUI : MonoBehaviour
         if (pointsText == null)
             pointsText = CreateTextElement("Points_Num", panelObj.transform, "0", 14, new Vector2(15, -135), false, new Color(1f, 0.8f, 0.2f));
 
-        if (skipButton == null)
+        if (waveCountdownPanel == null)
         {
-            GameObject btnObj = new GameObject("WaveStart");
-            btnObj.transform.SetParent(panelObj.transform, false);
-            
-            RectTransform btnRect = btnObj.AddComponent<RectTransform>();
-            btnRect.anchorMin = new Vector2(0, 1);
-            btnRect.anchorMax = new Vector2(0, 1);
-            btnRect.pivot = new Vector2(0, 1);
-            btnRect.anchoredPosition = new Vector2(15, -230);
-            btnRect.sizeDelta = new Vector2(220, 30);
-
-            UnityEngine.UI.Image btnImg = btnObj.AddComponent<UnityEngine.UI.Image>();
-            btnImg.color = new Color(0.2f, 0.6f, 0.2f, 1f);
-
-            skipButton = btnObj.AddComponent<UnityEngine.UI.Button>();
-            skipButton.onClick.AddListener(onSkipClicked);
-            
-            GameObject labelObj = new GameObject("Label");
-            labelObj.transform.SetParent(btnObj.transform, false);
-            RectTransform lblRect = labelObj.AddComponent<RectTransform>();
-            lblRect.anchorMin = Vector2.zero;
-            lblRect.anchorMax = Vector2.one;
-            lblRect.sizeDelta = Vector2.zero;
-
-            TextMeshProUGUI labelText = labelObj.AddComponent<TextMeshProUGUI>();
-            labelText.text = "START EARLY";
-            labelText.fontSize = 12;
-            labelText.alignment = TextAlignmentOptions.Center;
-            labelText.color = Color.white;
-            labelText.fontStyle = FontStyles.Bold;
-        }
-
-        if (bannerText == null)
-        {
-            GameObject bannerObj = new GameObject("BannerText");
-            bannerObj.transform.SetParent(canvasObj.transform, false);
-            
-            RectTransform bannerRect = bannerObj.AddComponent<RectTransform>();
-            bannerRect.anchorMin = new Vector2(0.5f, 0.5f);
-            bannerRect.anchorMax = new Vector2(0.5f, 0.5f);
-            bannerRect.pivot = new Vector2(0.5f, 0.5f);
-            bannerRect.anchoredPosition = new Vector2(0, 120);
-            bannerRect.sizeDelta = new Vector2(600, 100);
-
-            bannerText = bannerObj.AddComponent<TextMeshProUGUI>();
-            bannerText.alignment = TextAlignmentOptions.Center;
-            bannerText.fontSize = 42;
-            bannerText.fontStyle = FontStyles.Bold;
-            bannerText.text = "";
-            bannerText.outlineWidth = 0.25f;
-            bannerText.outlineColor = Color.black;
+            // Set up fallback panel if needed, but in redesign it's typically manually assigned
         }
     }
 
     private void TryAssignNewUIElements()
     {
-        bool hadButton = skipButton != null;
+        bool hadStartButton = waveStartButton != null;
         
         if (waveNumberText == null) waveNumberText = FindComponentByNameInHierarchy<TextMeshProUGUI>("Wave_Num");
         if (waveStatusText == null) waveStatusText = FindComponentByNameInHierarchy<TextMeshProUGUI>("Wave_Status");
         if (enemiesRemainingText == null) enemiesRemainingText = FindComponentByNameInHierarchy<TextMeshProUGUI>("Enemies_Num");
         if (moneyText == null) moneyText = FindComponentByNameInHierarchy<TextMeshProUGUI>("Money_Num");
         if (pointsText == null) pointsText = FindComponentByNameInHierarchy<TextMeshProUGUI>("Points_Num");
-        if (skipButton == null) skipButton = FindComponentByNameInHierarchy<UnityEngine.UI.Button>("WaveStart");
+        if (waveCountdownPanel == null) waveCountdownPanel = FindComponentByNameInHierarchy<RectTransform>("WaveCountdown");
+        if (waveStartButton == null) waveStartButton = FindComponentByNameInHierarchy<UnityEngine.UI.Button>("WaveStart");
+        if (countdownNumberText == null) countdownNumberText = FindComponentByNameInHierarchy<TextMeshProUGUI>("CountdownText");
+        if (waveClearedPanel == null) waveClearedPanel = FindComponentByNameInHierarchy<RectTransform>("WaveCleared");
+        if (hintList == null) hintList = FindComponentByNameInHierarchy<HintUI>("HintList");
+        if (hintList == null) hintList = FindAnyObjectByType<HintUI>();
 
-        if (!hadButton && skipButton != null)
+        if (!hadStartButton && waveStartButton != null)
         {
-            skipButton.onClick.RemoveListener(onSkipClicked);
-            skipButton.onClick.AddListener(onSkipClicked);
+            waveStartButton.onClick.RemoveListener(onSkipClicked);
+            waveStartButton.onClick.AddListener(onSkipClicked);
         }
     }
 
@@ -478,6 +564,16 @@ public class WaveUI : MonoBehaviour
         {
             WaveManager.Instance.SkipCountdownEarly();
         }
+
+        // Start the hide transition immediately for visual responsiveness
+        if (waveCountdownPanel != null || waveStartButton != null)
+        {
+            if (transitionCoroutine != null)
+            {
+                StopCoroutine(transitionCoroutine);
+            }
+            transitionCoroutine = StartCoroutine(TransitionUISequence(false));
+        }
     }
 
     private void HandleMoneyChanged(int value)
@@ -496,54 +592,149 @@ public class WaveUI : MonoBehaviour
         }
     }
 
-    private void InitializeButtonPositions()
+    private void InitializePositions()
     {
-        if (isButtonPositionsInitialized) return;
+        if (isPositionsInitialized) return;
         TryAssignNewUIElements();
-        if (skipButton != null)
+
+        // 1. Countdown Panel
+        if (waveCountdownPanel != null)
         {
-            RectTransform rect = skipButton.GetComponent<RectTransform>();
-            skip_SlideOutPosition = rect.anchoredPosition;
-            skip_SlideInPosition = skip_SlideOutPosition + new Vector2(0, skip_SlideDistance);
-            isButtonPositionsInitialized = true;
-            Debug.Log($"[WaveUI] Initialized button positions: Out = {skip_SlideOutPosition}, In = {skip_SlideInPosition}");
+            countdown_SlideOutPosition = waveCountdownPanel.anchoredPosition;
+            // Slide UP to hide: Y + distance
+            countdown_SlideInPosition = countdown_SlideOutPosition + new Vector2(0f, countdown_SlideDistance);
         }
+
+        // 2. Start Button
+        if (waveStartButton != null)
+        {
+            RectTransform rect = waveStartButton.GetComponent<RectTransform>();
+            waveStart_SlideOutPosition = rect.anchoredPosition;
+            // Slide LEFT to hide: X - distance
+            waveStart_SlideInPosition = waveStart_SlideOutPosition - new Vector2(waveStart_SlideDistance, 0f);
+        }
+
+        isPositionsInitialized = true;
     }
 
-    private IEnumerator SkipSlideCoroutine(bool show)
+    private IEnumerator TransitionUISequence(bool show)
     {
-        RectTransform rect = skipButton.GetComponent<RectTransform>();
-        Vector2 startPos = rect.anchoredPosition;
-        Vector2 targetPos = show ? skip_SlideOutPosition : skip_SlideInPosition;
+        InitializePositions();
         
-        skipButton.gameObject.SetActive(true);
+        RectTransform waveStartRect = waveStartButton != null ? waveStartButton.GetComponent<RectTransform>() : null;
+        RectTransform countdownRect = waveCountdownPanel;
 
-        float elapsed = 0f;
-        while (elapsed < skip_SlideDuration)
+        if (show)
         {
-            elapsed += Time.deltaTime;
-            float t = elapsed / skip_SlideDuration;
-            t = t * t * (3f - 2f * t); // Smooth ease-in-ease-out curve
-            rect.anchoredPosition = Vector2.Lerp(startPos, targetPos, t);
-            yield return null;
-        }
+            // --- SHOW SEQUENCE: Slide down and right simultaneously ---
+            // Set initial positions to hidden just before sliding in
+            if (countdownRect != null) countdownRect.anchoredPosition = countdown_SlideInPosition;
+            if (waveStartRect != null) waveStartRect.anchoredPosition = waveStart_SlideInPosition;
 
-        rect.anchoredPosition = targetPos;
-        skipButton.interactable = show;
+            if (waveStartButton != null)
+            {
+                waveStartButton.gameObject.SetActive(true);
+                waveStartButton.interactable = true;
+            }
+            if (waveCountdownPanel != null) waveCountdownPanel.gameObject.SetActive(true);
+
+            float elapsed = 0f;
+            Vector2 startCountdownPos = countdownRect != null ? countdownRect.anchoredPosition : Vector2.zero;
+            Vector2 startButtonPos = waveStartRect != null ? waveStartRect.anchoredPosition : Vector2.zero;
+
+            while (elapsed < slideDuration)
+            {
+                elapsed += Time.deltaTime;
+                float t = elapsed / slideDuration;
+                t = t * t * (3f - 2f * t); // Smooth step
+
+                if (countdownRect != null)
+                    countdownRect.anchoredPosition = Vector2.Lerp(startCountdownPos, countdown_SlideOutPosition, t);
+                if (waveStartRect != null)
+                    waveStartRect.anchoredPosition = Vector2.Lerp(startButtonPos, waveStart_SlideOutPosition, t);
+
+                yield return null;
+            }
+
+            if (countdownRect != null) countdownRect.anchoredPosition = countdown_SlideOutPosition;
+            if (waveStartRect != null) waveStartRect.anchoredPosition = waveStart_SlideOutPosition;
+        }
+        else
+        {
+            // --- HIDE SEQUENCE: Slide button left, then countdown up (sequential) ---
+            if (waveStartButton != null) 
+                waveStartButton.interactable = false;
+
+            // 1. Slide Start Button Left
+            if (waveStartRect != null)
+            {
+                Vector2 startButtonPos = waveStartRect.anchoredPosition;
+                float elapsed = 0f;
+                while (elapsed < slideDuration)
+                {
+                    elapsed += Time.deltaTime;
+                    float t = elapsed / slideDuration;
+                    t = t * t * (3f - 2f * t);
+
+                    waveStartRect.anchoredPosition = Vector2.Lerp(startButtonPos, waveStart_SlideInPosition, t);
+                    yield return null;
+                }
+                waveStartRect.anchoredPosition = waveStart_SlideInPosition;
+                waveStartButton.gameObject.SetActive(false);
+            }
+
+            // 2. Slide Countdown Panel Up
+            if (countdownRect != null)
+            {
+                Vector2 startCountdownPos = countdownRect.anchoredPosition;
+                float elapsed = 0f;
+                while (elapsed < slideDuration)
+                {
+                    elapsed += Time.deltaTime;
+                    float t = elapsed / slideDuration;
+                    t = t * t * (3f - 2f * t);
+
+                    countdownRect.anchoredPosition = Vector2.Lerp(startCountdownPos, countdown_SlideInPosition, t);
+                    yield return null;
+                }
+                countdownRect.anchoredPosition = countdown_SlideInPosition;
+                waveCountdownPanel.gameObject.SetActive(false);
+            }
+        }
     }
 
-    private void UpdateSkipButtonState(WaveState state)
+    private void UpdateCountdownUIState(WaveState state)
     {
-        bool show = (state == WaveState.Preparing) && (WaveManager.Instance != null); //&& WaveManager.Instance.isSpawned
+        bool show = (state == WaveState.Preparing) && (WaveManager.Instance != null);
 
-        InitializeButtonPositions();
-        if (skipButton == null || !isButtonPositionsInitialized) return;
-
-        if (skip_SlideCoroutine != null)
+        // Only trigger the transition if target visibility state changes, or on initial setup
+        if (!hasInitializedVisibility || show != isCountdownUIVisible)
         {
-            StopCoroutine(skip_SlideCoroutine);
+            hasInitializedVisibility = true;
+            isCountdownUIVisible = show;
+
+            InitializePositions();
+            if (transitionCoroutine != null)
+            {
+                StopCoroutine(transitionCoroutine);
+            }
+            transitionCoroutine = StartCoroutine(TransitionUISequence(show));
         }
-        skip_SlideCoroutine = StartCoroutine(SkipSlideCoroutine(show));
+    }
+
+    private void CheckMouseUnlockHint(WaveState state, int waveNum)
+    {
+        // show hint for the first 2 waves
+        if (state == WaveState.Preparing && waveNum <= 2 && !hasShownMouseUnlockHint)
+        {
+            if (waveNum == 2)
+                hasShownMouseUnlockHint = true;
+
+            if (hintList != null)
+            {
+                hintList.AddHint("Press Q to unlock mouse");
+            }
+        }
     }
 
     private TextMeshProUGUI CreateTextElement(string name, Transform parent, string initialText, float fontSize, Vector2 anchoredPos, bool bold, Color? textColor = null)

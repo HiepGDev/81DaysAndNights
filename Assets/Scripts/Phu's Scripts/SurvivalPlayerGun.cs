@@ -145,7 +145,9 @@ public class SurvivalPlayerGun : NetworkBehaviour
     void HandleShoot()
     {
         bool isSprinting = playerMovement != null && playerMovement.isSprinting;
-        bool shootInput = gunData.isAutomatic? shootAction.IsPressed(): shootAction.triggered;
+        bool isPointerOverUI = UnityEngine.EventSystems.EventSystem.current != null && 
+                               UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject();
+        bool shootInput = (gunData.isAutomatic ? shootAction.IsPressed() : shootAction.triggered) && !isPointerOverUI;
         animator.SetBool("isShoot", shootInput && gunData.currentAmmo > 0 && !gunData.reloading);
         if (shootInput && !isSprinting && !gunData.reloading && Time.time >= nextFireTime )
         {

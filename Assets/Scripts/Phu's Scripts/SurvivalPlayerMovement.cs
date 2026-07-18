@@ -90,8 +90,8 @@ public class SurvivalPlayerMovement : NetworkBehaviour
     {
         if (isSpawned && !isOwner) return;
 
-        // Toggle cursor lock state when pressing Alt (Left or Right)
-        if (Input.GetKeyDown(KeyCode.LeftAlt) || Input.GetKeyDown(KeyCode.RightAlt))
+        // Toggle cursor lock state when pressing Q
+        if (Input.GetKeyDown(KeyCode.Q))
         {
             if (Cursor.lockState == CursorLockMode.Locked)
             {

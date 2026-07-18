@@ -137,7 +137,9 @@ public class PlayerGun : MonoBehaviour
     {
         // Check if the player is sprinting from the movement script
         bool isSprinting = playerMovement != null && playerMovement.isSprinting;
-        bool shootInput = gunData.isAutomatic? shootAction.IsPressed(): shootAction.triggered;
+        bool isPointerOverUI = UnityEngine.EventSystems.EventSystem.current != null && 
+                               UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject();
+        bool shootInput = (gunData.isAutomatic ? shootAction.IsPressed() : shootAction.triggered) && !isPointerOverUI;
         animator.SetBool("isShoot", shootInput && gunData.currentAmmo > 0 && !gunData.reloading);
         if (shootInput && !isSprinting && !gunData.reloading && Time.time >= nextFireTime )
         {
