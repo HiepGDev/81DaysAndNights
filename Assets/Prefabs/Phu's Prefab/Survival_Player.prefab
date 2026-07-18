@@ -171,7 +171,7 @@ GameObject:
   - component: {fileID: 2425092925772900110}
   - component: {fileID: 1669271540665430505}
   - component: {fileID: 2592421764182756221}
-  - component: {fileID: 4537652777014334055}
+  - component: {fileID: 8005811737006179375}
   - component: {fileID: 3604858020177797979}
   m_Layer: 8
   m_Name: M1911_Arm
@@ -287,7 +287,7 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
---- !u!114 &4537652777014334055
+--- !u!114 &8005811737006179375
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -296,14 +296,22 @@ MonoBehaviour:
   m_GameObject: {fileID: 1119580142923714779}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5f501b313ffd5f943870b2d7e19d3148, type: 3}
+  m_Script: {fileID: 11500000, guid: 94550478c58fa814fb03ef61cc961b47, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PlayerGun
+  m_EditorClassIdentifier: Assembly-CSharp::SurvivalPlayerGun
+  _networkRules: {fileID: 0}
+  _visitiblityRules: {fileID: 0}
+  _isSetup: 0
+  _prefabId: -2147483648
+  _componentIndex: -2147483648
+  _shouldBePooled: 0
+  _parent: {fileID: 0}
+  _invertedPathToNearestParent: 
+  _directChildren: []
   gunData: {fileID: 11400000, guid: f09ee3edf4a3e5f488993b9887fbcc32, type: 2}
   recoil: {fileID: 2771845247438110806}
   crosshair: {fileID: 0}
   isAiming: 0
-  emptyClipSound: {fileID: 8300000, guid: d1886e7667720ab44b9ee57af3ddaa59, type: 3}
   interactionLayers:
     serializedVersion: 2
     m_Bits: 183
@@ -318,7 +326,7 @@ MonoBehaviour:
   aimSpeed: 10
   kickBackAmount: 0.04
   kickUpAmount: 1
-  scopeOverlayUI: {fileID: 0}
+  emptyClipSound: {fileID: 8300000, guid: d1886e7667720ab44b9ee57af3ddaa59, type: 3}
 --- !u!82 &3604858020177797979
 AudioSource:
   m_ObjectHideFlags: 0
@@ -6799,7 +6807,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6739673578214737814}
-  - component: {fileID: 559037592268247194}
   m_Layer: 0
   m_Name: Player_Camera
   m_TagString: Untagged
@@ -6823,33 +6830,6 @@ Transform:
   - {fileID: 4986748464622341298}
   m_Father: {fileID: 30124703825102583}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &559037592268247194
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5714615384781729350}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b0faf4b8c8fdd184ca88341258f68fdd, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PlayerInteraction
-  interactRange: 3
-  interactUI: {fileID: 0}
-  riceAnimator: {fileID: 0}
-  localizedPressTemplate:
-    m_TableReference:
-      m_TableCollectionName: GUID:b7e7f395dbc411c42ab85d0f06167a3a
-    m_TableEntryReference:
-      m_KeyId: 6514348654592
-      m_Key: 
-    m_FallbackState: 0
-    m_WaitForCompletion: 0
-    m_LocalVariables: []
-  references:
-    version: 2
-    RefIds: []
 --- !u!1 &5738097012333932164
 GameObject:
   m_ObjectHideFlags: 0
@@ -6949,16 +6929,15 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 30124703825102583}
-  - component: {fileID: 3356427865825249160}
-  - component: {fileID: 4052611616850423557}
-  - component: {fileID: 4003378509690604085}
-  - component: {fileID: 7370581137628022492}
-  - component: {fileID: 7333842697424536873}
   - component: {fileID: 8288525963746751748}
-  - component: {fileID: 5294046316171543384}
+  - component: {fileID: 3356427865825249160}
+  - component: {fileID: 7333842697424536873}
   - component: {fileID: 1625383896580981706}
-  - component: {fileID: 6589217131887351332}
   - component: {fileID: 2075070063510333114}
+  - component: {fileID: 4052611616850423557}
+  - component: {fileID: 5294046316171543384}
+  - component: {fileID: 4003378509690604085}
+  - component: {fileID: 6589217131887351332}
   m_Layer: 0
   m_Name: Survival_Player
   m_TagString: Player
@@ -6983,6 +6962,59 @@ Transform:
   - {fileID: 6739673578214737814}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 177.608, z: 0}
+--- !u!114 &8288525963746751748
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5916145969810567567}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 180ecf9b41d478f468eb3e9083753217, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.Cinemachine::Unity.Cinemachine.CinemachineImpulseSource
+  ImpulseDefinition:
+    ImpulseChannel: 1
+    ImpulseShape: 2
+    CustomImpulseShape:
+      serializedVersion: 2
+      m_Curve: []
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    ImpulseDuration: 0.2
+    ImpulseType: 0
+    DissipationRate: 0.25
+    RawSignal: {fileID: 0}
+    AmplitudeGain: 1
+    FrequencyGain: 1
+    RepeatMode: 0
+    Randomize: 1
+    TimeEnvelope:
+      AttackShape:
+        serializedVersion: 2
+        m_Curve: []
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      DecayShape:
+        serializedVersion: 2
+        m_Curve: []
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+      AttackTime: 0
+      SustainTime: 0.2
+      DecayTime: 0.7
+      ScaleWithImpact: 1
+      HoldForever: 0
+    ImpactRadius: 100
+    DirectionMode: 0
+    DissipationMode: 2
+    DissipationDistance: 100
+    PropagationSpeed: 343
+  DefaultVelocity: {x: 0.16, y: 0.16, z: 0}
 --- !u!114 &3356427865825249160
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6995,6 +7027,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7d358f21a1ee6d843bf045a5678f28d5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SurvivalPlayerMovement
+  _networkRules: {fileID: 0}
+  _visitiblityRules: {fileID: 0}
+  _isSetup: 0
+  _prefabId: -2147483648
+  _componentIndex: -2147483648
+  _shouldBePooled: 0
+  _parent: {fileID: 0}
+  _invertedPathToNearestParent: 
+  _directChildren: []
   animator: {fileID: 0}
   playerCamera: {fileID: 6739673578214737814}
   walkSpeed: 5
@@ -7011,6 +7052,89 @@ MonoBehaviour:
   crouchSpeed: 2.5
   crouchTransitionSpeed: 8
   isCrouching: 0
+--- !u!114 &7333842697424536873
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5916145969810567567}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9e7946871ed075d46a54506495197233, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SurvivalPlayerHealth
+  _networkRules: {fileID: 0}
+  _visitiblityRules: {fileID: 0}
+  _isSetup: 0
+  _prefabId: -2147483648
+  _componentIndex: -2147483648
+  _shouldBePooled: 0
+  _parent: {fileID: 0}
+  _invertedPathToNearestParent: 
+  _directChildren: []
+  maxHealth: 100
+  currentHealth:
+    _value: 100
+    _ownerAuth: 0
+    _sendIntervalInSeconds: 0
+  regenRate: 10
+  regenDelay: 2
+  healthBar: {fileID: 0}
+  gameOverCanvas: {fileID: 0}
+  hitsfx: {fileID: 8300000, guid: aa272b6788c6d4e42995a283d9511276, type: 3}
+  pitchVariation: 0.1
+  deathSound: {fileID: 8300000, guid: 084d54b4212f0e14e82cd39a78f98725, type: 3}
+  damageFlashImage: {fileID: 0}
+  damageFlashDuration: 0.55
+  maxFlashAlpha: 0.15
+  injuredOverlay: {fileID: 0}
+  injuredThreshold: 40
+  maxInjuredAlpha: 0.35
+  effectTransitionSpeed: 1.5
+--- !u!114 &1625383896580981706
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5916145969810567567}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5bb8a5221bf22d1478a400e2f20c47ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerFootstep
+  footstepSource: {fileID: 6589217131887351332}
+  dirtSteps:
+  - {fileID: 8300000, guid: f2fa09d2239f1e14fbc8ab76baf7f1d3, type: 3}
+  stoneSteps:
+  - {fileID: 8300000, guid: 488abb602c488584fbc9f81b23ce8a56, type: 3}
+  - {fileID: 8300000, guid: 4340e1b4b4d12224eae5644f847e831a, type: 3}
+  woodSteps: []
+  walkStepInterval: 0.62
+  sprintStepInterval: 0.38
+  crouchStepInterval: 0.72
+  rayDistance: 1.5
+  groundLayers:
+    serializedVersion: 2
+    m_Bits: 1
+--- !u!114 &2075070063510333114
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5916145969810567567}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0b59aa5195b147b41bdd1b5591f93591, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerStamina
+  staminaBar: {fileID: 0}
+  maxStamina: 5.5
+  drainRate: 0.7
+  regenRate: 0.9
+  regenDelay: 1.1
 --- !u!143 &4052611616850423557
 CharacterController:
   m_ObjectHideFlags: 0
@@ -7036,6 +7160,33 @@ CharacterController:
   m_SkinWidth: 0.08
   m_MinMoveDistance: 0.001
   m_Center: {x: 0, y: 1, z: 0}
+--- !u!54 &5294046316171543384
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5916145969810567567}
+  serializedVersion: 5
+  m_Mass: 1
+  m_LinearDamping: 0
+  m_AngularDamping: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 1
+  m_IsKinematic: 0
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
 --- !u!82 &4003378509690604085
 AudioSource:
   m_ObjectHideFlags: 0
@@ -7133,170 +7284,6 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
---- !u!114 &7370581137628022492
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5916145969810567567}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bf732b63f4fc9d648b1d4f8a08d0143b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PlayerHealth
-  maxHealth: 100
-  currentHealth: 100
-  regenRate: 10
-  regenDelay: 2
-  healthBar: {fileID: 0}
-  gameOverCanvas: {fileID: 0}
-  hitsfx: {fileID: 8300000, guid: aa272b6788c6d4e42995a283d9511276, type: 3}
-  pitchVariation: 0.1
-  deathSound: {fileID: 8300000, guid: 084d54b4212f0e14e82cd39a78f98725, type: 3}
-  damageFlashImage: {fileID: 0}
-  damageFlashDuration: 0.55
-  maxFlashAlpha: 0.15
-  injuredOverlay: {fileID: 0}
-  injuredThreshold: 40
-  maxInjuredAlpha: 0.35
-  effectTransitionSpeed: 1.5
-  weaponCameraObject: {fileID: 9112743097798552508}
---- !u!114 &7333842697424536873
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5916145969810567567}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9e7946871ed075d46a54506495197233, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::SurvivalPlayerHealth
-  maxHealth: 100
-  currentHealth: 100
-  regenRate: 10
-  regenDelay: 2
-  healthBar: {fileID: 0}
-  gameOverCanvas: {fileID: 0}
-  hitsfx: {fileID: 8300000, guid: aa272b6788c6d4e42995a283d9511276, type: 3}
-  pitchVariation: 0.1
-  deathSound: {fileID: 8300000, guid: 084d54b4212f0e14e82cd39a78f98725, type: 3}
-  damageFlashImage: {fileID: 0}
-  damageFlashDuration: 0.55
-  maxFlashAlpha: 0.15
-  injuredOverlay: {fileID: 0}
-  injuredThreshold: 40
-  maxInjuredAlpha: 0.35
-  effectTransitionSpeed: 1.5
-  weaponCameraObject: {fileID: 9112743097798552508}
---- !u!114 &8288525963746751748
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5916145969810567567}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 180ecf9b41d478f468eb3e9083753217, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Unity.Cinemachine::Unity.Cinemachine.CinemachineImpulseSource
-  ImpulseDefinition:
-    ImpulseChannel: 1
-    ImpulseShape: 2
-    CustomImpulseShape:
-      serializedVersion: 2
-      m_Curve: []
-      m_PreInfinity: 2
-      m_PostInfinity: 2
-      m_RotationOrder: 4
-    ImpulseDuration: 0.2
-    ImpulseType: 0
-    DissipationRate: 0.25
-    RawSignal: {fileID: 0}
-    AmplitudeGain: 1
-    FrequencyGain: 1
-    RepeatMode: 0
-    Randomize: 1
-    TimeEnvelope:
-      AttackShape:
-        serializedVersion: 2
-        m_Curve: []
-        m_PreInfinity: 2
-        m_PostInfinity: 2
-        m_RotationOrder: 4
-      DecayShape:
-        serializedVersion: 2
-        m_Curve: []
-        m_PreInfinity: 2
-        m_PostInfinity: 2
-        m_RotationOrder: 4
-      AttackTime: 0
-      SustainTime: 0.2
-      DecayTime: 0.7
-      ScaleWithImpact: 1
-      HoldForever: 0
-    ImpactRadius: 100
-    DirectionMode: 0
-    DissipationMode: 2
-    DissipationDistance: 100
-    PropagationSpeed: 343
-  DefaultVelocity: {x: 0.16, y: 0.16, z: 0}
---- !u!54 &5294046316171543384
-Rigidbody:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5916145969810567567}
-  serializedVersion: 5
-  m_Mass: 1
-  m_LinearDamping: 0
-  m_AngularDamping: 0.05
-  m_CenterOfMass: {x: 0, y: 0, z: 0}
-  m_InertiaTensor: {x: 1, y: 1, z: 1}
-  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ImplicitCom: 1
-  m_ImplicitTensor: 1
-  m_UseGravity: 1
-  m_IsKinematic: 0
-  m_Interpolate: 0
-  m_Constraints: 0
-  m_CollisionDetection: 0
---- !u!114 &1625383896580981706
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5916145969810567567}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5bb8a5221bf22d1478a400e2f20c47ea, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PlayerFootstep
-  footstepSource: {fileID: 6589217131887351332}
-  dirtSteps:
-  - {fileID: 8300000, guid: f2fa09d2239f1e14fbc8ab76baf7f1d3, type: 3}
-  stoneSteps:
-  - {fileID: 8300000, guid: 488abb602c488584fbc9f81b23ce8a56, type: 3}
-  - {fileID: 8300000, guid: 4340e1b4b4d12224eae5644f847e831a, type: 3}
-  woodSteps: []
-  walkStepInterval: 0.62
-  sprintStepInterval: 0.38
-  crouchStepInterval: 0.72
-  rayDistance: 1.5
-  groundLayers:
-    serializedVersion: 2
-    m_Bits: 1
 --- !u!82 &6589217131887351332
 AudioSource:
   m_ObjectHideFlags: 0
@@ -7394,23 +7381,6 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
---- !u!114 &2075070063510333114
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5916145969810567567}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0b59aa5195b147b41bdd1b5591f93591, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PlayerStamina
-  staminaBar: {fileID: 0}
-  maxStamina: 5.5
-  drainRate: 0.7
-  regenRate: 0.9
-  regenDelay: 1.1
 --- !u!1 &6016763312653814118
 GameObject:
   m_ObjectHideFlags: 0

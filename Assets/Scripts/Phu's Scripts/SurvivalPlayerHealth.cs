@@ -55,6 +55,13 @@ public class SurvivalPlayerHealth : NetworkBehaviour
         
         currentHealth.value = maxHealth;
 
+        // Disable singleplayer legacy PlayerGun to prevent shooting twice
+        var legacyGuns = GetComponentsInChildren<PlayerGun>(true);
+        foreach (var lg in legacyGuns)
+        {
+            lg.enabled = false;
+        }
+
         if (playerRigidbody != null)
         {
             playerRigidbody.isKinematic = true;  // No physics until Die()
@@ -80,6 +87,11 @@ public class SurvivalPlayerHealth : NetworkBehaviour
     {
         if (gameOverCanvas != null)
             gameOverCanvas.SetActive(false);
+        
+        if (!isSpawned)
+        {
+            currentHealth.value = maxHealth;
+        }
         UpdateHealthUI();
     }
 
@@ -111,6 +123,12 @@ public class SurvivalPlayerHealth : NetworkBehaviour
 
     void Update()
     {
+        if (currentHealth.value <= 0f && !isDead)
+        {
+            Die();
+            return;
+        }
+
         if (!isDead)
         {
             // Only server handles regeneration
@@ -140,6 +158,11 @@ public class SurvivalPlayerHealth : NetworkBehaviour
                 float healthBefore = currentHealth.value;
                 currentHealth.value += regenRate * Time.deltaTime;
                 currentHealth.value = Mathf.Min(currentHealth.value, maxHealth); // cap at max
+                
+                if (!isSpawned)
+                {
+                    OnHealthChanged(healthBefore, currentHealth.value);
+                }
             }
         }
     }
@@ -209,7 +232,13 @@ public class SurvivalPlayerHealth : NetworkBehaviour
         if (damage <= 0f || isDead) return;
         if (isSpawned && !isServer) return; // Only server handles damage
 
+        float healthBefore = currentHealth.value;
         currentHealth.value = Mathf.Max(0f, currentHealth.value - damage);
+        
+        if (!isSpawned)
+        {
+            OnHealthChanged(healthBefore, currentHealth.value);
+        }
     }
 
     private IEnumerator DamageFlash()
@@ -264,7 +293,19 @@ public class SurvivalPlayerHealth : NetworkBehaviour
         if (!isSpawned || isOwner)
         {
             if (gameOverCanvas != null)
+            {
+                var oldMgr = gameOverCanvas.GetComponent<GameOverManager>();
+                if (oldMgr != null)
+                {
+                    oldMgr.enabled = false;
+                    Destroy(oldMgr);
+                }
+                if (gameOverCanvas.GetComponent<SurvivalGameOverManager>() == null)
+                {
+                    gameOverCanvas.AddComponent<SurvivalGameOverManager>();
+                }
                 gameOverCanvas.SetActive(true);
+            }
             Cursor.visible = true;
             Cursor.lockState = CursorLockMode.None;
         }

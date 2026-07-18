@@ -38,6 +38,8 @@ public class SurvivalPlayerGun : NetworkBehaviour
     [SerializeField] private float kickUpAmount = 1.5f;     // How much the barrel tips up
     [SerializeField] private AudioClip emptyClipSound;
 
+    private SurvivalPlayerHealth playerHealth;
+
     private void Awake() {
         shootAction = InputSystem.actions.FindAction("Player/Shoot");
         reloadAction = InputSystem.actions.FindAction("Player/Reload");
@@ -78,6 +80,7 @@ public class SurvivalPlayerGun : NetworkBehaviour
         if (crosshair == null) crosshair = FindFirstObjectByType<CrosshairController>();
         if (ammoText == null) ammoText = FindFirstObjectByType<TMP_Text>();
         if (virtualCamera == null) virtualCamera = FindFirstObjectByType<CinemachineCamera>();
+        playerHealth = GetComponentInParent<SurvivalPlayerHealth>();
 
         // Find the Overlay Weapon Camera specifically
         if (weaponCamera == null)
@@ -134,6 +137,7 @@ public class SurvivalPlayerGun : NetworkBehaviour
     {
         if (isSpawned && !isOwner) return;
         if (Time.timeScale == 0) return;
+        if (playerHealth != null && playerHealth.IsDead) return;
         HandleShoot();
         HandleReload();
         HandleAim();

@@ -507,22 +507,29 @@ public class WaveManager : NetworkBehaviour
 
     private bool IsPlayerDead()
     {
-        if (isSpawned)
+        // First check for SurvivalPlayerHealth (since Survival_Player uses it)
+        var netPlayers = FindObjectsByType<SurvivalPlayerHealth>(FindObjectsSortMode.None);
+        if (netPlayers.Length > 0)
         {
-            var players = FindObjectsByType<SurvivalPlayerHealth>(FindObjectsSortMode.None);
-            if (players.Length == 0) return false;
+            foreach (var p in netPlayers)
+            {
+                if (!p.IsDead) return false;
+            }
+            return true;
+        }
+
+        // Fallback to original PlayerHealth
+        var players = FindObjectsByType<PlayerHealth>(FindObjectsSortMode.None);
+        if (players.Length > 0)
+        {
             foreach (var p in players)
             {
                 if (!p.IsDead) return false;
             }
             return true;
         }
-        else
-        {
-            if (playerTransform == null) return false;
-            PlayerHealth playerHealth = playerTransform.GetComponent<PlayerHealth>();
-            return playerHealth != null && playerHealth.IsDead;
-        }
+
+        return false;
     }
 
     private void SetState(WaveState newState)
@@ -532,6 +539,32 @@ public class WaveManager : NetworkBehaviour
             currentState.value = newState;
             OnWaveStateChanged?.Invoke(currentState.value);
             Debug.Log($"[WaveManager] State transitioned to: {currentState.value}");
+
+            if (currentState.value == WaveState.GameOver && isServer)
+            {
+                StartCoroutine(NetworkGameOverReloadRoutine());
+            }
+        }
+    }
+
+    private IEnumerator NetworkGameOverReloadRoutine()
+    {
+        // Wait to allow players to view game over quotes/banner
+        yield return new WaitForSeconds(5f);
+
+        Debug.Log("[WaveManager] Triggering network scene reload...");
+        if (NetworkManager.main != null && NetworkManager.main.sceneModule != null)
+        {
+            NetworkManager.main.sceneModule.LoadSceneAsync(
+                UnityEngine.SceneManagement.SceneManager.GetActiveScene().name,
+                UnityEngine.SceneManagement.LoadSceneMode.Single
+            );
+        }
+        else
+        {
+            UnityEngine.SceneManagement.SceneManager.LoadScene(
+                UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex
+            );
         }
     }
 
