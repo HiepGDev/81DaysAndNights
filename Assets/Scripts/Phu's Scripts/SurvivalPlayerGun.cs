@@ -9,6 +9,7 @@ using PhuScene;
 public class SurvivalPlayerGun : NetworkBehaviour
 {
     [SerializeField] WeaponSO gunData;
+    public WeaponSO WeaponData => gunData;
     [SerializeField] private GunRecoil recoil;
     [SerializeField] private CrosshairController crosshair;
     private SurvivalPlayerMovement playerMovement;

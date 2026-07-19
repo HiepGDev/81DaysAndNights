@@ -3,8 +3,15 @@ using UnityEngine;
 
 public class ShopUI : MonoBehaviour
 {
+    public static ShopUI Instance { get; private set; }
+
+    private void Awake()
+    {
+        Instance = this;
+    }
     [Header("UI Panels & Frames")]
     [SerializeField] private RectTransform shopPanel;
+    [SerializeField] private bool isTesting;
 
     [Header("Buttons")]
     [SerializeField] private UnityEngine.UI.Button openButton;
@@ -20,6 +27,26 @@ public class ShopUI : MonoBehaviour
     private Coroutine buttonScaleCoroutine;
     private bool isSubscribed = false;
     private bool isShopUnlocked = false;
+
+    [Header("Dynamic Cell Generation")]
+    [SerializeField] private GameObject shopCellPrefab;
+    [SerializeField] private Transform container1;
+    [SerializeField] private Transform container2;
+    [SerializeField] private Transform container3;
+
+    public Transform Container1 => container1;
+    public Transform Container2 => container2;
+    public Transform Container3 => container3;
+
+    [Header("Tooltip Configuration")]
+    [SerializeField] private RectTransform tooltipPanel;
+    [SerializeField] private TMPro.TextMeshProUGUI tooltipTitleText;
+    [SerializeField] private TMPro.TextMeshProUGUI tooltipDescText;
+    [SerializeField] private TMPro.TextMeshProUGUI tooltipSpecsText1;
+    [SerializeField] private TMPro.TextMeshProUGUI tooltipSpecsText2;
+    [SerializeField] private float tooltipOffset = 20f;
+
+
 
     private void Start()
     {
@@ -47,6 +74,11 @@ public class ShopUI : MonoBehaviour
         {
             openButton.transform.localScale = closedScale;
             openButton.gameObject.SetActive(false);
+        }
+
+        if (tooltipPanel != null)
+        {
+            tooltipPanel.gameObject.SetActive(false);
         }
 
         TrySubscribeEvents();
@@ -83,10 +115,11 @@ public class ShopUI : MonoBehaviour
 
     private void UpdateShopAvailability()
     {
+        if (isShopUnlocked) return;
         if (WaveManager.Instance == null) return;
 
-        // Check if shop has been unlocked (available after wave 1, i.e., currentWave >= 2)
-        if (!isShopUnlocked && WaveManager.Instance.CurrentWave >= 2)
+        // Check if shop has been unlocked (available after wave 1, i.e., currentWave >= 2) or if testing is enabled
+        if (WaveManager.Instance.CurrentWave >= 2 || isTesting)
         {
             isShopUnlocked = true;
             if (openButton != null)
@@ -100,7 +133,7 @@ public class ShopUI : MonoBehaviour
     private void HandleWaveStateChanged(WaveState state)
     {
         // Double check unlocking state on state changes
-        if (WaveManager.Instance != null && WaveManager.Instance.CurrentWave >= 2 && !isShopUnlocked)
+        if (!isShopUnlocked && (WaveManager.Instance != null && (WaveManager.Instance.CurrentWave >= 2 || isTesting)))
         {
             isShopUnlocked = true;
             if (openButton != null)
@@ -159,6 +192,8 @@ public class ShopUI : MonoBehaviour
     public void CloseShop()
     {
         if (shopPanel == null) return;
+
+        HideTooltip();
 
         // Expand open button back when closing the shop, waiting 0.5 seconds
         if (WaveManager.Instance != null && WaveManager.Instance.CurrentState != WaveState.WaveActive)
@@ -274,6 +309,143 @@ public class ShopUI : MonoBehaviour
                 Cursor.lockState = CursorLockMode.Locked;
                 Cursor.visible = false;
             }
+        }
+    }
+
+    
+
+    public void CreateWeaponCell(Transform parent, string name, string desc, int price, Sprite icon, string[] specs, string weaponId)
+    {
+        if (shopCellPrefab == null || parent == null) return;
+        GameObject cellObj = Instantiate(shopCellPrefab, parent);
+        PhuScene.WeaponShopItem item = cellObj.AddComponent<PhuScene.WeaponShopItem>();
+        AutoBindUIReferences(item, cellObj);
+        item.SetupWeapon(name, desc, price, icon, specs, weaponId);
+        item.InitializeRuntime();
+    }
+
+    public void CreateAmmoCell(Transform parent, string name, string desc, int price, Sprite icon, string[] specs)
+    {
+        if (shopCellPrefab == null || parent == null) return;
+        GameObject cellObj = Instantiate(shopCellPrefab, parent);
+        PhuScene.AmmoShopItem item = cellObj.AddComponent<PhuScene.AmmoShopItem>();
+        AutoBindUIReferences(item, cellObj);
+        item.SetupAmmo(name, desc, price, icon, specs);
+        item.InitializeRuntime();
+    }
+
+    public void CreateAllyCell(Transform parent, string name, string desc, int price, Sprite icon, string[] specs, GameObject prefab, int maxCount)
+    {
+        if (shopCellPrefab == null || parent == null) return;
+        GameObject cellObj = Instantiate(shopCellPrefab, parent);
+        PhuScene.AllyShopItem item = cellObj.AddComponent<PhuScene.AllyShopItem>();
+        AutoBindUIReferences(item, cellObj);
+        item.SetupAlly(name, desc, price, icon, specs, prefab, maxCount);
+        item.InitializeRuntime();
+    }
+
+    private void AutoBindUIReferences(PhuScene.BaseShopItem item, GameObject cellObj)
+    {
+        item.TitleText = FindComponentByName<TMPro.TextMeshProUGUI>(cellObj, "Title");
+        item.DescText = FindComponentByName<TMPro.TextMeshProUGUI>(cellObj, "Description");
+        item.PriceText = FindComponentByName<TMPro.TextMeshProUGUI>(cellObj, "BuyPrice");
+        item.SpecsText1 = FindComponentByName<TMPro.TextMeshProUGUI>(cellObj, "Specs1");
+        item.SpecsText2 = FindComponentByName<TMPro.TextMeshProUGUI>(cellObj, "Specs2");
+        item.IconImage = FindComponentByName<UnityEngine.UI.Image>(cellObj, "DisplayImage");
+        item.BuyButton = cellObj.GetComponent<UnityEngine.UI.Button>();
+        if (item.BuyButton == null)
+        {
+            item.BuyButton = FindComponentByName<UnityEngine.UI.Button>(cellObj, "BuyButton");
+        }
+        item.StatusText = FindComponentByName<TMPro.TextMeshProUGUI>(cellObj, "Status");
+    }
+
+    private T FindComponentByName<T>(GameObject root, string name) where T : Component
+    {
+        T[] comps = root.GetComponentsInChildren<T>(true);
+        foreach (T comp in comps)
+        {
+            if (comp.gameObject.name == name)
+            {
+                return comp;
+            }
+        }
+        return null;
+    }
+
+    public void ShowTooltip(string title, string desc, string[] specs, RectTransform targetRect)
+    {
+        if (tooltipPanel == null || targetRect == null) return;
+
+        if (tooltipTitleText != null) tooltipTitleText.text = title;
+        if (tooltipDescText != null) tooltipDescText.text = desc;
+
+        System.Text.StringBuilder sb1 = new System.Text.StringBuilder();
+        System.Text.StringBuilder sb2 = new System.Text.StringBuilder();
+        if (specs != null)
+        {
+            for (int i = 0; i < specs.Length; i++)
+            {
+                if (i % 2 == 0)
+                {
+                    if (sb1.Length > 0) sb1.Append("\n");
+                    sb1.Append(specs[i]);
+                }
+                else
+                {
+                    if (sb2.Length > 0) sb2.Append("\n");
+                    sb2.Append(specs[i]);
+                }
+            }
+        }
+        if (tooltipSpecsText1 != null) tooltipSpecsText1.text = sb1.ToString();
+        if (tooltipSpecsText2 != null) tooltipSpecsText2.text = sb2.ToString();
+
+        tooltipPanel.gameObject.SetActive(true);
+
+        // Position tooltip next to target button
+        Vector3[] corners = new Vector3[4];
+        targetRect.GetWorldCorners(corners);
+        // corners: 0 = bottom-left, 1 = top-left, 2 = top-right, 3 = bottom-right
+        Vector3 targetCenter = (corners[0] + corners[2]) * 0.5f;
+
+        float screenWidth = Screen.width;
+        bool isLeft = targetCenter.x < screenWidth * 0.5f;
+
+        float currentOffset = tooltipOffset;
+        Canvas canvas = tooltipPanel.GetComponentInParent<Canvas>();
+        if (canvas != null)
+        {
+            if (canvas.renderMode != RenderMode.WorldSpace)
+            {
+                currentOffset *= canvas.scaleFactor;
+            }
+            else
+            {
+                currentOffset *= tooltipPanel.lossyScale.x;
+            }
+        }
+
+        Vector3 targetPos = targetCenter;
+        if (isLeft)
+        {
+            targetPos.x = corners[2].x + currentOffset;
+            tooltipPanel.pivot = new Vector2(0f, 0.5f);
+        }
+        else
+        {
+            targetPos.x = corners[0].x - currentOffset;
+            tooltipPanel.pivot = new Vector2(1f, 0.5f);
+        }
+
+        tooltipPanel.position = targetPos;
+    }
+
+    public void HideTooltip()
+    {
+        if (tooltipPanel != null)
+        {
+            tooltipPanel.gameObject.SetActive(false);
         }
     }
 }

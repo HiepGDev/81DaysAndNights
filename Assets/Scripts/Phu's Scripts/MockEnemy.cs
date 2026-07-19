@@ -4,18 +4,13 @@ using PurrNet;
 
 namespace PhuScene
 {
-    public enum EnemyType
-    {
-        Basic,
-        Elite,
-        Boss
-    }
-
     public class MockEnemy : NetworkBehaviour
     {
         [Header("Stats")]
         [SerializeField] private EnemyType enemyType = EnemyType.Basic;
         public EnemyType Type => enemyType;
+        public int pointsAwarded = 50;
+        public int moneyAwarded = 10;
         [SerializeField] private float maxHealth = 50f;
         [SerializeField] private SyncVar<float> currentHealth = new(50f);
         [SerializeField] private float speed = 3.5f;
@@ -45,18 +40,24 @@ namespace PhuScene
                     maxHealth = 40f;
                     speed = 3.2f;
                     damage = 8f;
+                    pointsAwarded = 50;
+                    moneyAwarded = 10;
                     SetColor(Color.green);
                     break;
                 case EnemyType.Elite:
                     maxHealth = 90f;
                     speed = 4.0f;
                     damage = 18f;
+                    pointsAwarded = 150;
+                    moneyAwarded = 25;
                     SetColor(new Color(1f, 0.5f, 0f)); // Orange
                     break;
                 case EnemyType.Boss:
                     maxHealth = 250f;
                     speed = 2.5f;
                     damage = 40f;
+                    pointsAwarded = 500;
+                    moneyAwarded = 100;
                     transform.localScale = new Vector3(1.8f, 1.8f, 1.8f);
                     SetColor(Color.red);
                     break;

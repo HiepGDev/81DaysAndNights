@@ -7,6 +7,7 @@ using UnityEngine.InputSystem;
 public class PlayerGun : MonoBehaviour
 {
     [SerializeField] WeaponSO gunData;
+    public WeaponSO WeaponData => gunData;
     [SerializeField] private GunRecoil recoil;
     [SerializeField] private CrosshairController crosshair;
     private PlayerMovement playerMovement;

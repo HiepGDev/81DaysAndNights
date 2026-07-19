@@ -50,6 +50,7 @@ public class WaveManager : NetworkBehaviour
     [SerializeField] private Transform[] spawnPoints;      // Where to spawn enemies
     [SerializeField] private Transform playerTransform;    // Reference to Player for target updates
 
+
     [Header("Batch Spawn Configuration")]
     [Tooltip("Number of enemies spawned together in a single batch.")]
     [SerializeField] private int enemiesPerBatch = 3;
@@ -166,32 +167,7 @@ public class WaveManager : NetworkBehaviour
             {
                 if (enemy != null && IsEnemyDead(enemy))
                 {
-                    MockEnemy mock = enemy.GetComponent<MockEnemy>();
-                    if (mock != null)
-                    {
-                        int moneyAwarded = 10;
-                        int pointsAwarded = 50;
-                        switch (mock.Type)
-                        {
-                            case EnemyType.Basic:
-                                moneyAwarded = 10;
-                                pointsAwarded = 50;
-                                break;
-                            case EnemyType.Elite:
-                                moneyAwarded = 25;
-                                pointsAwarded = 150;
-                                break;
-                            case EnemyType.Boss:
-                                moneyAwarded = 100;
-                                pointsAwarded = 500;
-                                break;
-                        }
-                        AddMoneyAndPoints(moneyAwarded, pointsAwarded);
-                    }
-                    else
-                    {
-                        AddMoneyAndPoints(10, 50);
-                    }
+                    AwardDeathRewards(enemy);
                 }
             }
         }
@@ -367,9 +343,19 @@ public class WaveManager : NetworkBehaviour
 
         GameObject spawnedObj = null;
 
-        if (enemyPrefabs != null && enemyPrefabs.Length > 0)
+        WaveProgressionManager progression = GetComponent<WaveProgressionManager>();
+        GameObject prefab = null;
+        if (progression != null)
         {
-            GameObject prefab = enemyPrefabs[UnityEngine.Random.Range(0, enemyPrefabs.Length)];
+            prefab = progression.ChooseEnemyPrefabForWave(currentWave.value);
+        }
+        else if (enemyPrefabs != null && enemyPrefabs.Length > 0)
+        {
+            prefab = enemyPrefabs[UnityEngine.Random.Range(0, enemyPrefabs.Length)];
+        }
+
+        if (prefab != null)
+        {
             spawnedObj = Instantiate(prefab, spawnPos, spawnRot);
             spawnedObj.SetActive(true);
         }
@@ -377,7 +363,7 @@ public class WaveManager : NetworkBehaviour
         {
             if (isSpawned)
             {
-                Debug.LogError("[WaveManager] Cannot spawn procedural capsules in multiplayer. Please assign enemy prefabs in the inspector.");
+                Debug.LogError("[WaveManager] Cannot spawn procedural capsules in multiplayer. Please assign enemy prefabs in the inspector or setup WaveProgressionManager.");
             }
             else
             {
@@ -475,34 +461,39 @@ public class WaveManager : NetworkBehaviour
         {
             if (!isSpawned || isServer)
             {
-                MockEnemy enemy = mockEnemy.GetComponent<MockEnemy>();
-                if (enemy != null)
-                {
-                    int moneyAwarded = 10;
-                    int pointsAwarded = 50;
-                    switch (enemy.Type)
-                    {
-                        case EnemyType.Basic:
-                            moneyAwarded = 10;
-                            pointsAwarded = 50;
-                            break;
-                        case EnemyType.Elite:
-                            moneyAwarded = 25;
-                            pointsAwarded = 150;
-                            break;
-                        case EnemyType.Boss:
-                            moneyAwarded = 100;
-                            pointsAwarded = 500;
-                            break;
-                    }
-                    AddMoneyAndPoints(moneyAwarded, pointsAwarded);
-                }
+                AwardDeathRewards(mockEnemy);
             }
 
             activeEnemies.Remove(mockEnemy);
             remainingEnemies.value = activeEnemies.Count;
             OnEnemyCountChanged?.Invoke(activeEnemies.Count, spawnedEnemiesCount.value);
         }
+    }
+
+    private void AwardDeathRewards(GameObject enemy)
+    {
+        int money = 10;
+        int points = 50;
+
+        // Try getting reward from EnemyReward component
+        EnemyReward rewardComp = enemy.GetComponent<EnemyReward>();
+        if (rewardComp != null)
+        {
+            money = rewardComp.moneyAwarded;
+            points = rewardComp.pointsAwarded;
+        }
+        else
+        {
+            // Try getting reward from MockEnemy component
+            MockEnemy mockComp = enemy.GetComponent<MockEnemy>();
+            if (mockComp != null)
+            {
+                money = mockComp.moneyAwarded;
+                points = mockComp.pointsAwarded;
+            }
+        }
+
+        AddMoneyAndPoints(money, points);
     }
 
     private bool IsPlayerDead()
@@ -603,6 +594,20 @@ public class WaveManager : NetworkBehaviour
             OnMoneyChanged?.Invoke(money.value);
             OnPointsChanged?.Invoke(points.value);
         }
+    }
+
+    public bool TrySpendMoney(int amount)
+    {
+        if (money.value >= amount)
+        {
+            money.value -= amount;
+            if (!isSpawned || isServer)
+            {
+                OnMoneyChanged?.Invoke(money.value);
+            }
+            return true;
+        }
+        return false;
     }
 
     public void SkipCountdownEarly()
