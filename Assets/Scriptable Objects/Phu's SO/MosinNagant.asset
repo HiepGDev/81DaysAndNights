@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e8a349bc98124cd59051fb3e2849fa1b, type: 3}
+  m_Name: MosinNagant
+  m_EditorClassIdentifier: 
+  itemName: Mosin Nagant
+  itemDescription: Bolt-action sniper rifle with high zoom and power. Reliable for
+    tanky enemies.
+  price: 1000
+  icon: {fileID: 21300000, guid: e45b58f36472f2842b131be7ee8bf89c, type: 3}
+  specs:
+  - 'Damage: 100'
+  - 'Rate of Fire: 0.8'
+  - 'Magazine: 5'
+  - 'Reload Time: 3s'
+  itemType: 0
+  weaponPrefab: {fileID: 2630355231919593589, guid: 3cf187efef6bff44b8fa4aa973e06480, type: 3}
+  allyPrefab: {fileID: 0}
+  maxAlliesCount: 3

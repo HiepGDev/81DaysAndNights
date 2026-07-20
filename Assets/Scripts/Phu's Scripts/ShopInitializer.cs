@@ -3,34 +3,14 @@ using UnityEngine;
 
 namespace PhuScene
 {
-    [System.Serializable]
-    public struct ShopItemConfig
-    {
-        public string name;
-        [TextArea(2, 4)] public string description;
-        public int price;
-        public Sprite icon;
-        public string[] specs;
-
-        public enum ShopItemType { Weapon, Ammo, Ally }
-        public ShopItemType itemType;
-
-        [Header("Weapon Configurations")]
-        public string weaponId;
-
-        [Header("Ally Configurations")]
-        public GameObject allyPrefab;
-        public int maxAlliesCount;
-    }
-
     public class ShopInitializer : MonoBehaviour
     {
         [SerializeField] private ShopUI shopUI;
 
         [Header("Containers Item Lists")]
-        [SerializeField] private List<ShopItemConfig> container1Items;
-        [SerializeField] private List<ShopItemConfig> container2Items;
-        [SerializeField] private List<ShopItemConfig> container3Items;
+        [SerializeField] private List<ShopSO> container1Items;
+        [SerializeField] private List<ShopSO> container2Items;
+        [SerializeField] private List<ShopSO> container3Items;
 
         private void Start()
         {
@@ -65,22 +45,24 @@ namespace PhuScene
             }
         }
 
-        private void SpawnItems(Transform parent, List<ShopItemConfig> configs)
+        private void SpawnItems(Transform parent, List<ShopSO> configs)
         {
             if (parent == null || configs == null) return;
 
             foreach (var config in configs)
             {
+                if (config == null) continue;
+
                 switch (config.itemType)
                 {
-                    case ShopItemConfig.ShopItemType.Weapon:
-                        shopUI.CreateWeaponCell(parent, config.name, config.description, config.price, config.icon, config.specs, config.weaponId);
+                    case ShopSO.ShopItemType.Weapon:
+                        shopUI.CreateWeaponCell(parent, config.itemName, config.itemDescription, config.price, config.icon, config.specs, config.ItemId);
                         break;
-                    case ShopItemConfig.ShopItemType.Ammo:
-                        shopUI.CreateAmmoCell(parent, config.name, config.description, config.price, config.icon, config.specs);
+                    case ShopSO.ShopItemType.Ammo:
+                        shopUI.CreateAmmoCell(parent, config.itemName, config.itemDescription, config.price, config.icon, config.specs);
                         break;
-                    case ShopItemConfig.ShopItemType.Ally:
-                        shopUI.CreateAllyCell(parent, config.name, config.description, config.price, config.icon, config.specs, config.allyPrefab, config.maxAlliesCount);
+                    case ShopSO.ShopItemType.Ally:
+                        shopUI.CreateAllyCell(parent, config.itemName, config.itemDescription, config.price, config.icon, config.specs, config.allyPrefab, config.maxAlliesCount);
                         break;
                 }
             }

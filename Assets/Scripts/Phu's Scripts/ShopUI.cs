@@ -87,6 +87,26 @@ public class ShopUI : MonoBehaviour
     private void Update()
     {
         UpdateShopAvailability();
+
+        if (Input.GetKeyDown(KeyCode.Q))
+        {
+            ToggleShop();
+        }
+    }
+
+    public void ToggleShop()
+    {
+        if (shopPanel != null)
+        {
+            if (shopPanel.gameObject.activeSelf)
+            {
+                CloseShop();
+            }
+            else
+            {
+                OpenShop();
+            }
+        }
     }
 
     private void OnEnable()
@@ -312,6 +332,36 @@ public class ShopUI : MonoBehaviour
         }
     }
 
+    private Coroutine shakeCoroutine;
+
+    public void TriggerShakeEffect()
+    {
+        if (shopPanel == null) return;
+        if (shakeCoroutine != null)
+        {
+            StopCoroutine(shakeCoroutine);
+        }
+        shakeCoroutine = StartCoroutine(ShakeShopPanelCoroutine(0.15f, 15f));
+    }
+
+    private System.Collections.IEnumerator ShakeShopPanelCoroutine(float duration, float magnitude)
+    {
+        Vector2 originalPos = shopPanel.anchoredPosition;
+        float elapsed = 0.0f;
+
+        while (elapsed < duration)
+        {
+            float xOffset = UnityEngine.Random.Range(-1f, 1f) * magnitude;
+            shopPanel.anchoredPosition = new Vector2(originalPos.x + xOffset, originalPos.y);
+
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+
+        shopPanel.anchoredPosition = originalPos;
+        shakeCoroutine = null;
+    }
+
     
 
     public void CreateWeaponCell(Transform parent, string name, string desc, int price, Sprite icon, string[] specs, string weaponId)
@@ -352,12 +402,22 @@ public class ShopUI : MonoBehaviour
         item.SpecsText1 = FindComponentByName<TMPro.TextMeshProUGUI>(cellObj, "Specs1");
         item.SpecsText2 = FindComponentByName<TMPro.TextMeshProUGUI>(cellObj, "Specs2");
         item.IconImage = FindComponentByName<UnityEngine.UI.Image>(cellObj, "DisplayImage");
-        item.BuyButton = cellObj.GetComponent<UnityEngine.UI.Button>();
-        if (item.BuyButton == null)
-        {
-            item.BuyButton = FindComponentByName<UnityEngine.UI.Button>(cellObj, "BuyButton");
-        }
+        item.BuyButton = cellObj.GetComponentInChildren<UnityEngine.UI.Button>(true);
         item.StatusText = FindComponentByName<TMPro.TextMeshProUGUI>(cellObj, "Status");
+        item.DisplayTick = FindChildByName(cellObj, "DisplayTick");
+    }
+
+    private GameObject FindChildByName(GameObject root, string name)
+    {
+        Transform[] transforms = root.GetComponentsInChildren<Transform>(true);
+        foreach (Transform t in transforms)
+        {
+            if (t.gameObject.name == name)
+            {
+                return t.gameObject;
+            }
+        }
+        return null;
     }
 
     private T FindComponentByName<T>(GameObject root, string name) where T : Component

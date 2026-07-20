@@ -101,6 +101,11 @@ public class WaveUI : MonoBehaviour
         {
             RetrieveStateFromBackendPoll();
         }
+
+        if (Input.GetKeyDown(KeyCode.Return))
+        {
+            onSkipClicked();
+        }
     }
 
     // --- Active Retrieval: Polling (Backend to Frontend) ---
@@ -662,8 +667,8 @@ public class WaveUI : MonoBehaviour
         else
         {
             // --- HIDE SEQUENCE: Slide button left, then countdown up (sequential) ---
-            if (waveStartButton != null) 
-                waveStartButton.interactable = false;
+            // if (waveStartButton != null) 
+            //     waveStartButton.interactable = false;
 
             // 1. Slide Start Button Left
             if (waveStartRect != null)
@@ -732,7 +737,7 @@ public class WaveUI : MonoBehaviour
 
             if (hintList != null)
             {
-                hintList.AddHint("Press Q to unlock mouse");
+                hintList.AddHint("Press Alt to unlock mouse");
             }
         }
     }

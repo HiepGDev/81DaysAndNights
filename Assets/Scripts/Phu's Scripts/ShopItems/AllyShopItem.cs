@@ -57,6 +57,11 @@ namespace PhuScene
             Debug.Log($"[Shop] Spawned new ally. Active allies: {GetActiveAllyCount()}/{maxAllies}");
         }
 
+        protected override void OnPurchaseFailed()
+        {
+            base.TriggerFailureShake();
+        }
+
         public override void UpdateUIState()
         {
             base.UpdateUIState();

@@ -10,38 +10,50 @@ public class SurvivalPlayerGun : NetworkBehaviour
 {
     [SerializeField] WeaponSO gunData;
     public WeaponSO WeaponData => gunData;
-    [SerializeField] private GunRecoil recoil;
-    [SerializeField] private CrosshairController crosshair;
-    private SurvivalPlayerMovement playerMovement;
-    InputAction shootAction; 
-    InputAction reloadAction; 
-    InputAction aimAction;
-    public bool isAiming; 
-    private AudioSource audioSource; 
+
     [SerializeField] private LayerMask interactionLayers; 
     [SerializeField] private ParticleSystem muzzleFlash;
     [SerializeField] private GameObject bloodEffectPrefab;
-    private float nextFireTime = 0f;
-    private Animator animator;
-    [SerializeField] TMP_Text ammoText;
-    [Header("Procedural Aiming")]
-    [SerializeField] private CinemachineCamera virtualCamera; // World Camera
-    [SerializeField] private Camera weaponCamera; // overlay camera
-    [SerializeField] private Transform weaponTransform; 
-    [SerializeField] private Vector3 adsPosition;     // The target position for aiming
-    [SerializeField] private Vector3 adsRotation;
-    private Vector3 hipPosition; 
-    private Quaternion hipRotation;
     [SerializeField] private float aimSpeed = 10f;
-    private float defaultFOV = 75f;
+    [SerializeField] private float defaultFOV = 75f;
+
     [Header("Procedural Kick Settings")]
     [SerializeField] private float kickBackAmount = 0.04f;  // How far the gun moves back
     [SerializeField] private float kickUpAmount = 1.5f;     // How much the barrel tips up
     [SerializeField] private AudioClip emptyClipSound;
 
+    [Header("Procedural Aiming")]
+    [SerializeField] private Vector3 adsPosition;     // The target position for aiming
+    [SerializeField] private Vector3 adsRotation;
+
+    private GunRecoil recoil;
+    private CrosshairController crosshair;
+    private SurvivalPlayerMovement playerMovement;
     private SurvivalPlayerHealth playerHealth;
+    private AudioSource audioSource; 
+    private Animator animator;
+    private TMP_Text ammoText;
+    private CinemachineCamera virtualCamera; // World Camera
+    private GameObject scopeOverlayUI;
+    private bool isScoped = false;
+    private Camera weaponCamera; // overlay camera
+
+    private InputAction shootAction; 
+    private InputAction reloadAction; 
+    private InputAction aimAction;
+
+    [HideInInspector] public bool isAiming; 
+    private float nextFireTime = 0f;
+    private Vector3 hipPosition; 
+    private Quaternion hipRotation;
+    private bool ammoRestored = false;
 
     private void Awake() {
+        if (gunData != null)
+        {
+            gunData = Instantiate(gunData);
+        }
+
         shootAction = InputSystem.actions.FindAction("Player/Shoot");
         reloadAction = InputSystem.actions.FindAction("Player/Reload");
         aimAction = InputSystem.actions.FindAction("Player/Aim");
@@ -53,10 +65,10 @@ public class SurvivalPlayerGun : NetworkBehaviour
         if (animator == null) animator = GetComponent<Animator>();
         if (audioSource == null) audioSource = GetComponent<AudioSource>();
         if (muzzleFlash == null) muzzleFlash = GetComponentInChildren<ParticleSystem>();
-        if (weaponTransform != null)
+        if (transform != null)
         {
-            hipPosition = weaponTransform.localPosition;
-            hipRotation = weaponTransform.localRotation;
+            hipPosition = transform.localPosition;
+            hipRotation = transform.localRotation;
         }
     }
     private void OnEnable()
@@ -77,34 +89,24 @@ public class SurvivalPlayerGun : NetworkBehaviour
         }
 
         if (playerMovement == null) playerMovement = GetComponentInParent<SurvivalPlayerMovement>();
-        if (recoil == null) recoil = GetComponentInParent<GunRecoil>();
-        if (crosshair == null) crosshair = FindFirstObjectByType<CrosshairController>();
-        if (ammoText == null) ammoText = FindFirstObjectByType<TMP_Text>();
-        if (virtualCamera == null) virtualCamera = FindFirstObjectByType<CinemachineCamera>();
         playerHealth = GetComponentInParent<SurvivalPlayerHealth>();
 
-        // Find the Overlay Weapon Camera specifically
-        if (weaponCamera == null)
+        if (transform != null)
         {
-            Camera[] allCameras = Object.FindObjectsByType<Camera>(FindObjectsSortMode.None);
-            foreach (Camera cam in allCameras)
-            {
-                if (cam.name.Contains("Weapon")) // Find "WeaponCamera"
-                {
-                    weaponCamera = cam;
-                    break;
-                }
-            }
+            hipPosition = transform.localPosition;
+            hipRotation = transform.localRotation;
         }
-        animator = GetComponent<Animator>();
-        audioSource = GetComponent<AudioSource>();
+
+        if (animator == null) animator = GetComponent<Animator>();
+        if (audioSource == null) audioSource = GetComponent<AudioSource>();
         if (gunData != null)
         {
-            // Duplicate SO instance so it's not shared in memory across clients
-            gunData = Instantiate(gunData);
             gunData.reloading = false;
-            gunData.currentAmmo = gunData.magazineSize;
-            gunData.reserveAmmo = gunData.maxReserveAmmo;
+            if (!ammoRestored)
+            {
+                gunData.currentAmmo = gunData.magazineSize;
+                gunData.reserveAmmo = gunData.maxReserveAmmo;
+            }
             UpdateAmmoUI();
         }
         
@@ -118,16 +120,56 @@ public class SurvivalPlayerGun : NetworkBehaviour
             weaponCamera.fieldOfView = defaultFOV;
         }
     }
+
+    public void InitializeGunReferences(
+        GunRecoil recoilReference,
+        CrosshairController crosshairReference,
+        TMP_Text ammoTextReference,
+        CinemachineCamera virtualCameraReference,
+        Camera weaponCameraReference,
+        GameObject scopeOverlayUIReference)
+    {
+        this.recoil = recoilReference;
+        this.crosshair = crosshairReference;
+        this.ammoText = ammoTextReference;
+        this.virtualCamera = virtualCameraReference;
+        this.weaponCamera = weaponCameraReference;
+        this.scopeOverlayUI = scopeOverlayUIReference;
+        
+        if (scopeOverlayUI != null)
+        {
+            scopeOverlayUI.SetActive(false);
+        }
+
+        if (transform != null)
+        {
+            hipPosition = transform.localPosition;
+            hipRotation = transform.localRotation;
+        }
+
+        defaultFOV = PlayerPrefs.GetFloat("PlayerFOV", 75f);
+        if (virtualCamera != null)
+        {
+            virtualCamera.Lens.FieldOfView = defaultFOV;
+        }
+        if (weaponCamera != null)
+        {
+            weaponCamera.fieldOfView = defaultFOV;
+        }
+
+        UpdateAmmoUI();
+    }
     private void OnDisable()
     {
         StopAllCoroutines();
+        Unscope();
         if (gunData != null) gunData.reloading = false;
         if (virtualCamera != null) virtualCamera.Lens.FieldOfView = defaultFOV;
         if (weaponCamera != null) weaponCamera.fieldOfView = defaultFOV;
-        if (weaponTransform != null)
+        if (transform != null)
         {
-            weaponTransform.localPosition = hipPosition;
-            weaponTransform.localRotation = hipRotation;
+            transform.localPosition = hipPosition;
+            transform.localRotation = hipRotation;
         }
         shootAction?.Disable();
         reloadAction?.Disable();
@@ -155,8 +197,11 @@ public class SurvivalPlayerGun : NetworkBehaviour
             if (gunData.currentAmmo > 0)
             {
                 if (recoil != null) recoil.FireRecoil();
-                weaponTransform.localPosition -= Vector3.forward * kickBackAmount; // Push gun backward
-                weaponTransform.localRotation *= Quaternion.Euler(-kickUpAmount, 0, 0); // Tip gun upward
+                if (transform != null)
+                {
+                    transform.localPosition -= Vector3.forward * kickBackAmount; // Push gun backward
+                    transform.localRotation *= Quaternion.Euler(-kickUpAmount, 0, 0); // Tip gun upward
+                }
                 
                 gunData.currentAmmo--;
                 UpdateAmmoUI();
@@ -313,6 +358,7 @@ public class SurvivalPlayerGun : NetworkBehaviour
         if (!gunData.canZoom)
         {
             isAiming = false;
+            if (isScoped) Unscope();
             return;
         }
 
@@ -320,30 +366,97 @@ public class SurvivalPlayerGun : NetworkBehaviour
 
         if (aimAction.IsPressed() && !isSprinting && !gunData.reloading) {
             isAiming = true;
+            if (gunData.useScopeOverlay && !isScoped) 
+            {
+                StartCoroutine(OnScoped());
+            }
         } else {
             isAiming = false;
+            if (isScoped) Unscope();
         }
 
-        Vector3 targetPos = isAiming ? adsPosition : hipPosition;
-        weaponTransform.localPosition = Vector3.Lerp(weaponTransform.localPosition, targetPos, Time.deltaTime * aimSpeed);
-        Quaternion targetRot = isAiming ? Quaternion.Euler(adsRotation) : hipRotation;
-        weaponTransform.localRotation = Quaternion.Slerp(weaponTransform.localRotation, targetRot, Time.deltaTime * aimSpeed);
+        if (transform != null)
+        {
+            Vector3 targetPos = isAiming ? adsPosition : hipPosition;
+            transform.localPosition = Vector3.Lerp(transform.localPosition, targetPos, Time.deltaTime * aimSpeed);
+            Quaternion targetRot = isAiming ? Quaternion.Euler(adsRotation) : hipRotation;
+            transform.localRotation = Quaternion.Slerp(transform.localRotation, targetRot, Time.deltaTime * aimSpeed);
+        }
 
         float targetFOV = isAiming ? gunData.zoomAmount : defaultFOV;
         if (virtualCamera != null)
         {
             virtualCamera.Lens.FieldOfView = Mathf.Lerp(virtualCamera.Lens.FieldOfView, targetFOV, Time.deltaTime * aimSpeed);
         }
-        if (weaponCamera != null)
+        if (weaponCamera != null && !isScoped)
         {
             weaponCamera.fieldOfView = Mathf.Lerp(weaponCamera.fieldOfView, targetFOV, Time.deltaTime * aimSpeed);
         }
+    }
+
+    IEnumerator OnScoped()
+    {
+        isScoped = true;
+        yield return new WaitForSeconds(gunData.scopeDelay);
+
+        if (isAiming)
+        {
+            if (scopeOverlayUI != null) scopeOverlayUI.SetActive(true);
+            if (weaponCamera != null) weaponCamera.enabled = false; 
+            if (crosshair != null) crosshair.gameObject.SetActive(false); 
+        }
+    }
+
+    void Unscope()
+    {
+        isScoped = false;
+        if (scopeOverlayUI != null) scopeOverlayUI.SetActive(false);
+        if (weaponCamera != null) weaponCamera.enabled = true; 
+        if (crosshair != null) crosshair.gameObject.SetActive(true);
     }
     void UpdateAmmoUI()
     {
         if (ammoText != null)
             ammoText.text = $"{gunData.currentAmmo:D2} / {gunData.reserveAmmo:D3}";
     }
+
+    public int CurrentAmmo
+    {
+        get => gunData != null ? gunData.currentAmmo : 0;
+        set
+        {
+            if (gunData != null)
+            {
+                gunData.currentAmmo = value;
+                UpdateAmmoUI();
+            }
+        }
+    }
+
+    public int ReserveAmmo
+    {
+        get => gunData != null ? gunData.reserveAmmo : 0;
+        set
+        {
+            if (gunData != null)
+            {
+                gunData.reserveAmmo = value;
+                UpdateAmmoUI();
+            }
+        }
+    }
+
+    public void SetAmmo(int current, int reserve)
+    {
+        if (gunData != null)
+        {
+            gunData.currentAmmo = current;
+            gunData.reserveAmmo = reserve;
+            ammoRestored = true;
+            UpdateAmmoUI();
+        }
+    }
+
     public void UpdateDefaultFOV(float newFOV)
     {
         defaultFOV = newFOV;

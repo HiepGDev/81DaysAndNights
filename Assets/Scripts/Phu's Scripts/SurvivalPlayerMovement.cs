@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
 using PurrNet;
+using PhuScene;
 
 public class SurvivalPlayerMovement : NetworkBehaviour
 {
@@ -29,7 +30,6 @@ public class SurvivalPlayerMovement : NetworkBehaviour
     private Vector3 velocity;
     [HideInInspector]
     private PlayerStamina staminaSystem;
-    private SurvivalPlayerGun playerGun;
     public bool isSprinting;
     public bool canSprint = true;
     public bool canMove = true;
@@ -41,7 +41,7 @@ public class SurvivalPlayerMovement : NetworkBehaviour
     
     public bool isCrouching = false;
     private Vector3 originalCamPos; 
-    // center lerping to stop sinking/stutter
+
     private void Awake()
     {
         playerController = GetComponent<CharacterController>();
@@ -49,7 +49,6 @@ public class SurvivalPlayerMovement : NetworkBehaviour
         if (staminaSystem == null) staminaSystem = GetComponent<PlayerStamina>();
         if (playerCamera == null)
         {
-            // Look for a child named...
             Transform camPivot = transform.Find("Player_Camera"); 
             playerCamera = camPivot;
         }
@@ -64,6 +63,7 @@ public class SurvivalPlayerMovement : NetworkBehaviour
         sprintAction.Enable();
         crouchAction.Enable();
     }
+
     void Start()
     {
         if (isSpawned && !isOwner)
@@ -81,7 +81,6 @@ public class SurvivalPlayerMovement : NetworkBehaviour
 
         DisableCursor();
 
-        if (playerGun == null) playerGun = GetComponentInChildren<SurvivalPlayerGun>();
         if (playerCamera != null) originalCamPos = playerCamera.localPosition;
         lookSensitivity = PlayerPrefs.GetFloat("MouseSensitivity", 10f);
     }
@@ -90,8 +89,8 @@ public class SurvivalPlayerMovement : NetworkBehaviour
     {
         if (isSpawned && !isOwner) return;
 
-        // Toggle cursor lock state when pressing Q
-        if (Input.GetKeyDown(KeyCode.Q))
+        // Toggle cursor lock state when pressing Alt
+        if (Input.GetKeyDown(KeyCode.LeftAlt) || Input.GetKeyDown(KeyCode.RightAlt))
         {
             if (Cursor.lockState == CursorLockMode.Locked)
             {
@@ -120,79 +119,75 @@ public class SurvivalPlayerMovement : NetworkBehaviour
         Cursor.visible = false;
         Cursor.lockState = CursorLockMode.Locked;
     }
+
     void HandleMove()
     {
-        // get vector from input 
         Vector2 moveValue = canMove ? moveAction.ReadValue<Vector2>() : Vector2.zero;
-        // Check the stamina system to see if we are allowed to sprint
         bool hasEnergy = staminaSystem != null && staminaSystem.HasStamina();
-        // sprint is held or not 
         if (sprintAction.IsPressed() && isCrouching)
         {
             isCrouching = false;
         }
         isSprinting = sprintAction.IsPressed() && moveValue.magnitude > 0.1f && moveValue.y > 0.1f 
         && hasEnergy && !isCrouching && canSprint; 
-        // Speed selection
         float currentSpeed = isCrouching ? crouchSpeed : (isSprinting ? sprintSpeed : walkSpeed);
 
         Vector3 move = transform.right * moveValue.x + transform.forward * moveValue.y;
         playerController.Move(move * currentSpeed * Time.deltaTime);
 
-        // Apply gravity continuously
         velocity.y += gravity * Time.deltaTime;
         playerController.Move(velocity * Time.deltaTime);
 
-        // If grounded, reset vertical velocity (ensuring don't accumulate gravity)
         if (playerController.isGrounded && velocity.y < 0)
         {
             velocity.y = -2f;
         }
-        bool isMoving = moveValue.magnitude > 0.1f;
-        bool isWalking = isMoving && !isSprinting;
-        bool isRunning = isMoving && isSprinting;
+        
+        bool isWalking = moveValue.magnitude > 0.1f && !isSprinting;
+        bool isRunning = isSprinting;
 
-        // only set walk/run to true if NOT aiming.
-        // if aiming, the animator will naturally fall back to "Idle".
-        bool Walk = isWalking && (playerGun == null || !playerGun.isAiming);
-        bool Run = isRunning && (playerGun == null || !playerGun.isAiming);
-        if (animator != null && animator.isActiveAndEnabled)
+        // Check aiming state from local player inventory
+        bool isAiming = false;
+        var inventory = GetComponent<SurvivalInventory>();
+        if (inventory != null && inventory.ActiveGun != null)
         {
-            animator.SetBool("isWalk", Walk);
-            animator.SetBool("isRun", Run);
+            isAiming = inventory.ActiveGun.isAiming;
+        }
+
+        bool Walk = isWalking && !isAiming;
+        bool Run = isRunning && !isAiming;
+        
+        if (animator != null)
+        {
+            animator.SetBool("Walk", Walk);
+            animator.SetBool("Run", Run);
         }
     }
-    
+
     void HandleLook()
     {
-        // If the cursor is not locked, do not process look input to prevent camera swinging when clicking UI
-        if (Cursor.lockState != CursorLockMode.Locked) return;
+        // Prevent rotating camera when unlocking mouse
+        if (Cursor.lockState == CursorLockMode.None)
+            return;
 
-        // Read the mouse delta
         Vector2 lookValue = lookAction.ReadValue<Vector2>();
+        float mouseX = lookValue.x * lookSensitivity * Time.deltaTime;
+        float mouseY = lookValue.y * lookSensitivity * Time.deltaTime;
 
-        // Rotate camera up/down
-        xRotation -= lookValue.y * lookSensitivity * Time.deltaTime;
-        xRotation = Math.Clamp(xRotation, -90f, 90f);
+        xRotation -= mouseY;
+        xRotation = Mathf.Clamp(xRotation, -90f, 90f);
 
-        playerCamera.localRotation = Quaternion.Euler(xRotation, 0f, 0f);
-
-        // Rotate player left/right
-        transform.Rotate(Vector3.up * (lookValue.x * lookSensitivity * Time.deltaTime));
+        if (playerCamera != null)
+        {
+            playerCamera.localRotation = Quaternion.Euler(xRotation, 0f, 0f);
+        }
+        transform.Rotate(Vector3.up * mouseX);
     }
+
     void HandleJump()
     {
-        if (!canMove) return;
-        // If the jump button is pressed this frame, reset the jump buffer counter
-        if (jumpAction.triggered)
+        if (jumpAction.triggered && canMove)
         {
-            if (isCrouching)
-            {
-                isCrouching = false;
-                jumpBufferCounter = 0f; // Clear the buffer so they don't jump immediately
-                return; // Stop here; the player just stood up
-
-            }
             jumpBufferCounter = jumpBufferTime;
         }
         else
@@ -200,20 +195,19 @@ public class SurvivalPlayerMovement : NetworkBehaviour
             jumpBufferCounter -= Time.deltaTime;
         }
 
-        // If grounded and a jump was buffered, perform the jump
         if (playerController.isGrounded && jumpBufferCounter > 0f && !isCrouching)
         {
             velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
-            jumpBufferCounter = 0f; // reset the buffer once the jump is triggered
+            jumpBufferCounter = 0f;
         }
     }
+
     private void HandleCrouch()
     {
         if (canMove && crouchAction.triggered)
         {
             isCrouching = !isCrouching;
         } 
-        // Smoothly adjust CharacterController height
         float targetHeight = isCrouching ? crouchHeight : standingHeight;
         float newHeight = Mathf.Lerp(playerController.height, targetHeight, Time.deltaTime * crouchTransitionSpeed);
         playerController.height = newHeight;
@@ -221,14 +215,15 @@ public class SurvivalPlayerMovement : NetworkBehaviour
         playerController.center = new Vector3(0, newHeight / 2f, 0);
         float heightDifference = standingHeight - newHeight;
 
-        // Adjust camera position relative to crouch
         Vector3 targetCamPos = new Vector3(originalCamPos.x, originalCamPos.y - heightDifference, originalCamPos.z);
         playerCamera.localPosition = Vector3.Lerp(playerCamera.localPosition, targetCamPos, Time.deltaTime * crouchTransitionSpeed);
     }
+
     public void UpdateSensitivity(float newSensitivity)
     {
         lookSensitivity = newSensitivity;
     }
+
     public void SetAnimator(Animator newAnimator)
     {
         animator = newAnimator;

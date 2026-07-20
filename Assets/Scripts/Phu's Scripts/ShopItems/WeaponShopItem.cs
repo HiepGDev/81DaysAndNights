@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections.Generic;
 
 namespace PhuScene
 {
@@ -9,9 +10,11 @@ namespace PhuScene
 
         private bool isOwned = false;
 
+        // Static runtime HashSet to keep track of unlocks in memory during tests without persistence
+        private static readonly HashSet<string> runtimeUnlockedWeapons = new HashSet<string>();
+
         protected override void Start()
         {
-            isOwned = PlayerPrefs.GetInt("UnlockedWeapon_" + weaponId, 0) == 1;
             base.Start();
         }
 
@@ -29,19 +32,43 @@ namespace PhuScene
         protected override void OnPurchaseSuccess()
         {
             isOwned = true;
-            PlayerPrefs.SetInt("UnlockedWeapon_" + weaponId, 1);
-            PlayerPrefs.Save();
+            runtimeUnlockedWeapons.Add(weaponId);
+
+            if (SurvivalInventory.Instance != null)
+            {
+                SurvivalInventory.Instance.UnlockWeapon(weaponId);
+                SurvivalInventory.Instance.EquipWeapon(weaponId);
+            }
             
-            // Trigger gameplay event or notify weapon manager to equip/unlock
-            Debug.Log($"[Shop] Weapon unlocked permanently: {weaponId}");
+            Debug.Log($"[Shop] Weapon unlocked and equipped: {weaponId}");
         }
+
+        protected override void OnPurchaseFailed()
+        {
+            if (!isOwned)
+                base.TriggerFailureShake();
+        }
+
 
         public override void UpdateUIState()
         {
+            if (SurvivalInventory.Instance != null)
+            {
+                isOwned = SurvivalInventory.Instance.IsWeaponUnlocked(weaponId);
+            }
+            else
+            {
+                isOwned = runtimeUnlockedWeapons.Contains(weaponId);
+            }
+
             base.UpdateUIState();
             if (statusText != null)
             {
                 statusText.text = isOwned ? "Owned" : "";
+            }
+            if (displayTick != null)
+            {
+                displayTick.SetActive(isOwned);
             }
         }
     }

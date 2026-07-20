@@ -5,7 +5,7 @@ using UnityEngine.EventSystems;
 
 namespace PhuScene
 {
-    public abstract class BaseShopItem : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
+    public abstract class BaseShopItem : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler
     {
         // Shared Information (initialized at runtime by SetupItem)
         protected string itemName;
@@ -21,7 +21,8 @@ namespace PhuScene
         [SerializeField] protected TextMeshProUGUI specsText1;
         [SerializeField] protected TextMeshProUGUI specsText2;
         [SerializeField] protected Image iconImage;
-        [SerializeField] protected Button buyLabel;
+        [SerializeField] protected Button cellButton;
+        [SerializeField] protected GameObject displayTick;
         [SerializeField] protected TextMeshProUGUI statusText;
 
         [Header("Buy Label Animation Settings")]
@@ -36,8 +37,9 @@ namespace PhuScene
         public TextMeshProUGUI SpecsText1 { get => specsText1; set => specsText1 = value; }
         public TextMeshProUGUI SpecsText2 { get => specsText2; set => specsText2 = value; }
         public Image IconImage { get => iconImage; set => iconImage = value; }
-        public Button BuyButton { get => buyLabel; set => buyLabel = value; }
+        public Button BuyButton { get => cellButton; set => cellButton = value; }
         public TextMeshProUGUI StatusText { get => statusText; set => statusText = value; }
+        public GameObject DisplayTick { get => displayTick; set => displayTick = value; }
 
         private RectTransform myRectTransform;
         private Vector2 buyLabelHoverPos;
@@ -52,12 +54,21 @@ namespace PhuScene
 
         protected virtual void Start()
         {
+            Debug.Log("BASE START");
             InitializeRuntime();
         }
 
+        private float stateUpdateTimer = 0f;
+        private const float STATE_UPDATE_INTERVAL = 0.2f;
+
         protected virtual void Update()
         {
-            UpdateUIState();
+            stateUpdateTimer += Time.deltaTime;
+            if (stateUpdateTimer >= STATE_UPDATE_INTERVAL)
+            {
+                stateUpdateTimer = 0f;
+                UpdateUIState();
+            }
             AnimateBuyLabel();
         }
 
@@ -74,10 +85,16 @@ namespace PhuScene
         {
             SetupAnimationPositions();
 
-            if (buyLabel != null)
+            if (cellButton == null)
             {
-                buyLabel.onClick.RemoveListener(BuyItem);
-                buyLabel.onClick.AddListener(BuyItem);
+                cellButton = GetComponentInChildren<Button>(true);
+            }
+
+            if (cellButton != null)
+            {
+                cellButton.onClick.RemoveListener(BuyItem);
+                cellButton.onClick.AddListener(BuyItem);
+                Debug.Log("BASE CLICK ADDED");
             }
             UpdateUI();
             UpdateUIState();
@@ -143,36 +160,66 @@ namespace PhuScene
 
         public virtual void UpdateUIState()
         {
-            if (buyLabel == null) return;
-
-            bool canAfford = false;
-            if (WaveManager.Instance != null)
+            if (cellButton == null)
             {
-                canAfford = WaveManager.Instance.Money >= price;
+                cellButton = GetComponentInChildren<Button>(true);
             }
 
-            buyLabel.interactable = canAfford && IsPurchaseable();
+            if (!IsPurchaseable())
+            {
+                buyLabelTargetPos = buyLabelTuckedPos;
+            }
         }
 
         public virtual void BuyItem()
         {
-            if (!IsPurchaseable()) return;
+            Debug.Log($"[Shop] BuyItem called. Item: {itemName}, Price: {price}, IsPurchaseable: {IsPurchaseable()}");
+
+            if (!IsPurchaseable())
+            {
+                Debug.Log($"[Shop] Item {itemName} is not purchaseable (e.g. already owned or full). Shaking UI.");
+                OnPurchaseFailed();
+                return;
+            }
 
             if (WaveManager.Instance != null)
             {
-                if (WaveManager.Instance.Money >= price)
+                int currentMoney = WaveManager.Instance.Money;
+                Debug.Log($"[Shop] Player money: {currentMoney}, Price: {price}");
+                if (currentMoney >= price)
                 {
                     if (WaveManager.Instance.TrySpendMoney(price))
                     {
+                        Debug.Log($"[Shop] Purchase success for: {itemName}");
                         OnPurchaseSuccess();
                         UpdateUIState();
+                        return;
                     }
                 }
+                else
+                {
+                    Debug.Log($"[Shop] Insufficient funds: {currentMoney} < {price}.");
+                }
+            }
+            else
+            {
+                Debug.LogWarning("[Shop] WaveManager.Instance is null!");
+            }
+
+            OnPurchaseFailed();
+        }
+
+        protected void TriggerFailureShake()
+        {
+            if (ShopUI.Instance != null)
+            {
+                ShopUI.Instance.TriggerShakeEffect();
             }
         }
 
         protected abstract bool IsPurchaseable();
         protected abstract void OnPurchaseSuccess();
+        protected abstract void OnPurchaseFailed();
 
         public virtual void OnPointerEnter(PointerEventData eventData)
         {
@@ -180,7 +227,11 @@ namespace PhuScene
             {
                 ShopUI.Instance.ShowTooltip(itemName, itemDescription, specs, myRectTransform);
             }
-            buyLabelTargetPos = buyLabelHoverPos; // Slide down on hover
+
+            if (IsPurchaseable())
+            {
+                buyLabelTargetPos = buyLabelHoverPos;
+            }
         }
 
         public virtual void OnPointerExit(PointerEventData eventData)
@@ -189,7 +240,12 @@ namespace PhuScene
             {
                 ShopUI.Instance.HideTooltip();
             }
-            buyLabelTargetPos = buyLabelTuckedPos; // Slide up on unhover
+            buyLabelTargetPos = buyLabelTuckedPos;
+        }
+
+        public virtual void OnPointerClick(PointerEventData eventData)
+        {
+            BuyItem();
         }
 
         protected virtual void OnDisable()

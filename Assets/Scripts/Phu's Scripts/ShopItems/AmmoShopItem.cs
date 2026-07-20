@@ -49,6 +49,11 @@ namespace PhuScene
             }
         }
 
+        protected override void OnPurchaseFailed()
+        {
+            base.TriggerFailureShake();
+        }
+
         public override void UpdateUIState()
         {
             base.UpdateUIState();
