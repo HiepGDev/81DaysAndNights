@@ -403,7 +403,8 @@ public class ShopUI : MonoBehaviour
         item.SpecsText2 = FindComponentByName<TMPro.TextMeshProUGUI>(cellObj, "Specs2");
         item.IconImage = FindComponentByName<UnityEngine.UI.Image>(cellObj, "DisplayImage");
         item.BuyButton = cellObj.GetComponentInChildren<UnityEngine.UI.Button>(true);
-        item.StatusText = FindComponentByName<TMPro.TextMeshProUGUI>(cellObj, "Status");
+        item.DisplayCount = FindChildByName(cellObj, "DisplayCount");
+        item.DisplayCountText = FindComponentByName<TMPro.TextMeshProUGUI>(cellObj, "DisplayCount");
         item.DisplayTick = FindChildByName(cellObj, "DisplayTick");
     }
 
@@ -506,6 +507,21 @@ public class ShopUI : MonoBehaviour
         if (tooltipPanel != null)
         {
             tooltipPanel.gameObject.SetActive(false);
+        }
+    }
+
+    private bool hasShownSwitchHint = false;
+
+    public void OnWeaponPurchased(string weaponId)
+    {
+        if (!hasShownSwitchHint)
+        {
+            hasShownSwitchHint = true;
+            HintUI foundHintList = FindFirstObjectByType<HintUI>();
+            if (foundHintList != null)
+            {
+                foundHintList.AddHint("Press 1,2,3... to switch weapons");
+            }
         }
     }
 }

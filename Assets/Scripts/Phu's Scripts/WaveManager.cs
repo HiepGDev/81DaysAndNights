@@ -14,6 +14,19 @@ public enum WaveState
 }
 
 [System.Serializable]
+public struct EnemySpawnRule
+{
+    [Tooltip("The enemy prefab to spawn.")]
+    public GameObject enemyPrefab;
+
+    [Tooltip("The wave number at which this enemy starts spawning (inclusive).")]
+    public int startWave;
+
+    [Tooltip("Relative weight of spawning this enemy type when active.")]
+    [Range(0f, 100f)] public float spawnChanceWeight;
+}
+
+[System.Serializable]
 public struct WaveStatusReport
 {
     public int currentWave;
@@ -46,8 +59,13 @@ public class WaveManager : NetworkBehaviour
     private SyncVar<float> countdownTimer = new(0f);
 
     [Header("Enemy Configurations")]
-    [SerializeField] private GameObject[] enemyPrefabs;    // List of actual enemy prefabs
+    [SerializeField] private List<EnemySpawnRule> enemyRules = new List<EnemySpawnRule>();
     [SerializeField] private Transform[] spawnPoints;      // Where to spawn enemies
+
+    [Header("Ally Configurations")]
+    [SerializeField] private Transform[] allySpawnPoints;
+
+    public Transform[] AllySpawnPoints => allySpawnPoints;
     [SerializeField] private Transform playerTransform;    // Reference to Player for target updates
 
 
@@ -343,16 +361,7 @@ public class WaveManager : NetworkBehaviour
 
         GameObject spawnedObj = null;
 
-        WaveProgressionManager progression = GetComponent<WaveProgressionManager>();
-        GameObject prefab = null;
-        if (progression != null)
-        {
-            prefab = progression.ChooseEnemyPrefabForWave(currentWave.value);
-        }
-        else if (enemyPrefabs != null && enemyPrefabs.Length > 0)
-        {
-            prefab = enemyPrefabs[UnityEngine.Random.Range(0, enemyPrefabs.Length)];
-        }
+        GameObject prefab = ChooseEnemyPrefabForWave(currentWave.value);
 
         if (prefab != null)
         {
@@ -363,7 +372,7 @@ public class WaveManager : NetworkBehaviour
         {
             if (isSpawned)
             {
-                Debug.LogError("[WaveManager] Cannot spawn procedural capsules in multiplayer. Please assign enemy prefabs in the inspector or setup WaveProgressionManager.");
+                Debug.LogError("[WaveManager] Cannot spawn procedural capsules in multiplayer. Please assign enemy prefabs in the inspector or setup enemyRules.");
             }
             else
             {
@@ -634,5 +643,85 @@ public class WaveManager : NetworkBehaviour
             countdownTimer.value = 0f;
             Debug.Log("[WaveManager] SkipCountdown requested: countdown set to 0 on server.");
         }
+    }
+
+    private GameObject ChooseEnemyPrefabForWave(int wave)
+    {
+        List<EnemySpawnRule> activeRules = new List<EnemySpawnRule>();
+        float totalWeight = 0f;
+
+        foreach (var rule in enemyRules)
+        {
+            if (rule.enemyPrefab != null && wave >= rule.startWave && rule.spawnChanceWeight > 0f)
+            {
+                activeRules.Add(rule);
+                totalWeight += rule.spawnChanceWeight;
+            }
+        }
+
+        if (activeRules.Count == 0)
+        {
+            return null;
+        }
+
+        // Weighted random selection
+        float randomValue = UnityEngine.Random.Range(0f, totalWeight);
+        float currentSum = 0f;
+
+        foreach (var rule in activeRules)
+        {
+            currentSum += rule.spawnChanceWeight;
+            if (randomValue <= currentSum)
+            {
+                return rule.enemyPrefab;
+            }
+        }
+
+        return activeRules[0].enemyPrefab;
+    }
+
+    public void SpawnAlly(GameObject allyPrefab)
+    {
+        if (allyPrefab == null) return;
+
+        Vector3 spawnPos = Vector3.zero;
+        Quaternion spawnRot = Quaternion.identity;
+        bool spawnFound = false;
+
+        if (allySpawnPoints != null && allySpawnPoints.Length > 0)
+        {
+            int randIndex = UnityEngine.Random.Range(0, allySpawnPoints.Length);
+            Transform chosenSpawnPoint = allySpawnPoints[randIndex];
+            if (chosenSpawnPoint != null)
+            {
+                spawnPos = chosenSpawnPoint.position;
+                spawnRot = chosenSpawnPoint.rotation;
+                spawnFound = true;
+            }
+        }
+
+        if (!spawnFound)
+        {
+            var player = FindFirstObjectByType<SurvivalPlayerHealth>();
+            if (player != null)
+            {
+                spawnPos = player.transform.position + player.transform.forward * 2f + Vector3.up * 0.5f;
+                spawnRot = player.transform.rotation;
+            }
+            else
+            {
+                var mainCam = Camera.main;
+                if (mainCam != null)
+                {
+                    spawnPos = mainCam.transform.position + mainCam.transform.forward * 2f;
+                    spawnPos.y = 0f;
+                }
+            }
+        }
+
+        GameObject spawnedAlly = Instantiate(allyPrefab, spawnPos, spawnRot);
+        spawnedAlly.SetActive(true);
+        
+        Debug.Log($"[WaveManager] Spawned new ally from shop at: {spawnPos}");
     }
 }

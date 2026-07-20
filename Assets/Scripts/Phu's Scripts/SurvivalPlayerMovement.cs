@@ -159,8 +159,8 @@ public class SurvivalPlayerMovement : NetworkBehaviour
         
         if (animator != null)
         {
-            animator.SetBool("Walk", Walk);
-            animator.SetBool("Run", Run);
+            animator.SetBool("isWalk", Walk);
+            animator.SetBool("isRun", Run);
         }
     }
 

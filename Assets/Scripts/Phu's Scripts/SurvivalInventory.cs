@@ -304,9 +304,105 @@ namespace PhuScene
                     }
                 }
 
+                // Sync weapon animator with movement script to restore walk/run sway
+                SurvivalPlayerMovement survivalMovement = GetComponentInParent<SurvivalPlayerMovement>();
+                if (survivalMovement != null)
+                {
+                    Animator newAnim = newGunObj.GetComponentInChildren<Animator>(true);
+                    if (newAnim != null)
+                    {
+                        survivalMovement.SetAnimator(newAnim);
+                    }
+                }
+
                 currentlyEquippedWeaponId = weaponId;
                 
                 Debug.Log($"[SurvivalInventory] Switched active weapon model locally to index: {index} ({weaponId})");
+            }
+        }
+
+        public bool IsAnyWeaponMissingAmmo()
+        {
+            if (equipSlots == null) return false;
+
+            for (int i = 0; i < equipSlots.Count; i++)
+            {
+                if (equipSlots[i] == null) continue;
+                string weaponId = equipSlots[i].ItemId;
+                
+                if (IsWeaponUnlocked(weaponId))
+                {
+                    GameObject prefab = GetWeaponPrefab(weaponId);
+                    if (prefab != null)
+                    {
+                        SurvivalPlayerGun gunComponent = prefab.GetComponent<SurvivalPlayerGun>();
+                        if (gunComponent != null && gunComponent.WeaponData != null)
+                        {
+                            int maxMag = gunComponent.WeaponData.magazineSize;
+                            int maxRes = gunComponent.WeaponData.maxReserveAmmo;
+
+                            int curClip = maxMag;
+                            int curRes = maxRes;
+
+                            if (activePlayerGun != null && currentlyEquippedWeaponId == weaponId)
+                            {
+                                curClip = activePlayerGun.CurrentAmmo;
+                                curRes = activePlayerGun.ReserveAmmo;
+                            }
+                            else if (weaponAmmoStates.TryGetValue(weaponId, out WeaponAmmoState state))
+                            {
+                                curClip = state.currentAmmo;
+                                curRes = state.reserveAmmo;
+                            }
+
+                            if (curClip < maxMag || curRes < maxRes)
+                            {
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+            return false;
+        }
+
+        public void RefillAllWeaponsAmmo()
+        {
+            if (equipSlots == null) return;
+
+            for (int i = 0; i < equipSlots.Count; i++)
+            {
+                if (equipSlots[i] == null) continue;
+                string weaponId = equipSlots[i].ItemId;
+
+                if (IsWeaponUnlocked(weaponId))
+                {
+                    GameObject prefab = GetWeaponPrefab(weaponId);
+                    if (prefab != null)
+                    {
+                        SurvivalPlayerGun gunComponent = prefab.GetComponent<SurvivalPlayerGun>();
+                        if (gunComponent != null && gunComponent.WeaponData != null)
+                        {
+                            int maxMag = gunComponent.WeaponData.magazineSize;
+                            int maxRes = gunComponent.WeaponData.maxReserveAmmo;
+
+                            if (activePlayerGun != null && currentlyEquippedWeaponId == weaponId)
+                            {
+                                activePlayerGun.SetAmmo(maxMag, maxRes);
+                            }
+
+                            if (weaponAmmoStates.TryGetValue(weaponId, out WeaponAmmoState state))
+                            {
+                                state.currentAmmo = maxMag;
+                                state.reserveAmmo = maxRes;
+                            }
+                            else
+                            {
+                                weaponAmmoStates.Add(weaponId, new WeaponAmmoState { currentAmmo = maxMag, reserveAmmo = maxRes });
+                            }
+                        }
+                    }
+                }
             }
         }
     }

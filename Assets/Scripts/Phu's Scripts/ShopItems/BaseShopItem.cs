@@ -23,6 +23,8 @@ namespace PhuScene
         [SerializeField] protected Image iconImage;
         [SerializeField] protected Button cellButton;
         [SerializeField] protected GameObject displayTick;
+        [SerializeField] protected GameObject displayCount;
+        [SerializeField] protected TextMeshProUGUI displayCountText;
         [SerializeField] protected TextMeshProUGUI statusText;
 
         [Header("Buy Label Animation Settings")]
@@ -38,8 +40,10 @@ namespace PhuScene
         public TextMeshProUGUI SpecsText2 { get => specsText2; set => specsText2 = value; }
         public Image IconImage { get => iconImage; set => iconImage = value; }
         public Button BuyButton { get => cellButton; set => cellButton = value; }
-        public TextMeshProUGUI StatusText { get => statusText; set => statusText = value; }
         public GameObject DisplayTick { get => displayTick; set => displayTick = value; }
+        public GameObject DisplayCount { get => displayCount; set => displayCount = value; }
+        public TextMeshProUGUI DisplayCountText { get => displayCountText; set => displayCountText = value; }
+        public TextMeshProUGUI StatusText { get => statusText; set => statusText = value; }
 
         private RectTransform myRectTransform;
         private Vector2 buyLabelHoverPos;
@@ -54,7 +58,6 @@ namespace PhuScene
 
         protected virtual void Start()
         {
-            Debug.Log("BASE START");
             InitializeRuntime();
         }
 
@@ -94,7 +97,6 @@ namespace PhuScene
             {
                 cellButton.onClick.RemoveListener(BuyItem);
                 cellButton.onClick.AddListener(BuyItem);
-                Debug.Log("BASE CLICK ADDED");
             }
             UpdateUI();
             UpdateUIState();

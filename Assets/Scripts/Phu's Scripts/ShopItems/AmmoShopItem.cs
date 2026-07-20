@@ -33,6 +33,11 @@ namespace PhuScene
 
         protected override bool IsPurchaseable()
         {
+            if (SurvivalInventory.Instance != null)
+            {
+                return SurvivalInventory.Instance.IsAnyWeaponMissingAmmo();
+            }
+
             WeaponSO activeWeapon = GetActiveWeaponData();
             if (activeWeapon == null) return false;
 
@@ -41,6 +46,13 @@ namespace PhuScene
 
         protected override void OnPurchaseSuccess()
         {
+            if (SurvivalInventory.Instance != null)
+            {
+                SurvivalInventory.Instance.RefillAllWeaponsAmmo();
+                Debug.Log("[Shop] Replenished ammo for all unlocked weapons.");
+                return;
+            }
+
             WeaponSO activeWeapon = GetActiveWeaponData();
             if (activeWeapon != null)
             {
@@ -58,21 +70,24 @@ namespace PhuScene
         {
             base.UpdateUIState();
 
-            WeaponSO activeWeapon = GetActiveWeaponData();
-            if (statusText != null)
+            bool allFilled = true;
+            if (SurvivalInventory.Instance != null)
             {
-                if (activeWeapon == null)
+                allFilled = !SurvivalInventory.Instance.IsAnyWeaponMissingAmmo();
+            }
+            else
+            {
+                WeaponSO activeWeapon = GetActiveWeaponData();
+                if (activeWeapon != null)
                 {
-                    statusText.text = "No Weapon";
+                    allFilled = activeWeapon.reserveAmmo >= activeWeapon.maxReserveAmmo;
                 }
-                else if (activeWeapon.reserveAmmo >= activeWeapon.maxReserveAmmo)
-                {
-                    statusText.text = "Full";
-                }
-                else
-                {
-                    statusText.text = $"{activeWeapon.reserveAmmo}/{activeWeapon.maxReserveAmmo}";
-                }
+            }
+
+            if (displayCountText != null)
+            {
+                displayCount.gameObject.SetActive(allFilled);
+                displayCountText.text = allFilled ? "FULL" : "";
             }
         }
     }

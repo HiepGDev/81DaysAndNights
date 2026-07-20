@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e8a349bc98124cd59051fb3e2849fa1b, type: 3}
+  m_Name: Ally
+  m_EditorClassIdentifier: 
+  itemName: Summon Ally
+  itemDescription: Spawn an ally to help you fight the enemies.
+  price: 150
+  icon: {fileID: 21300000, guid: 9772bede05123304ba3a5008bfad8a7f, type: 3}
+  specs:
+  - 'Health: 100'
+  - 'Speed: 3.5'
+  itemType: 2
+  weaponPrefab: {fileID: 0}
+  allyPrefab: {fileID: 2838897745346657174, guid: f00a915d672f21748940058bc5ec116f, type: 3}
+  maxAlliesCount: 10

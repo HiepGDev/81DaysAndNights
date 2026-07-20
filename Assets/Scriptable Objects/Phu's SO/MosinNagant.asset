@@ -25,4 +25,4 @@ MonoBehaviour:
   itemType: 0
   weaponPrefab: {fileID: 2630355231919593589, guid: 3cf187efef6bff44b8fa4aa973e06480, type: 3}
   allyPrefab: {fileID: 0}
-  maxAlliesCount: 3
+  maxAlliesCount: 0

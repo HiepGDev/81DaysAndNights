@@ -102,7 +102,8 @@ public class WaveUI : MonoBehaviour
             RetrieveStateFromBackendPoll();
         }
 
-        if (Input.GetKeyDown(KeyCode.Return))
+        // Press Tab to press the start wave button too
+        if (Input.GetKeyDown(KeyCode.Tab))
         {
             onSkipClicked();
         }

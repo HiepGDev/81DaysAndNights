@@ -41,6 +41,11 @@ namespace PhuScene
             }
             
             Debug.Log($"[Shop] Weapon unlocked and equipped: {weaponId}");
+
+            if (ShopUI.Instance != null)
+            {
+                ShopUI.Instance.OnWeaponPurchased(weaponId);
+            }
         }
 
         protected override void OnPurchaseFailed()
@@ -62,10 +67,7 @@ namespace PhuScene
             }
 
             base.UpdateUIState();
-            if (statusText != null)
-            {
-                statusText.text = isOwned ? "Owned" : "";
-            }
+            
             if (displayTick != null)
             {
                 displayTick.SetActive(isOwned);
