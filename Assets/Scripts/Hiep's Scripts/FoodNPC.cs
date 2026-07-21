@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Localization;
 
 public class FriendlyNPC : MonoBehaviour, IInteractable
 {
@@ -6,7 +7,9 @@ public class FriendlyNPC : MonoBehaviour, IInteractable
     [SerializeField] private GameObject rice;
     [SerializeField] private AudioSource voiceSource; // for dialogue
     [SerializeField] private AudioClip thankYouClip;
-
+    [Header("Localization")]
+    [Tooltip("The translated text for the action, e.g., 'Give Rice'")]
+    [SerializeField] private LocalizedString localizedGiveRiceText;
     [SerializeField] private Transform headBone;      
     [SerializeField] private float maxLookAngle = 60f; // Prevent turning past a natural shoulder line
     [SerializeField] private float lookSpeed = 4f;
@@ -62,7 +65,7 @@ public class FriendlyNPC : MonoBehaviour, IInteractable
     }
     public string GetInteractText()
     {
-        return hasReceivedFood ? "" : "Give Rice";
+        return hasReceivedFood ? "" : localizedGiveRiceText.GetLocalizedString();
     }
 
     public void Interact()

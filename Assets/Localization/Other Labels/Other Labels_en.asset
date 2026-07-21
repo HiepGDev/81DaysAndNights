@@ -28,6 +28,28 @@ MonoBehaviour:
     m_Metadata:
       m_Items:
       - rid: 8959167304910241906
+  - m_Id: 3676674049703936
+    m_Localized: Give Rice
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3970655216205824
+    m_Localized: '81 Days and Nights is a work of historical fiction.
+
+
+      While
+      the setting is inspired by the 1972 Battle of Quang Tri - Viet Nam,
+
+      certain
+      characters, locations, and events have been fictionalized for gameplay and
+      dramatic purposes.
+
+
+      This experience is intended for commemorative and
+      entertainment purposes
+
+      and does not claim to be 100% historically accurate.'
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds:

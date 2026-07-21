@@ -148,10 +148,9 @@ MonoBehaviour:
   walkSize: 35
   sprintSize: 62
   lerpSpeed: 15
-  movement: {fileID: 0}
+  sprintSpeedThreshold: 6
   gun: {fileID: 0}
   controller: {fileID: 0}
-  weaponManager: {fileID: 0}
 --- !u!1 &3608452876630341392
 GameObject:
   m_ObjectHideFlags: 0

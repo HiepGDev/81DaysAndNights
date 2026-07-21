@@ -14,39 +14,59 @@ public class CrosshairController : MonoBehaviour
     [SerializeField] private float walkSize = 30f;
     [SerializeField] private float sprintSize = 60f;
     [SerializeField] private float lerpSpeed = 15f;
+    [Tooltip("If the player's physical speed is above this number, the crosshair expands to sprint size.")]
+    [SerializeField] private float sprintSpeedThreshold = 6f;
     private float currentSize;
     private InputAction moveAction;
     [Header("Player References")]
-    [SerializeField] private PlayerMovement movement;
+    // [SerializeField] private PlayerMovement movement;
     [SerializeField] private PlayerGun gun;
     [SerializeField] private CharacterController controller;
+    // Added to manually track speed
+    private Vector3 lastPosition;
     void Awake()
     {
         moveAction = InputSystem.actions.FindAction("Move");
     }
     void Start()
     {
-        if (movement == null) movement = FindFirstObjectByType<PlayerMovement>(FindObjectsInactive.Include);
+        // if (movement == null) movement = FindFirstObjectByType<PlayerMovement>(FindObjectsInactive.Include);
         if (gun == null) gun = FindFirstObjectByType<PlayerGun>(FindObjectsInactive.Include);
         if (controller == null) controller = FindFirstObjectByType<CharacterController>();
-        if (movement == null || gun == null || controller == null)
+        if ( gun == null || controller == null)
         {
             Debug.LogWarning($"[Crosshair] Missing Player references in {gameObject.name}!");
         }
         currentSize = normalSize;
+        if (controller != null)
+        {
+            lastPosition = controller.transform.position;
+        }
     }
 
     void Update()
     {
         Vector2 input = moveAction.ReadValue<Vector2>();
-        bool isMoving = input.sqrMagnitude > 0.01f;
+        bool isInputtingMovement = input.sqrMagnitude > 0.01f;
         // Calculate the target size based on movement only
         float targetSize = normalSize;
-        if (isMoving)
+        if (isInputtingMovement && controller != null)
         {
-            targetSize = movement.isSprinting ? sprintSize : walkSize;
-        }
+            Vector3 currentPos = controller.transform.position;
+            Vector3 actualVelocity = (currentPos - lastPosition) / Time.deltaTime;
+            
+            // Flatten the Y axis so jumping/falling doesn't trigger the sprint crosshair
+            Vector3 flatVelocity = new Vector3(actualVelocity.x, 0, actualVelocity.z);
+            float currentSpeed = flatVelocity.magnitude;
 
+            // Determine target size
+            targetSize = (currentSpeed >= sprintSpeedThreshold) ? sprintSize : walkSize;
+        }
+        if (controller != null)
+        {
+            lastPosition = controller.transform.position;
+        }
+        
         PlayerGun activeGun = GetActiveGun();
         // Hide crosshair if aiming (ADS) or if the player is holding the rice arm
         bool isAiming = activeGun != null && activeGun.isAiming;
