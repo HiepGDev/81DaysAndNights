@@ -38,12 +38,14 @@ public class EnemyShooting : MonoBehaviour
     private bool isShootingInProgress = false;
     private bool isReloading = false;
     private bool isCrouched = false;
+    private float stopShootingTimer = 0f;
 
     [HideInInspector] public bool allowFiring = true;
 
     public bool IsOutOfAmmo => currentAmmo <= 0;
     public bool IsReloading => isReloading;
     public float FireDistance => fireDistance;
+    public bool IsShootingInProgress => isShootingInProgress;
 
     private void Awake()
     {
@@ -166,10 +168,18 @@ public class EnemyShooting : MonoBehaviour
         // 3. MOVEMENT SYNC: Only shoot if the behavior agent is physically ready
         if (behaviorAgent == null || !behaviorAgent.IsReadyToShoot)
         {
-            if (isShootingInProgress) EndShooting();
+            if (isShootingInProgress)
+            {
+                stopShootingTimer += Time.deltaTime;
+                if (stopShootingTimer >= 0.2f) // 0.2s debounce buffer
+                {
+                    EndShooting();
+                }
+            }
             return;
         }
 
+        stopShootingTimer = 0f; // Reset debounce timer when ready
         if (!isShootingInProgress) StartShooting();
         
         // Face and Aim
@@ -296,7 +306,9 @@ public class EnemyShooting : MonoBehaviour
 
     public void TriggerReload()
     {
-        if (!isReloading) StartCoroutine(ReloadRoutine());
+        if (isReloading) return;
+        EndShooting();
+        StartCoroutine(ReloadRoutine());
     }
 
     private IEnumerator ReloadRoutine()
@@ -312,41 +324,18 @@ public class EnemyShooting : MonoBehaviour
         if (animator != null)
         {
             if (HasParameter("isShooting", animator)) animator.SetBool("isShooting", false);
-            
-            if (shouldCrouchReload)
-            {
-                if (HasParameter("isCrouching", animator)) animator.SetBool("isCrouching", true);
-                if (HasParameter("isCovering", animator)) animator.SetBool("isCovering", true);
-            }
-            else
-            {
-                if (HasParameter("isCrouching", animator)) animator.SetBool("isCrouching", false);
-                if (HasParameter("isCovering", animator)) animator.SetBool("isCovering", false);
-            }
-
+            if (HasParameter("isCrouching", animator)) animator.SetBool("isCrouching", shouldCrouchReload);
+            if (HasParameter("isCovering", animator)) animator.SetBool("isCovering", inCover);
             if (HasParameter("isReloading", animator)) animator.SetBool("isReloading", true);
+        }
 
+        if (animator != null)
+        {
             if (shouldCrouchReload)
             {
                 animator.CrossFade("crouching_reload", 0.1f);
-            }
-            else
-            {
-                animator.CrossFade("reload_standing", 0.1f);
-            }
-
-            // Wait one frame to let the animator process the reload transition
-            yield return null;
-
-            // Clear the animator's isReloading parameter so it doesn't loop when the clip finishes
-            if (animator != null && HasParameter("isReloading", animator)) 
-                animator.SetBool("isReloading", false);
-
-            if (shouldCrouchReload)
-            {
                 float animDuration = 1.5f; 
-                float firstWait = Mathf.Max(0, animDuration - Time.deltaTime);
-                if (firstWait > 0) yield return new WaitForSeconds(firstWait);
+                yield return new WaitForSeconds(animDuration);
 
                 if (isReloading && inCover)
                 {
@@ -357,8 +346,8 @@ public class EnemyShooting : MonoBehaviour
             }
             else
             {
-                float waitTime = Mathf.Max(0, reloadTime - Time.deltaTime);
-                if (waitTime > 0) yield return new WaitForSeconds(waitTime);
+                animator.CrossFade("reload_standing", 0.1f);
+                yield return new WaitForSeconds(reloadTime);
             }
         }
         else
@@ -389,10 +378,12 @@ public class EnemyShooting : MonoBehaviour
             if (isCrouched)
             {
                 if (HasParameter("isCrouching", animator)) animator.SetBool("isCrouching", true);
+                if (HasParameter("isShooting", animator)) animator.SetBool("isShooting", true);
                 animator.CrossFade("Enemy_CrouchShooting", 0.1f);
             }
             else
             {
+                if (HasParameter("isCrouching", animator)) animator.SetBool("isCrouching", false);
                 if (HasParameter("isShooting", animator)) animator.SetBool("isShooting", true);
                 animator.CrossFade("Enemy_Shooting", 0.1f);
             }
@@ -406,8 +397,13 @@ public class EnemyShooting : MonoBehaviour
         if (animator != null)
         {
             if (HasParameter("isShooting", animator)) animator.SetBool("isShooting", false);
-            if (HasParameter("isCrouching", animator)) animator.SetBool("isCrouching", false);
-            animator.CrossFade("Enemy_Idle", 0.2f);
+            
+            // If the enemy is in cover, they should return to crouching cover stance instead of standing up
+            EnemyBehaviorAgent behaviorAgent = GetComponent<EnemyBehaviorAgent>();
+            bool shouldCrouch = (behaviorAgent != null && behaviorAgent.IsInCover);
+            if (HasParameter("isCrouching", animator)) animator.SetBool("isCrouching", shouldCrouch);
+
+            animator.CrossFade(shouldCrouch ? "Cover_Crouching" : "Enemy_Idle", 0.2f);
         }
     }
 

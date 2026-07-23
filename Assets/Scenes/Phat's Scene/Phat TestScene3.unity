@@ -18656,10 +18656,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: Enemy Test 3
       objectReference: {fileID: 0}
-    - target: {fileID: 4943702373628869083, guid: fe56043a17e1ab04785acc6b7cfbbc75, type: 3}
-      propertyPath: m_IsActive
-      value: 0
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -24816,7 +24812,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!1 &5441438553733430709
 GameObject:
   m_ObjectHideFlags: 0
@@ -27011,7 +27007,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2197622166840120587, guid: 0e81c88ce8403414f80ab2c4c3aeb716, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7797298470558721498, guid: 0e81c88ce8403414f80ab2c4c3aeb716, type: 3}
       propertyPath: m_LocalPosition.x
@@ -38943,6 +38939,7 @@ MonoBehaviour:
   waypointStopDistance: 0.5
   waypointWaitTime: 1.5
   loopPatrol: 1
+  patrolStartDistance: 15
 --- !u!1 &7768955782676611046
 GameObject:
   m_ObjectHideFlags: 0
@@ -41211,6 +41208,107 @@ Transform:
   m_Children: []
   m_Father: {fileID: 8704015615715829070}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1001 &9007754057576917722
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 51802814794721920, guid: 59db3d6034abc65448a18867cc0ef5a5, type: 3}
+      propertyPath: m_ConnectedBody
+      value: 
+      objectReference: {fileID: 1857621486}
+    - target: {fileID: 1251350469458382248, guid: 59db3d6034abc65448a18867cc0ef5a5, type: 3}
+      propertyPath: m_ConnectedBody
+      value: 
+      objectReference: {fileID: 744300541}
+    - target: {fileID: 1347963993474929557, guid: 59db3d6034abc65448a18867cc0ef5a5, type: 3}
+      propertyPath: m_ConnectedBody
+      value: 
+      objectReference: {fileID: 1314357719}
+    - target: {fileID: 1545512383529162718, guid: 59db3d6034abc65448a18867cc0ef5a5, type: 3}
+      propertyPath: m_ConnectedBody
+      value: 
+      objectReference: {fileID: 744300541}
+    - target: {fileID: 1783242764371527490, guid: 59db3d6034abc65448a18867cc0ef5a5, type: 3}
+      propertyPath: m_Name
+      value: Enemy Sniper test 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 1783242764371527490, guid: 59db3d6034abc65448a18867cc0ef5a5, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2464396861559840471, guid: 59db3d6034abc65448a18867cc0ef5a5, type: 3}
+      propertyPath: m_ConnectedBody
+      value: 
+      objectReference: {fileID: 1787877351}
+    - target: {fileID: 4984201444426830147, guid: 59db3d6034abc65448a18867cc0ef5a5, type: 3}
+      propertyPath: m_ConnectedBody
+      value: 
+      objectReference: {fileID: 1651929511}
+    - target: {fileID: 6458594294281899317, guid: 59db3d6034abc65448a18867cc0ef5a5, type: 3}
+      propertyPath: m_ConnectedBody
+      value: 
+      objectReference: {fileID: 126576810}
+    - target: {fileID: 7438190706809943325, guid: 59db3d6034abc65448a18867cc0ef5a5, type: 3}
+      propertyPath: m_ConnectedBody
+      value: 
+      objectReference: {fileID: 126576810}
+    - target: {fileID: 7787024202914059363, guid: 59db3d6034abc65448a18867cc0ef5a5, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -6.64
+      objectReference: {fileID: 0}
+    - target: {fileID: 7787024202914059363, guid: 59db3d6034abc65448a18867cc0ef5a5, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7787024202914059363, guid: 59db3d6034abc65448a18867cc0ef5a5, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7787024202914059363, guid: 59db3d6034abc65448a18867cc0ef5a5, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7787024202914059363, guid: 59db3d6034abc65448a18867cc0ef5a5, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7787024202914059363, guid: 59db3d6034abc65448a18867cc0ef5a5, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7787024202914059363, guid: 59db3d6034abc65448a18867cc0ef5a5, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7787024202914059363, guid: 59db3d6034abc65448a18867cc0ef5a5, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7787024202914059363, guid: 59db3d6034abc65448a18867cc0ef5a5, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7787024202914059363, guid: 59db3d6034abc65448a18867cc0ef5a5, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8550675610293476666, guid: 59db3d6034abc65448a18867cc0ef5a5, type: 3}
+      propertyPath: m_ConnectedBody
+      value: 
+      objectReference: {fileID: 744300541}
+    - target: {fileID: 8692572344730699246, guid: 59db3d6034abc65448a18867cc0ef5a5, type: 3}
+      propertyPath: m_ConnectedBody
+      value: 
+      objectReference: {fileID: 126576810}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 59db3d6034abc65448a18867cc0ef5a5, type: 3}
 --- !u!4 &9013221435142929152
 Transform:
   m_ObjectHideFlags: 0
@@ -41552,3 +41650,4 @@ SceneRoots:
   - {fileID: 6477588976167033001}
   - {fileID: 8224298781655910756}
   - {fileID: 5225040262249977011}
+  - {fileID: 9007754057576917722}
