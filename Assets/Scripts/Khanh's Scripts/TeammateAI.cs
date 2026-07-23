@@ -9,7 +9,6 @@ public class TeammateAI : MonoBehaviour
 
     [SerializeField] private TeammateSO teammateData;
 
-    // THÊM MODE MỚI: Defender (Tử thủ 1 chỗ)
     public enum AIMode { Follower, Patroller, Defender }
 
     [Header("Teammate Mode")]
@@ -20,7 +19,8 @@ public class TeammateAI : MonoBehaviour
 
     [Header("Defend Settings (Defender only)")]
     [SerializeField] private Transform defendPoint;
-    private Vector3 originalDefendPosition; 
+    private Vector3 originalDefendPosition;
+    private DefendPoint claimedDefendPoint;
 
     [Header("Follow Settings (Follower only)")]
     [SerializeField] private float followTriggerDistance = 10f;
@@ -33,7 +33,12 @@ public class TeammateAI : MonoBehaviour
     [SerializeField] private Transform[] patrolPoints;
     [SerializeField] private float waypointStopDistance = 0.5f;
     [SerializeField] private float waypointWaitTime = 1.5f;
-    [SerializeField] private bool loopPatrol = true;
+
+    [Tooltip("Tick: Đi vòng tròn (0->1->0) | Bỏ Tick: Đi một lèo 0->1 rồi dừng hẳn")]
+    [SerializeField] private bool loopPatrol = false;
+
+    [Tooltip("Khoảng cách tối đa để Player kích hoạt NPC đi tuần tra")]
+    [SerializeField] private float patrolStartDistance = 15f;
 
     private int currentPatrolIndex = -1;
     private float waypointWaitTimer = 0f;
@@ -94,7 +99,6 @@ public class TeammateAI : MonoBehaviour
             if (playerObj != null) playerTarget = playerObj.transform;
         }
 
-        // Lưu lại tọa độ sinh ra ban đầu để làm chốt thủ (nếu không gán defendPoint)
         originalDefendPosition = transform.position;
         lastDestination = transform.position;
         InitializeState();
@@ -110,25 +114,58 @@ public class TeammateAI : MonoBehaviour
                 break;
             case AIMode.Patroller:
                 agent.stoppingDistance = waypointStopDistance;
-                if (patrolPoints != null && patrolPoints.Length > 0)
-                {
-                    currentState = TeammateState.Patrolling;
-                    GoToNextWaypoint();
-                }
-                else currentState = TeammateState.Idle;
-                break;
-            // Khởi tạo cho Defender
-            case AIMode.Defender:
-                agent.stoppingDistance = 0.2f; // Ép đứng sát chốt
                 currentState = TeammateState.Idle;
                 break;
+            case AIMode.Defender:
+                agent.stoppingDistance = 0.2f;
+                currentState = TeammateState.Idle;
+
+                if (defendPoint == null)
+                {
+                    FindAvailableDefendPoint();
+                }
+                break;
+        }
+    }
+
+    private void FindAvailableDefendPoint()
+    {
+        DefendPoint[] allPoints = FindObjectsOfType<DefendPoint>();
+        float closestDistance = float.MaxValue;
+        DefendPoint bestPoint = null;
+
+        foreach (DefendPoint point in allPoints)
+        {
+            if (point.isOccupied) continue;
+
+            float distanceToPoint = Vector3.Distance(transform.position, point.transform.position);
+            if (distanceToPoint < closestDistance)
+            {
+                closestDistance = distanceToPoint;
+                bestPoint = point;
+            }
+        }
+
+        if (bestPoint != null)
+        {
+            claimedDefendPoint = bestPoint;
+            claimedDefendPoint.isOccupied = true;
+            defendPoint = claimedDefendPoint.transform;
+        }
+    }
+
+    private void OnDestroy()
+    {
+        if (claimedDefendPoint != null)
+        {
+            claimedDefendPoint.isOccupied = false;
         }
     }
 
     private void Update()
     {
         if (!agent.isOnNavMesh) return;
-        if (aiMode == AIMode.Follower && playerTarget == null) return;
+        if ((aiMode == AIMode.Follower || aiMode == AIMode.Patroller) && playerTarget == null) return;
 
         if (shooting != null && shooting.IsOutOfAmmo)
         {
@@ -161,7 +198,6 @@ public class TeammateAI : MonoBehaviour
                 currentState = TeammateState.SeekingCover;
                 agent.isStopped = false;
                 agent.SetDestination(activeCover.position);
-                Debug.Log("[TeammateAI] Hết đạn! Đang chạy đi tìm chỗ nấp...");
                 return;
             }
         }
@@ -193,10 +229,9 @@ public class TeammateAI : MonoBehaviour
         {
             case AIMode.Follower: UpdateFollowerState(); break;
             case AIMode.Patroller: UpdatePatrollerState(); break;
-            case AIMode.Defender: UpdateDefenderState(); break; // Gọi state tử thủ
+            case AIMode.Defender: UpdateDefenderState(); break;
         }
     }
-
 
     private void UpdateDefenderState()
     {
@@ -233,21 +268,67 @@ public class TeammateAI : MonoBehaviour
 
     private void UpdatePatrollerState()
     {
+        float distToPlayer = Vector3.Distance(transform.position, playerTarget.position);
+
+        bool hasFinishedPatrol = (!loopPatrol && currentPatrolIndex >= patrolPoints.Length - 1);
+
         switch (currentState)
         {
-            case TeammateState.Patrolling:
-                if (enemyTarget != null) { currentState = TeammateState.Combat; StopAgent(); }
+            case TeammateState.Idle:
+                if (enemyTarget != null) { currentState = TeammateState.Combat; break; }
+
+                if (!hasFinishedPatrol && distToPlayer <= patrolStartDistance && patrolPoints != null && patrolPoints.Length > 0)
+                {
+                    currentState = TeammateState.Patrolling;
+                    ResumePatrol();
+                }
                 break;
+
+            case TeammateState.Patrolling:
+                if (enemyTarget != null) { currentState = TeammateState.Combat; StopAgent(); break; }
+
+                if (distToPlayer > patrolStartDistance)
+                {
+                    currentState = TeammateState.Idle;
+                    StopAgent();
+                }
+                break;
+
             case TeammateState.Combat:
                 if (enemyTarget == null)
                 {
-                    currentState = TeammateState.Patrolling;
-                    GoToNextWaypoint();
+                    if (!hasFinishedPatrol && distToPlayer <= patrolStartDistance)
+                    {
+                        currentState = TeammateState.Patrolling;
+                        ResumePatrol();
+                    }
+                    else
+                    {
+                        currentState = TeammateState.Idle;
+                    }
                 }
                 break;
-            case TeammateState.Idle:
-                if (enemyTarget != null) { currentState = TeammateState.Combat; break; }
-                break;
+        }
+    }
+
+    private void ResumePatrol()
+    {
+        if (patrolPoints == null || patrolPoints.Length == 0) return;
+
+        if (!loopPatrol && currentPatrolIndex >= patrolPoints.Length - 1)
+        {
+            currentState = TeammateState.Idle;
+            return;
+        }
+
+        if (currentPatrolIndex == -1)
+        {
+            GoToNextWaypoint();
+        }
+        else
+        {
+            agent.isStopped = false;
+            agent.SetDestination(patrolPoints[currentPatrolIndex].position);
         }
     }
 
@@ -260,7 +341,6 @@ public class TeammateAI : MonoBehaviour
                 {
                     Vector3 targetPos = defendPoint != null ? defendPoint.position : originalDefendPosition;
 
-                    // Nếu đang đứng cách xa chốt thì chạy về
                     if (Vector3.Distance(transform.position, targetPos) > agent.stoppingDistance + 0.1f)
                     {
                         agent.isStopped = false;
@@ -268,7 +348,7 @@ public class TeammateAI : MonoBehaviour
                     }
                     else if (!agent.isStopped)
                     {
-                        StopAgent(); // Về đến nơi thì phanh lại
+                        StopAgent();
                     }
                 }
                 break;
@@ -304,16 +384,17 @@ public class TeammateAI : MonoBehaviour
 
         if (!agent.pathPending && agent.remainingDistance <= waypointStopDistance)
         {
-            bool isLastPoint = currentPatrolIndex == patrolPoints.Length - 1;
-            if (loopPatrol || !isLastPoint)
+            bool isLastPoint = currentPatrolIndex >= patrolPoints.Length - 1;
+
+            if (isLastPoint && !loopPatrol)
             {
-                isWaitingAtWaypoint = true;
-                waypointWaitTimer = waypointWaitTime;
+                currentState = TeammateState.Idle;
                 StopAgent();
             }
             else
             {
-                currentState = TeammateState.Idle;
+                isWaitingAtWaypoint = true;
+                waypointWaitTimer = waypointWaitTime;
                 StopAgent();
             }
         }
@@ -322,13 +403,21 @@ public class TeammateAI : MonoBehaviour
     private void GoToNextWaypoint()
     {
         if (patrolPoints == null || patrolPoints.Length == 0) return;
-        currentPatrolIndex = (currentPatrolIndex + 1) % patrolPoints.Length;
-        if (!loopPatrol && currentPatrolIndex == 0 && patrolPoints.Length > 1)
+
+        if (!loopPatrol && currentPatrolIndex >= patrolPoints.Length - 1)
         {
             currentState = TeammateState.Idle;
             StopAgent();
             return;
         }
+
+        currentPatrolIndex++;
+
+        if (loopPatrol && currentPatrolIndex >= patrolPoints.Length)
+        {
+            currentPatrolIndex = 0;
+        }
+
         if (patrolPoints[currentPatrolIndex] == null) return;
 
         agent.isStopped = false;
@@ -357,7 +446,6 @@ public class TeammateAI : MonoBehaviour
                     SmoothRotateToward(enemyTarget.position);
                 break;
 
-            // Xoay mặt đúng hướng lúc canh gác
             case TeammateState.Idle:
                 if (agent.velocity.sqrMagnitude > 0.1f)
                 {
@@ -365,7 +453,6 @@ public class TeammateAI : MonoBehaviour
                 }
                 else if (aiMode == AIMode.Defender && defendPoint != null)
                 {
-                    // Từ từ xoay mặt giống y hệt hướng của defendPoint
                     transform.rotation = Quaternion.Slerp(transform.rotation, defendPoint.rotation, Time.deltaTime * rotationSpeed);
                 }
                 break;

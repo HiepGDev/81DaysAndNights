@@ -163,7 +163,11 @@ public class EnemyBehaviorAgent : MonoBehaviour
         float baseRange = isAmbushing ? ambushShootRange : maxGunRange;
         
         CurrentEngagementDist = Mathf.Clamp(baseRange + personalRangeOffset, minEngagementDist, maxGunRange - 2.0f);
-        bool inShootingRange = isDetected && distToTarget <= CurrentEngagementDist;
+        
+        // Hysteresis buffer: extend shooting range slightly if already shooting to prevent boundary flickering
+        bool currentlyShooting = (shooting != null && shooting.IsShootingInProgress);
+        float rangeThreshold = currentlyShooting ? (CurrentEngagementDist + 2.0f) : CurrentEngagementDist;
+        bool inShootingRange = isDetected && distToTarget <= rangeThreshold;
 
         // 3. ANIMATION CONTROL
         if (animator != null)
@@ -372,7 +376,8 @@ public class EnemyBehaviorAgent : MonoBehaviour
         if (isPeeking || distToCover <= 0.2f || (!agent.pathPending && agent.remainingDistance <= agent.stoppingDistance))
         {
             bool isReloading = (shooting != null && shooting.IsReloading);
-            bool shouldCrouch = (shooting != null && shooting.IsOutOfAmmo);
+            bool isOutOfAmmo = (shooting != null && shooting.IsOutOfAmmo);
+            bool shouldCrouch = !isPeeking || isOutOfAmmo;
 
             if (isPeeking && !isReloading)
             {
@@ -391,10 +396,11 @@ public class EnemyBehaviorAgent : MonoBehaviour
                 StopAgent();
                 transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(activeCover.lookDirection), Time.deltaTime * 10f);
             }
-
             if (!isReloading)
             {
-                if (shouldCrouch)
+                // Only crossfade to Cover_Crouching if we are NOT out of ammo.
+                // If we ARE out of ammo, TriggerReload() will play crouching_reload instead, avoiding double-crossfades.
+                if (shouldCrouch && !isOutOfAmmo)
                 {
                     if (animator != null && HasParameter("isCovering", animator))
                     {
@@ -403,13 +409,13 @@ public class EnemyBehaviorAgent : MonoBehaviour
                             animator.CrossFade("Cover_Crouching", 0.1f);
                     }
                 }
-                else if (!shooting.IsOutOfAmmo && !isPeeking)
+                else if (!isOutOfAmmo && !isPeeking)
                 {
                     if (!inShootingRange) ExitCover();
                 }
             }
 
-            if (shooting != null && shooting.IsOutOfAmmo && !isReloading)
+            if (shooting != null && isOutOfAmmo && !isReloading)
                 shooting.TriggerReload();
         }
     }
