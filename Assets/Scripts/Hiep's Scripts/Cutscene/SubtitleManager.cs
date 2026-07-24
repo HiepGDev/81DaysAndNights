@@ -2,13 +2,16 @@ using System.Collections;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Playables;
+using UnityEngine.Localization.Settings;
 
 // INotificationReceiver allows this script to "hear" Timeline markers
 public class SubtitleManager : MonoBehaviour, INotificationReceiver
 {
     [Header("UI References")]
     [SerializeField] private TextMeshProUGUI subtitleText;
-    
+    [Header("Localization Settings")]
+    [Tooltip("The exact name of string table collection")]
+    [SerializeField] private string dialogueTableName = "CutsceneSubtitles";
     private Coroutine clearCoroutine;
 
     void Start()
@@ -24,11 +27,9 @@ public class SubtitleManager : MonoBehaviour, INotificationReceiver
         if (notification is SubtitleMarker subtitleMarker)
         {
             // --- LOCALIZATION READY ---
-            // Later, when you add Unity Localization, you will change this line to something like:
             // subtitleText.text = LocalizationSettings.StringDatabase.GetLocalizedString("Subtitles", subtitleMarker.subtitleKey);
-            
-            // For now, it just prints exactly what type in the Timeline inspector:
-            subtitleText.text = subtitleMarker.subtitleKey; 
+            string localizedSubtitle = LocalizationSettings.StringDatabase.GetLocalizedString(dialogueTableName, subtitleMarker.subtitleKey);
+            subtitleText.text = localizedSubtitle;
 
             // Stop any previous timers so subtitles don't overlap weirdly
             if (clearCoroutine != null) StopCoroutine(clearCoroutine);

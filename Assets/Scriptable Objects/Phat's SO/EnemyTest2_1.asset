@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: EnemyTest2_1
   m_EditorClassIdentifier: Assembly-CSharp::EnemySO
   maxHealth: 100
+  detectionRadius: 15
   defaultMode: 1
   wanderRadius: 15
   idleTime: 2

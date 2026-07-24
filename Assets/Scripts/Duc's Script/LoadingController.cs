@@ -3,6 +3,7 @@ using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using TMPro;
 using System.Collections;
+using UnityEngine.Localization;
 
 public class LoadingController : MonoBehaviour
 {
@@ -13,24 +14,17 @@ public class LoadingController : MonoBehaviour
     public TextMeshProUGUI loadingText;
     [Tooltip("Enter the exact name of the scene to load")]
     [SerializeField] private string sceneToLoad;
+    [Header("Fact Settings")]
+    [Tooltip("How many seconds the fact stays on screen before fading out")]
+    [SerializeField] private float factDisplayDuration = 4.5f;
+    [Header("Localization Setup")]
+    [SerializeField] private LocalizedString[] localizedFacts;
+    [SerializeField] private LocalizedString localizedDidYouKnow;
+    [SerializeField] private LocalizedString localizedEnteringBattlefield;
     private AsyncOperation operation;
     private bool isDone = false;
 
-    string[] facts = new string[]
-    {
-        "The 81-day battle at Quang Tri Citadel became a symbol of resilience.",
-        "Many soldiers fighting in Quang Tri were young students and volunteers.",
-        "Every inch of Quang Tri Citadel witnessed immense sacrifice.",
-        "The intensity of bombing in Quang Tri was among the heaviest in the war.",
-        "Quang Tri Citadel stands as a symbol of courage and endurance.",
-        "The Thach Han River was crossed by countless soldiers during the battle.",
-        "Young soldiers played a crucial role in the 81-day defense.",
-        "Many fighters went to war at a very young age.",
-        "The sacrifices at Quang Tri helped shape the course of the war.",
-        "Quang Tri Citadel represents the bravery of an entire generation."
-    };
-
-    void Start()
+    void Start() 
     {
         if (string.IsNullOrEmpty(sceneToLoad))
         {
@@ -86,7 +80,11 @@ public class LoadingController : MonoBehaviour
     {
         while (true)
         {
-            int randomIndex = Random.Range(0, facts.Length);
+            if (localizedFacts == null || localizedFacts.Length == 0)
+            {
+                yield break;
+            }
+            int randomIndex = Random.Range(0, localizedFacts.Length);
 
             // fade out
             for (float t = 1; t > 0; t -= Time.deltaTime)
@@ -94,9 +92,11 @@ public class LoadingController : MonoBehaviour
                 factText.alpha = t;
                 yield return null;
             }
+            string didYouKnowStr = localizedDidYouKnow.GetLocalizedString();
+            string factStr = localizedFacts[randomIndex].GetLocalizedString();
 
             // đổi fact (có màu + in nghiêng)
-            factText.text = "<b><color=#D4AF37>Did you know?</color></b> <i>" + facts[randomIndex] + "</i>";
+            factText.text = $"<b><color=#D4AF37>{didYouKnowStr}</color></b> <i>{factStr}</i>";
 
             // fade in
             for (float t = 0; t < 1; t += Time.deltaTime)
@@ -105,17 +105,18 @@ public class LoadingController : MonoBehaviour
                 yield return null;
             }
 
-            yield return new WaitForSeconds(3f);
+            yield return new WaitForSeconds(factDisplayDuration);
         }
     }
 
   IEnumerator AnimateLoadingText()
 {
-    string baseText = "Entering the battlefield";
     int dotCount = 0;
 
     while (true)
     {
+        string baseText = localizedEnteringBattlefield.GetLocalizedString();
+        
         dotCount = (dotCount % 3) + 1;
         loadingText.text = baseText + new string('.', dotCount);
         yield return new WaitForSeconds(0.5f);

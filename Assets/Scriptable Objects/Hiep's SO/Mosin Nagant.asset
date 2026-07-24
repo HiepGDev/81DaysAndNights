@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d690b49afd5fe004d98d41ea5bd77115, type: 3}
+  m_Name: Mosin Nagant
+  m_EditorClassIdentifier: Assembly-CSharp::WeaponSO
+  Damage: 100
+  MaxDistance: 500
+  currentAmmo: 5
+  reserveAmmo: 26
+  maxReserveAmmo: 40
+  magazineSize: 5
+  fireRate: 1.3
+  reloadTime: 3.02
+  reloading: 0
+  isAutomatic: 0
+  canZoom: 1
+  zoomAmount: 10
+  useScopeOverlay: 1
+  scopeDelay: 0.15
+  GunSound: {fileID: 8300000, guid: 1b44bd740df806a4d9590da10a807e5f, type: 3}
+  reloadSound: {fileID: 0}
+  HitVfxPrefab: {fileID: 6937745106237518484, guid: b8a152f6cad1821469b12ed36594fc8b, type: 3}

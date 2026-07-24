@@ -312,14 +312,41 @@ public class EnemyShooting : MonoBehaviour
         if (animator != null)
         {
             if (HasParameter("isShooting", animator)) animator.SetBool("isShooting", false);
-            if (HasParameter("isCrouching", animator)) animator.SetBool("isCrouching", false);
+            
+            if (shouldCrouchReload)
+            {
+                if (HasParameter("isCrouching", animator)) animator.SetBool("isCrouching", true);
+                if (HasParameter("isCovering", animator)) animator.SetBool("isCovering", true);
+            }
+            else
+            {
+                if (HasParameter("isCrouching", animator)) animator.SetBool("isCrouching", false);
+                if (HasParameter("isCovering", animator)) animator.SetBool("isCovering", false);
+            }
+
             if (HasParameter("isReloading", animator)) animator.SetBool("isReloading", true);
 
             if (shouldCrouchReload)
             {
                 animator.CrossFade("crouching_reload", 0.1f);
+            }
+            else
+            {
+                animator.CrossFade("reload_standing", 0.1f);
+            }
+
+            // Wait one frame to let the animator process the reload transition
+            yield return null;
+
+            // Clear the animator's isReloading parameter so it doesn't loop when the clip finishes
+            if (animator != null && HasParameter("isReloading", animator)) 
+                animator.SetBool("isReloading", false);
+
+            if (shouldCrouchReload)
+            {
                 float animDuration = 1.5f; 
-                yield return new WaitForSeconds(animDuration);
+                float firstWait = Mathf.Max(0, animDuration - Time.deltaTime);
+                if (firstWait > 0) yield return new WaitForSeconds(firstWait);
 
                 if (isReloading && inCover)
                 {
@@ -330,8 +357,8 @@ public class EnemyShooting : MonoBehaviour
             }
             else
             {
-                animator.CrossFade("reload_standing", 0.1f);
-                yield return new WaitForSeconds(reloadTime);
+                float waitTime = Mathf.Max(0, reloadTime - Time.deltaTime);
+                if (waitTime > 0) yield return new WaitForSeconds(waitTime);
             }
         }
         else

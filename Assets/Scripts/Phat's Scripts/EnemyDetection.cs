@@ -5,6 +5,12 @@ public class EnemyDetection : MonoBehaviour
     [Header("Detection Settings")]
     [SerializeField] private float detectionRadius = 10.0f;
     [SerializeField] private string[] targetTags = { "Player", "Teammate" };
+
+    public float DetectionRadius
+    {
+        get => detectionRadius;
+        set => detectionRadius = value;
+    }
     [SerializeField] private LayerMask detectionLayer;
 
     public bool IsTargetDetected { get; private set; }

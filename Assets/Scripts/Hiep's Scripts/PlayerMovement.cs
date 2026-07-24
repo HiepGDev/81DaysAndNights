@@ -65,7 +65,7 @@ public class PlayerMovement : MonoBehaviour
     }
     void Start()
     {
-        if (playerGun == null) playerGun = GetComponentInChildren<PlayerGun>();
+       // if (playerGun == null) playerGun = GetComponentInChildren<PlayerGun>(true);
         if (playerCamera != null) originalCamPos = playerCamera.localPosition;
         lookSensitivity = PlayerPrefs.GetFloat("MouseSensitivity", 10f);
     }
@@ -120,10 +120,11 @@ public class PlayerMovement : MonoBehaviour
         bool isWalking = isMoving && !isSprinting;
         bool isRunning = isMoving && isSprinting;
 
+        PlayerGun activeGun = GetActiveGun();
         // only set walk/run to true if NOT aiming.
         // if aiming, the animator will naturally fall back to "Idle".
-        bool Walk = isWalking && (playerGun == null || !playerGun.isAiming);
-        bool Run = isRunning && (playerGun == null || !playerGun.isAiming);
+        bool Walk = isWalking && (activeGun == null || !activeGun.isAiming);
+        bool Run = isRunning && (activeGun == null || !activeGun.isAiming);
         if (animator != null && animator.isActiveAndEnabled)
         {
             animator.SetBool("isWalk", Walk);
@@ -197,5 +198,14 @@ public class PlayerMovement : MonoBehaviour
     public void SetAnimator(Animator newAnimator)
     {
         animator = newAnimator;
+    }
+    private PlayerGun GetActiveGun()
+    {
+        // If don't have a gun cached, or the cached gun was just holstered (disabled)
+        if (playerGun == null || !playerGun.gameObject.activeInHierarchy)
+        {
+            playerGun = GetComponentInChildren<PlayerGun>(false); 
+        }
+        return playerGun;
     }
 }
