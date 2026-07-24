@@ -4,7 +4,7 @@ using UnityEngine.AI;
 [RequireComponent(typeof(NavMeshAgent))]
 public class EnemyBehaviorAgent : MonoBehaviour
 {
-    public enum EnemyMode { Wander, Ambush }
+    public enum EnemyMode { Wander, Ambush, Sniper }
 
     private NavMeshAgent agent;
     private EnemyDetection detection;
@@ -32,6 +32,7 @@ public class EnemyBehaviorAgent : MonoBehaviour
     private float idleTimer;
     private bool isIdle = false;
     private bool isInCover = false;
+    private bool hasSearchedForCover = false;
     private Vector3 currentTarget; 
     private EnemyCover.CoverPoint activeCover;
 
@@ -39,6 +40,7 @@ public class EnemyBehaviorAgent : MonoBehaviour
     private float personalRangeOffset;
     private float personalFlankingAngle;
     private float targetSearchTimer = 0f;
+    private float sniperLogTimer = 0f;
 
     // Squad Distribution
     private static System.Collections.Generic.Dictionary<int, int> targetAttackers = new System.Collections.Generic.Dictionary<int, int>();
@@ -67,6 +69,11 @@ public class EnemyBehaviorAgent : MonoBehaviour
             minEngagementDist = enemyData.minEngagementDist;
             rangeSpread = enemyData.rangeSpread;
             destinationSpread = enemyData.destinationSpread;
+
+            if (detection != null)
+            {
+                detection.DetectionRadius = enemyData.detectionRadius;
+            }
         }
 
         GameObject p = GameObject.FindGameObjectWithTag("Player");
@@ -115,7 +122,8 @@ public class EnemyBehaviorAgent : MonoBehaviour
 
         // 2. TACTICAL TARGETING: Hunt closest person (Optimized & Shared)
         bool isAmbushing = (currentMode == EnemyMode.Ambush);
-        if (isAmbushing)
+        bool isCombatUnit = (currentMode == EnemyMode.Ambush || currentMode == EnemyMode.Sniper);
+        if (isCombatUnit)
         {
             targetSearchTimer -= Time.deltaTime;
             if (targetSearchTimer <= 0 || CurrentAmbushTarget == null || !IsAlive(CurrentAmbushTarget.gameObject))
@@ -125,15 +133,36 @@ public class EnemyBehaviorAgent : MonoBehaviour
             }
         }
 
-        bool isDetected = (isAmbushing && CurrentAmbushTarget != null) || (detection != null && detection.IsTargetDetected);
-        Transform target = isAmbushing ? CurrentAmbushTarget : (detection != null ? detection.CurrentTarget : null);
+        bool isDetected = (isCombatUnit && CurrentAmbushTarget != null) || (detection != null && detection.IsTargetDetected);
+        Transform target = isCombatUnit ? CurrentAmbushTarget : (detection != null ? detection.CurrentTarget : null);
+
+        if (!isDetected)
+        {
+            hasSearchedForCover = false;
+        }
 
         float distToTarget = target != null ? Vector3.Distance(transform.position, target.position) : float.MaxValue;
+
+        // Sniper periodic status logging
+        if (currentMode == EnemyMode.Sniper)
+        {
+            sniperLogTimer -= Time.deltaTime;
+            if (sniperLogTimer <= 0f)
+            {
+                sniperLogTimer = 2.0f;
+                Debug.Log($"[Sniper Log] GameObject: {gameObject.name}, Target: {(target != null ? target.name : "None")}, isDetected: {isDetected}, isInCover: {isInCover}, coverFound: {activeCover.found}, distance: {(target != null ? Vector3.Distance(transform.position, target.position).ToString("F1") : "N/A")}m, agent.isStopped: {agent.isStopped}");
+            }
+        }
+
         float maxGunRange = (shooting != null ? shooting.FireDistance : 25f);
         float baseRange = isAmbushing ? ambushShootRange : maxGunRange;
         
         CurrentEngagementDist = Mathf.Clamp(baseRange + personalRangeOffset, minEngagementDist, maxGunRange - 2.0f);
-        bool inShootingRange = isDetected && distToTarget <= CurrentEngagementDist;
+        
+        // Hysteresis buffer: extend shooting range slightly if already shooting to prevent boundary flickering
+        bool currentlyShooting = (shooting != null && shooting.IsShootingInProgress);
+        float rangeThreshold = currentlyShooting ? (CurrentEngagementDist + 2.0f) : CurrentEngagementDist;
+        bool inShootingRange = isDetected && distToTarget <= rangeThreshold;
 
         // 3. ANIMATION CONTROL
         if (animator != null)
@@ -175,6 +204,27 @@ public class EnemyBehaviorAgent : MonoBehaviour
             return;
         }
 
+        if (currentMode == EnemyMode.Sniper && isDetected && target != null)
+        {
+            if (!isInCover && !hasSearchedForCover)
+            {
+                hasSearchedForCover = true;
+                TryFindSniperCover(target.position);
+            }
+
+            if (isInCover)
+            {
+                HandleCoverLogic(inShootingRange);
+            }
+            else
+            {
+                if (!agent.isStopped) StopAgent();
+                FaceTarget();
+                IsReadyToShoot = true;
+            }
+            return;
+        }
+
         if (isInCover)
         {
             HandleCoverLogic(inShootingRange);
@@ -206,6 +256,12 @@ public class EnemyBehaviorAgent : MonoBehaviour
                 FaceTarget();
                 IsReadyToShoot = true;
             }
+            return;
+        }
+
+        if (currentMode == EnemyMode.Sniper)
+        {
+            if (!agent.isStopped) StopAgent();
             return;
         }
 
@@ -242,6 +298,22 @@ public class EnemyBehaviorAgent : MonoBehaviour
         }
     }
 
+    private bool TryFindSniperCover(Vector3 targetPos)
+    {
+        if (cover == null) return false;
+        activeCover = cover.FindNearestCover(targetPos);
+        
+        if (activeCover.found)
+        {
+            isInCover = true;
+            isIdle = false;
+            agent.isStopped = false;
+            agent.SetDestination(activeCover.position);
+            return true;
+        }
+        return false;
+    }
+
     private void HandleCoverLogic(bool inShootingRange)
     {
         bool isPeeking = (peek != null && peek.IsPeeking);
@@ -250,7 +322,8 @@ public class EnemyBehaviorAgent : MonoBehaviour
         if (isPeeking || distToCover <= 0.2f || (!agent.pathPending && agent.remainingDistance <= agent.stoppingDistance))
         {
             bool isReloading = (shooting != null && shooting.IsReloading);
-            bool shouldCrouch = (shooting != null && shooting.IsOutOfAmmo);
+            bool isOutOfAmmo = (shooting != null && shooting.IsOutOfAmmo);
+            bool shouldCrouch = !isPeeking || isOutOfAmmo;
 
             if (isPeeking && !isReloading)
             {
@@ -269,10 +342,11 @@ public class EnemyBehaviorAgent : MonoBehaviour
                 StopAgent();
                 transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(activeCover.lookDirection), Time.deltaTime * 10f);
             }
-
             if (!isReloading)
             {
-                if (shouldCrouch)
+                // Only crossfade to Cover_Crouching if we are NOT out of ammo.
+                // If we ARE out of ammo, TriggerReload() will play crouching_reload instead, avoiding double-crossfades.
+                if (shouldCrouch && !isOutOfAmmo)
                 {
                     if (animator != null && HasParameter("isCovering", animator))
                     {
@@ -281,13 +355,13 @@ public class EnemyBehaviorAgent : MonoBehaviour
                             animator.CrossFade("Cover_Crouching", 0.1f);
                     }
                 }
-                else if (!shooting.IsOutOfAmmo && !isPeeking)
+                else if (!isOutOfAmmo && !isPeeking)
                 {
                     if (!inShootingRange) ExitCover();
                 }
             }
 
-            if (shooting != null && shooting.IsOutOfAmmo && !isReloading)
+            if (shooting != null && isOutOfAmmo && !isReloading)
                 shooting.TriggerReload();
         }
     }
@@ -385,6 +459,14 @@ public class EnemyBehaviorAgent : MonoBehaviour
                 if (!IsAlive(obj)) continue;
 
                 float dist = Vector3.Distance(transform.position, obj.transform.position);
+
+                // Limit global targeting by the configured detection radius only for Sniper mode
+                if (currentMode == EnemyMode.Sniper)
+                {
+                    float maxDetectDist = (detection != null) ? detection.DetectionRadius : 15f;
+                    if (dist > maxDetectDist) continue;
+                }
+
                 int targetID = obj.GetInstanceID();
 
                 int attackers = targetAttackers.ContainsKey(targetID) ? targetAttackers[targetID] : 0;

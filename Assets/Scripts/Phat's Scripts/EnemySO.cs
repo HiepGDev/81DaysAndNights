@@ -6,6 +6,9 @@ public class EnemySO : ScriptableObject
     [Header("Base Stats")]
     public int maxHealth = 100;
 
+    [Header("Detection Settings")]
+    public float detectionRadius = 15.0f;
+
     [Header("Wander Settings")]
     public EnemyBehaviorAgent.EnemyMode defaultMode = EnemyBehaviorAgent.EnemyMode.Wander;
     public float wanderRadius = 15f;
