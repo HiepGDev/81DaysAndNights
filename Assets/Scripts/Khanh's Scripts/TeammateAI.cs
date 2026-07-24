@@ -156,9 +156,16 @@ public class TeammateAI : MonoBehaviour
 
     private void OnDestroy()
     {
+        ReleaseDefendPoint();
+    }
+
+    public void ReleaseDefendPoint()
+    {
         if (claimedDefendPoint != null)
         {
             claimedDefendPoint.isOccupied = false;
+            claimedDefendPoint = null; // Xóa luôn tham chiếu
+            Debug.Log($"[{gameObject.name}] Đã nhả Defend Point ra vì tử trận!");
         }
     }
 

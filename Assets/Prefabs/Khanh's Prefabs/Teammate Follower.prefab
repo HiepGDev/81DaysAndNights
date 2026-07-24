@@ -850,7 +850,7 @@ Animator:
   m_GameObject: {fileID: 1667960561088260291}
   m_Enabled: 1
   m_Avatar: {fileID: 9000000, guid: 2ea8a1867ff7b0542a02b3fb520bd092, type: 3}
-  m_Controller: {fileID: 9100000, guid: 84cffcc3ce5690e43ab9a4924d8885a4, type: 2}
+  m_Controller: {fileID: 9100000, guid: 1afecc654ddc31846b2d22a2e7a0df1b, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
   m_ApplyRootMotion: 0
@@ -894,7 +894,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2069129159604702209}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 8.46002, y: -0.02, z: -10.03913}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -948,6 +948,7 @@ MonoBehaviour:
   waypointStopDistance: 0.5
   waypointWaitTime: 1.5
   loopPatrol: 1
+  patrolStartDistance: 15
 --- !u!114 &7212761010368358075
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1111,6 +1112,8 @@ MonoBehaviour:
   maxHealth: 101
   currentHealth: 0
   teammateData: {fileID: 11400000, guid: 7c6ff9ee23f0c784c823ea9003f8bfb7, type: 2}
+  lidBottomL: {fileID: 0}
+  lidBottomR: {fileID: 0}
 --- !u!136 &2582913553731477740
 CapsuleCollider:
   m_ObjectHideFlags: 0
