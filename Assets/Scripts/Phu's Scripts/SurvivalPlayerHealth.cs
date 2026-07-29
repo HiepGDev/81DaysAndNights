@@ -17,7 +17,7 @@ public class SurvivalPlayerHealth : NetworkBehaviour
     private float regenTimer = 0f;
     private SurvivalPlayerMovement playerMovement;
     private PlayerFootstep playerFootstep;
-    private SurvivalPlayerGun playerGun;
+    private PlayerGun playerGun;
     private CharacterController characterController;
     private CinemachineImpulseSource impulseSource; // impulse needs get component 
     [SerializeField] GameObject gameOverCanvas; 
@@ -47,20 +47,13 @@ public class SurvivalPlayerHealth : NetworkBehaviour
     {
         playerMovement = GetComponent<SurvivalPlayerMovement>();
         playerFootstep = GetComponent<PlayerFootstep>();
-        playerGun = GetComponentInChildren<SurvivalPlayerGun>();
+        playerGun = GetComponentInChildren<PlayerGun>();
         characterController = GetComponent<CharacterController>();
         impulseSource = GetComponent<CinemachineImpulseSource>();
         audioSource = GetComponent<AudioSource>();
         playerRigidbody = GetComponent<Rigidbody>();
         
         currentHealth.value = maxHealth;
-
-        // Disable singleplayer legacy PlayerGun to prevent shooting twice
-        var legacyGuns = GetComponentsInChildren<PlayerGun>(true);
-        foreach (var lg in legacyGuns)
-        {
-            lg.enabled = false;
-        }
 
         if (playerRigidbody != null)
         {
@@ -227,6 +220,11 @@ public class SurvivalPlayerHealth : NetworkBehaviour
         }
     }
 
+    public void TakeDamage(int damage)
+    {
+        TakeDamage((float)damage);
+    }
+
     public void TakeDamage(float damage)
     {
         if (damage <= 0f || isDead) return;
@@ -262,7 +260,7 @@ public class SurvivalPlayerHealth : NetworkBehaviour
     private void Die()
     {
         isDead = true;
-        var activeGun = GetComponentInChildren<SurvivalPlayerGun>();
+        var activeGun = GetComponentInChildren<PlayerGun>();
         if (activeGun != null)
         {
             activeGun.enabled = false;
@@ -295,16 +293,6 @@ public class SurvivalPlayerHealth : NetworkBehaviour
         {
             if (gameOverCanvas != null)
             {
-                var oldMgr = gameOverCanvas.GetComponent<GameOverManager>();
-                if (oldMgr != null)
-                {
-                    oldMgr.enabled = false;
-                    Destroy(oldMgr);
-                }
-                if (gameOverCanvas.GetComponent<SurvivalGameOverManager>() == null)
-                {
-                    gameOverCanvas.AddComponent<SurvivalGameOverManager>();
-                }
                 gameOverCanvas.SetActive(true);
             }
             Cursor.visible = true;

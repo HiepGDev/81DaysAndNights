@@ -22,6 +22,6 @@ MonoBehaviour:
   - 'Magazine: 30'
   - 'Reload Time: 2.3s'
   itemType: 0
-  weaponPrefab: {fileID: 349087909198230789, guid: 30fae676da5ffc542850a7f6d73f41e7, type: 3}
+  weaponPrefab: {fileID: 349087909198230789, guid: 995f09f53c8f9c648a7ad9985852d6d2, type: 3}
   allyPrefab: {fileID: 0}
   maxAlliesCount: 0

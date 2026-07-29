@@ -14,14 +14,6 @@ namespace PhuScene
 
         private WeaponSO GetActiveWeaponData()
         {
-            // Find active networked gun first
-            var survivalGun = FindAnyObjectByType<SurvivalPlayerGun>();
-            if (survivalGun != null && survivalGun.enabled && survivalGun.WeaponData != null)
-            {
-                return survivalGun.WeaponData;
-            }
-
-            // Fallback to offline gun
             var playerGun = FindAnyObjectByType<PlayerGun>();
             if (playerGun != null && playerGun.enabled && playerGun.WeaponData != null)
             {

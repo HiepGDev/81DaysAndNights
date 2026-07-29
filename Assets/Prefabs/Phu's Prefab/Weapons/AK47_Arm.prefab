@@ -99,9 +99,9 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4921762603148000508}
-  - component: {fileID: 6488251501976794495}
   - component: {fileID: 594954732103922941}
   - component: {fileID: 1220716830481158723}
+  - component: {fileID: 6435262573440104703}
   - component: {fileID: 1800984075868520879}
   m_Layer: 8
   m_Name: AK47_Arm
@@ -127,41 +127,6 @@ Transform:
   - {fileID: 4658930855801149366}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &6488251501976794495
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 349087909198230789}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 94550478c58fa814fb03ef61cc961b47, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::SurvivalPlayerGun
-  _networkRules: {fileID: 0}
-  _visitiblityRules: {fileID: 0}
-  _isSetup: 0
-  _prefabId: -2147483648
-  _componentIndex: -2147483648
-  _shouldBePooled: 0
-  _parent: {fileID: 0}
-  _invertedPathToNearestParent: 
-  _directChildren: []
-  gunData: {fileID: 11400000, guid: 9c261834df3c7a84ea7aa95d3c05723c, type: 2}
-  interactionLayers:
-    serializedVersion: 2
-    m_Bits: 183
-  muzzleFlash: {fileID: 358171227032589980}
-  bloodEffectPrefab: {fileID: 1236252522621119485, guid: 1bf55f58ce078b94d8312c8368dce63a, type: 3}
-  aimSpeed: 10
-  defaultFOV: 75
-  kickBackAmount: 0.04
-  kickUpAmount: 1.5
-  emptyClipSound: {fileID: 8300000, guid: d1886e7667720ab44b9ee57af3ddaa59, type: 3}
-  adsPosition: {x: -0.11, y: -1.57, z: -0.1}
-  adsRotation: {x: -0.92, y: -5.64, z: -0.24}
-  isAiming: 0
 --- !u!114 &594954732103922941
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -252,6 +217,38 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &6435262573440104703
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 349087909198230789}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5f501b313ffd5f943870b2d7e19d3148, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerGun
+  gunData: {fileID: 11400000, guid: 9c261834df3c7a84ea7aa95d3c05723c, type: 2}
+  recoil: {fileID: 0}
+  crosshair: {fileID: 0}
+  isAiming: 0
+  emptyClipSound: {fileID: 8300000, guid: d1886e7667720ab44b9ee57af3ddaa59, type: 3}
+  interactionLayers:
+    serializedVersion: 2
+    m_Bits: 183
+  muzzleFlash: {fileID: 358171227032589980}
+  bloodEffectPrefab: {fileID: 1236252522621119485, guid: 1bf55f58ce078b94d8312c8368dce63a, type: 3}
+  ammoText: {fileID: 0}
+  virtualCamera: {fileID: 0}
+  weaponCamera: {fileID: 0}
+  weaponTransform: {fileID: 4921762603148000508}
+  adsPosition: {x: -0.11, y: -1.57, z: -0.1}
+  adsRotation: {x: -0.92, y: -5.64, z: -0.24}
+  aimSpeed: 10
+  kickBackAmount: 0.04
+  kickUpAmount: 1.5
+  scopeOverlayUI: {fileID: 0}
 --- !u!82 &1800984075868520879
 AudioSource:
   m_ObjectHideFlags: 0

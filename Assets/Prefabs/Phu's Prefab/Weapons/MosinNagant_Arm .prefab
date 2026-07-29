@@ -5360,10 +5360,10 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7929576478554770925}
-  - component: {fileID: -3848173136160053227}
-  - component: {fileID: 2880033496838107756}
   - component: {fileID: 4944599409655037409}
   - component: {fileID: 1963559344811127805}
+  - component: {fileID: 3136158283570223347}
+  - component: {fileID: 2880033496838107756}
   - component: {fileID: 6140922338817226624}
   m_Layer: 8
   m_Name: 'MosinNagant_Arm '
@@ -5389,54 +5389,6 @@ Transform:
   - {fileID: 6578622964919630800}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &-3848173136160053227
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2630355231919593589}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 94550478c58fa814fb03ef61cc961b47, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::SurvivalPlayerGun
-  _networkRules: {fileID: 0}
-  _visitiblityRules: {fileID: 0}
-  _isSetup: 0
-  _prefabId: -2147483648
-  _componentIndex: -2147483648
-  _shouldBePooled: 0
-  _parent: {fileID: 0}
-  _invertedPathToNearestParent: 
-  _directChildren: []
-  gunData: {fileID: 11400000, guid: 7000f5b00d10c774b84c31308de2ba6a, type: 2}
-  interactionLayers:
-    serializedVersion: 2
-    m_Bits: 183
-  muzzleFlash: {fileID: 246908257714355423}
-  bloodEffectPrefab: {fileID: 1236252522621119485, guid: 1bf55f58ce078b94d8312c8368dce63a, type: 3}
-  aimSpeed: 8
-  defaultFOV: 75
-  kickBackAmount: 0.06
-  kickUpAmount: 2
-  emptyClipSound: {fileID: 8300000, guid: d1886e7667720ab44b9ee57af3ddaa59, type: 3}
-  adsPosition: {x: -0.09, y: -1.561, z: -0.14}
-  adsRotation: {x: -0.92, y: -6.18, z: -0.31}
-  isAiming: 0
---- !u!114 &2880033496838107756
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2630355231919593589}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 05bd57aee40124a4d94115feb56c56ae, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::AmmoModel
-  ammoModel: {fileID: 8331103683108083885}
 --- !u!114 &4944599409655037409
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5527,6 +5479,51 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &3136158283570223347
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2630355231919593589}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5f501b313ffd5f943870b2d7e19d3148, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerGun
+  gunData: {fileID: 11400000, guid: 7000f5b00d10c774b84c31308de2ba6a, type: 2}
+  recoil: {fileID: 0}
+  crosshair: {fileID: 0}
+  isAiming: 0
+  emptyClipSound: {fileID: 8300000, guid: d1886e7667720ab44b9ee57af3ddaa59, type: 3}
+  interactionLayers:
+    serializedVersion: 2
+    m_Bits: 183
+  muzzleFlash: {fileID: 246908257714355423}
+  bloodEffectPrefab: {fileID: 1236252522621119485, guid: 1bf55f58ce078b94d8312c8368dce63a, type: 3}
+  ammoText: {fileID: 0}
+  virtualCamera: {fileID: 0}
+  weaponCamera: {fileID: 0}
+  weaponTransform: {fileID: 7929576478554770925}
+  adsPosition: {x: -0.09, y: -1.561, z: -0.14}
+  adsRotation: {x: -0.92, y: -6.18, z: -0.31}
+  aimSpeed: 8
+  kickBackAmount: 0.06
+  kickUpAmount: 2
+  scopeOverlayUI: {fileID: 0}
+--- !u!114 &2880033496838107756
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2630355231919593589}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 05bd57aee40124a4d94115feb56c56ae, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AmmoModel
+  ammoModel: {fileID: 8331103683108083885}
 --- !u!82 &6140922338817226624
 AudioSource:
   m_ObjectHideFlags: 0

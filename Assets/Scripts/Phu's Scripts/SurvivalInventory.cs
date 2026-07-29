@@ -16,19 +16,14 @@ namespace PhuScene
         [SerializeField] private Transform weaponHolder;
         [SerializeField] private SyncVar<int> currentWeaponIndex = new(-1);
 
-        [Header("Injected Weapon References")]
-        [SerializeField] private GunRecoil recoil;
-        [SerializeField] private CrosshairController crosshair;
+        [Header("Workaround References")]
         [SerializeField] private TMP_Text ammoText;
-        [SerializeField] private CinemachineCamera virtualCamera;
-        [SerializeField] private Camera weaponCamera;
-        [SerializeField] private GameObject scopeOverlayUI;
 
         private HashSet<string> unlockedWeapons = new HashSet<string>();
         private Dictionary<string, GameObject> weaponPrefabsDict = new Dictionary<string, GameObject>();
-        private SurvivalPlayerGun activePlayerGun;
+        private PlayerGun activePlayerGun;
 
-        public SurvivalPlayerGun ActiveGun => activePlayerGun;
+        public PlayerGun ActiveGun => activePlayerGun;
 
         private void Awake()
         {
@@ -74,6 +69,57 @@ namespace PhuScene
             else if (Input.GetKeyDown(KeyCode.Alpha2)) SwitchToUnlockedWeaponNumber(1);
             else if (Input.GetKeyDown(KeyCode.Alpha3)) SwitchToUnlockedWeaponNumber(2);
             else if (Input.GetKeyDown(KeyCode.Alpha4)) SwitchToUnlockedWeaponNumber(3);
+
+            // Weapon switching via mouse scroll wheel
+            float scroll = Input.GetAxis("Mouse ScrollWheel");
+            if (scroll != 0f)
+            {
+                HandleScrollWeaponSwitch(scroll);
+            }
+        }
+
+        private List<int> GetUnlockedSlotIndices()
+        {
+            List<int> unlockedIndices = new List<int>();
+            if (equipSlots != null)
+            {
+                for (int i = 0; i < equipSlots.Count; i++)
+                {
+                    if (equipSlots[i] != null)
+                    {
+                        string weaponId = equipSlots[i].ItemId;
+                        if (IsWeaponUnlocked(weaponId))
+                        {
+                            unlockedIndices.Add(i);
+                        }
+                    }
+                }
+            }
+            return unlockedIndices;
+        }
+
+        private int currentSelectedSlotIndex = -1;
+
+        private void HandleScrollWeaponSwitch(float scroll)
+        {
+            List<int> unlockedSlotIndices = GetUnlockedSlotIndices();
+            if (unlockedSlotIndices.Count <= 1) return;
+
+            int activeIndex = currentSelectedSlotIndex >= 0 ? currentSelectedSlotIndex : currentWeaponIndex.value;
+            int currentUnlockedPos = unlockedSlotIndices.IndexOf(activeIndex);
+            if (currentUnlockedPos == -1) currentUnlockedPos = 0;
+
+            if (scroll > 0f) // Scroll Up -> Next weapon
+            {
+                currentUnlockedPos = (currentUnlockedPos + 1) % unlockedSlotIndices.Count;
+            }
+            else if (scroll < 0f) // Scroll Down -> Previous weapon
+            {
+                currentUnlockedPos = (currentUnlockedPos - 1 + unlockedSlotIndices.Count) % unlockedSlotIndices.Count;
+            }
+
+            int nextSlotIndex = unlockedSlotIndices[currentUnlockedPos];
+            TrySwitchWeapon(nextSlotIndex);
         }
 
         private int GetSlotIndexForUnlockedWeaponNumber(int unlockedNumber)
@@ -200,16 +246,26 @@ namespace PhuScene
                 {
                     if (equipSlots[i] != null && equipSlots[i].ItemId == weaponId)
                     {
-                        TrySwitchWeapon(i);
+                        TrySwitchWeapon(i, ignoreCooldown: true);
                         break;
                     }
                 }
             }
         }
 
-        public void TrySwitchWeapon(int index)
+        [Header("Weapon Switching Cooldown")]
+        [SerializeField] private float switchCooldown = 0.1f;
+        private float lastSwitchTime = -100f;
+
+        public void TrySwitchWeapon(int index, bool ignoreCooldown = false)
         {
             if (equipSlots == null || index < 0 || index >= equipSlots.Count) return;
+
+            if (!ignoreCooldown && Time.time < lastSwitchTime + switchCooldown)
+            {
+                return;
+            }
+
             string weaponId = GetWeaponIdAt(index);
             if (string.IsNullOrEmpty(weaponId)) return;
 
@@ -220,14 +276,15 @@ namespace PhuScene
                 return;
             }
 
+            lastSwitchTime = Time.time;
+
             if (isSpawned)
             {
                 currentWeaponIndex.value = index;
             }
-            else
-            {
-                HandleWeaponIndexChanged(index);
-            }
+
+            currentSelectedSlotIndex = index;
+            HandleWeaponIndexChanged(index);
         }
 
         private class WeaponAmmoState
@@ -257,58 +314,68 @@ namespace PhuScene
         {
             if (equipSlots == null || index < 0 || index >= equipSlots.Count) return;
             string weaponId = GetWeaponIdAt(index);
-            GameObject prefab = GetWeaponPrefab(weaponId);
+            if (string.IsNullOrEmpty(weaponId)) return;
 
-            // Save old weapon's ammo count before destroying it
-            if (activePlayerGun != null)
+            if (weaponHolder == null)
             {
-                if (!string.IsNullOrEmpty(currentlyEquippedWeaponId))
-                {
-                    SaveWeaponAmmoState(currentlyEquippedWeaponId, activePlayerGun.CurrentAmmo, activePlayerGun.ReserveAmmo);
-                }
-                Destroy(activePlayerGun.gameObject);
-                activePlayerGun = null;
-            }
-            else
-            {
-                if (weaponHolder != null)
-                {
-                    foreach (Transform child in weaponHolder)
-                    {
-                        Destroy(child.gameObject);
-                    }
-                }
+                Debug.LogWarning("[SurvivalInventory] weaponHolder reference is missing.");
+                return;
             }
 
-            // Instantiate new gun
-            if (prefab != null && weaponHolder != null)
+            activePlayerGun = null;
+            Transform targetChild = null;
+
+            ShopSO shopSO = equipSlots[index];
+            string itemName = shopSO != null ? shopSO.itemName : "";
+            GameObject weaponPrefab = shopSO != null ? shopSO.weaponPrefab : null;
+            string prefabName = weaponPrefab != null ? weaponPrefab.name : "";
+
+            int childIndex = 0;
+            // Pass 1: Find target weapon child and disable all non-matching preloaded weapon GameObjects.
+            // Disabling non-matching guns FIRST prevents their OnDisable() from accidentally disabling
+            // the shared InputSystem actions after the target weapon enables them.
+            foreach (Transform child in weaponHolder)
             {
-                GameObject newGunObj = Instantiate(prefab, weaponHolder);
-                // newGunObj.transform.localPosition = Vector3.zero;
-                // newGunObj.transform.localRotation = Quaternion.identity;
-                // newGunObj.transform.localScale = Vector3.one;
+                PlayerGun gunComp = child.GetComponent<PlayerGun>();
+                
+                bool isMatch = child.name.Equals(weaponId, System.StringComparison.OrdinalIgnoreCase) ||
+                               child.name.Contains(weaponId, System.StringComparison.OrdinalIgnoreCase) ||
+                               (!string.IsNullOrEmpty(itemName) && child.name.Contains(itemName, System.StringComparison.OrdinalIgnoreCase)) ||
+                               (!string.IsNullOrEmpty(prefabName) && child.name.Contains(prefabName, System.StringComparison.OrdinalIgnoreCase)) ||
+                               (gunComp != null && gunComp.WeaponData != null && (
+                                   gunComp.WeaponData.name.Equals(weaponId, System.StringComparison.OrdinalIgnoreCase) ||
+                                   gunComp.WeaponData.name.Contains(weaponId, System.StringComparison.OrdinalIgnoreCase)
+                               )) ||
+                               (childIndex == index);
 
-                activePlayerGun = newGunObj.GetComponent<SurvivalPlayerGun>();
-                if (activePlayerGun != null)
+                if (isMatch)
                 {
-                    activePlayerGun.InitializeGunReferences(recoil, crosshair, ammoText, virtualCamera, weaponCamera, scopeOverlayUI);
-
-                    // Load saved ammo state if exists; otherwise save default values as initial state
-                    if (weaponAmmoStates.TryGetValue(weaponId, out WeaponAmmoState savedState))
-                    {
-                        activePlayerGun.SetAmmo(savedState.currentAmmo, savedState.reserveAmmo);
-                    }
-                    else
-                    {
-                        SaveWeaponAmmoState(weaponId, activePlayerGun.CurrentAmmo, activePlayerGun.ReserveAmmo);
-                    }
+                    targetChild = child;
                 }
+                else
+                {
+                    child.gameObject.SetActive(false);
+                }
+                childIndex++;
+            }
+
+            // Pass 2: Enable the target matching weapon LAST so its OnEnable() enables shoot/reload/aim inputs
+            if (targetChild != null)
+            {
+                // Force a toggle if it was already active to re-trigger OnEnable() and refresh input actions
+                if (targetChild.gameObject.activeSelf)
+                {
+                    targetChild.gameObject.SetActive(false);
+                }
+                targetChild.gameObject.SetActive(true);
+
+                activePlayerGun = targetChild.GetComponent<PlayerGun>();
 
                 // Sync weapon animator with movement script to restore walk/run sway
                 SurvivalPlayerMovement survivalMovement = GetComponentInParent<SurvivalPlayerMovement>();
                 if (survivalMovement != null)
                 {
-                    Animator newAnim = newGunObj.GetComponentInChildren<Animator>(true);
+                    Animator newAnim = targetChild.GetComponentInChildren<Animator>(true);
                     if (newAnim != null)
                     {
                         survivalMovement.SetAnimator(newAnim);
@@ -316,94 +383,71 @@ namespace PhuScene
                 }
 
                 currentlyEquippedWeaponId = weaponId;
-                
-                Debug.Log($"[SurvivalInventory] Switched active weapon model locally to index: {index} ({weaponId})");
+                currentSelectedSlotIndex = index;
+                UpdateActiveWeaponAmmoUI();
+                Debug.Log($"[SurvivalInventory] Activated preloaded weapon model for index: {index} ({weaponId})");
+            }
+            else
+            {
+                Debug.LogWarning($"[SurvivalInventory] Preloaded weapon GameObject matching '{weaponId}' was not found under weaponHolder.");
+            }
+        }
+
+        public void UpdateActiveWeaponAmmoUI()
+        {
+            if (activePlayerGun != null && activePlayerGun.WeaponData != null)
+            {
+                if (ammoText == null) ammoText = FindFirstObjectByType<TMP_Text>();
+                if (ammoText != null)
+                {
+                    ammoText.text = $"{activePlayerGun.WeaponData.currentAmmo:D2} / {activePlayerGun.WeaponData.reserveAmmo:D3}";
+                }
             }
         }
 
         public bool IsAnyWeaponMissingAmmo()
         {
-            if (equipSlots == null) return false;
+            if (weaponHolder == null) return false;
 
-            for (int i = 0; i < equipSlots.Count; i++)
+            foreach (Transform child in weaponHolder)
             {
-                if (equipSlots[i] == null) continue;
-                string weaponId = equipSlots[i].ItemId;
-                
-                if (IsWeaponUnlocked(weaponId))
+                PlayerGun gun = child.GetComponent<PlayerGun>();
+                if (gun != null && gun.WeaponData != null)
                 {
-                    GameObject prefab = GetWeaponPrefab(weaponId);
-                    if (prefab != null)
+                    string id = gun.WeaponData.name;
+                    if (IsWeaponUnlocked(id) || IsWeaponUnlocked(child.name))
                     {
-                        SurvivalPlayerGun gunComponent = prefab.GetComponent<SurvivalPlayerGun>();
-                        if (gunComponent != null && gunComponent.WeaponData != null)
+                        if (gun.WeaponData.currentAmmo < gun.WeaponData.magazineSize ||
+                            gun.WeaponData.reserveAmmo < gun.WeaponData.maxReserveAmmo)
                         {
-                            int maxMag = gunComponent.WeaponData.magazineSize;
-                            int maxRes = gunComponent.WeaponData.maxReserveAmmo;
-
-                            int curClip = maxMag;
-                            int curRes = maxRes;
-
-                            if (activePlayerGun != null && currentlyEquippedWeaponId == weaponId)
-                            {
-                                curClip = activePlayerGun.CurrentAmmo;
-                                curRes = activePlayerGun.ReserveAmmo;
-                            }
-                            else if (weaponAmmoStates.TryGetValue(weaponId, out WeaponAmmoState state))
-                            {
-                                curClip = state.currentAmmo;
-                                curRes = state.reserveAmmo;
-                            }
-
-                            if (curClip < maxMag || curRes < maxRes)
-                            {
-                                return true;
-                            }
+                            return true;
                         }
                     }
                 }
             }
+
             return false;
         }
 
         public void RefillAllWeaponsAmmo()
         {
-            if (equipSlots == null) return;
+            if (weaponHolder == null) return;
 
-            for (int i = 0; i < equipSlots.Count; i++)
+            foreach (Transform child in weaponHolder)
             {
-                if (equipSlots[i] == null) continue;
-                string weaponId = equipSlots[i].ItemId;
-
-                if (IsWeaponUnlocked(weaponId))
+                PlayerGun gun = child.GetComponent<PlayerGun>();
+                if (gun != null && gun.WeaponData != null)
                 {
-                    GameObject prefab = GetWeaponPrefab(weaponId);
-                    if (prefab != null)
+                    string id = gun.WeaponData.name;
+                    if (IsWeaponUnlocked(id) || IsWeaponUnlocked(child.name))
                     {
-                        SurvivalPlayerGun gunComponent = prefab.GetComponent<SurvivalPlayerGun>();
-                        if (gunComponent != null && gunComponent.WeaponData != null)
-                        {
-                            int maxMag = gunComponent.WeaponData.magazineSize;
-                            int maxRes = gunComponent.WeaponData.maxReserveAmmo;
-
-                            if (activePlayerGun != null && currentlyEquippedWeaponId == weaponId)
-                            {
-                                activePlayerGun.SetAmmo(maxMag, maxRes);
-                            }
-
-                            if (weaponAmmoStates.TryGetValue(weaponId, out WeaponAmmoState state))
-                            {
-                                state.currentAmmo = maxMag;
-                                state.reserveAmmo = maxRes;
-                            }
-                            else
-                            {
-                                weaponAmmoStates.Add(weaponId, new WeaponAmmoState { currentAmmo = maxMag, reserveAmmo = maxRes });
-                            }
-                        }
+                        gun.WeaponData.currentAmmo = gun.WeaponData.magazineSize;
+                        gun.WeaponData.reserveAmmo = gun.WeaponData.maxReserveAmmo;
                     }
                 }
             }
+
+            UpdateActiveWeaponAmmoUI();
         }
     }
 }
