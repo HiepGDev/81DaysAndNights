@@ -203,6 +203,38 @@ MonoBehaviour:
     m_Key: ClickToContinue
     m_Metadata:
       m_Items: []
+  - m_Id: 30409331575881728
+    m_Key: return.Button
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30409880257953792
+    m_Key: Video.FullScreen
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30410026257481728
+    m_Key: Video.Borderless
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30410252988973056
+    m_Key: Video.Windowed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30414332822028288
+    m_Key: Graphic.Low
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30414369765457920
+    m_Key: Graphic.Medium
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30414414493515776
+    m_Key: Graphic.High
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30774811398504448
+    m_Key: mainMenu.SurvivalMode
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

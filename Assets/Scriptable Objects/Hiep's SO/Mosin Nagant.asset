@@ -15,7 +15,7 @@ MonoBehaviour:
   Damage: 100
   MaxDistance: 500
   currentAmmo: 5
-  reserveAmmo: 26
+  reserveAmmo: 20
   maxReserveAmmo: 40
   magazineSize: 5
   fireRate: 1.3
@@ -26,6 +26,6 @@ MonoBehaviour:
   zoomAmount: 10
   useScopeOverlay: 1
   scopeDelay: 0.15
-  GunSound: {fileID: 8300000, guid: 1b44bd740df806a4d9590da10a807e5f, type: 3}
-  reloadSound: {fileID: 0}
+  GunSound: {fileID: 8300000, guid: 4f6aad74ee3d80d4b820b01ac84226a4, type: 3}
+  reloadSound: {fileID: 8300000, guid: 8b8ddacf83a063845839736575baa66e, type: 3}
   HitVfxPrefab: {fileID: 6937745106237518484, guid: b8a152f6cad1821469b12ed36594fc8b, type: 3}

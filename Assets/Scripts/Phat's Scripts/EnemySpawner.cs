@@ -16,6 +16,7 @@ public class EnemySpawner : MonoBehaviour
 
     [Header("Ambush Settings")]
     [SerializeField] private bool forceAmbushMode = true;
+    public bool IsDoneSpawning { get; private set; } = false;
 
     private int currentWave = 0;
     private int spawnedThisWave = 0;
@@ -47,6 +48,7 @@ public class EnemySpawner : MonoBehaviour
         }
 
         Debug.Log("[Spawner] All waves complete.");
+        IsDoneSpawning = true;
     }
 
     private IEnumerator SpawnWave()

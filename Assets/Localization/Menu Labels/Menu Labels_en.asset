@@ -214,6 +214,38 @@ MonoBehaviour:
     m_Localized: Click to continue
     m_Metadata:
       m_Items: []
+  - m_Id: 30409331575881728
+    m_Localized: Return
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30409880257953792
+    m_Localized: Fullscreen
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30410026257481728
+    m_Localized: Borderless
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30410252988973056
+    m_Localized: Windowed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30414332822028288
+    m_Localized: Low
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30414369765457920
+    m_Localized: Medium
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30414414493515776
+    m_Localized: High
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30774811398504448
+    m_Localized: Survival Mode
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

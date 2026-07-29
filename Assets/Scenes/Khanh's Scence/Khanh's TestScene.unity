@@ -26731,7 +26731,7 @@ PrefabInstance:
     - target: {fileID: 7732851628829948290, guid: 8a4319ac8fcdaf64e820bc078d5f16d2, type: 3}
       propertyPath: defendPoint
       value: 
-      objectReference: {fileID: 1585243770}
+      objectReference: {fileID: 0}
     - target: {fileID: 7781454998182126901, guid: 8a4319ac8fcdaf64e820bc078d5f16d2, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
       value: 12.93876

@@ -214,6 +214,38 @@ MonoBehaviour:
     m_Localized: Klicken, um fortzufahren
     m_Metadata:
       m_Items: []
+  - m_Id: 30409331575881728
+    m_Localized: "Zur\xFCck"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30409880257953792
+    m_Localized: Vollbild
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30410026257481728
+    m_Localized: Randlos
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30410252988973056
+    m_Localized: Fenstermodus
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30414332822028288
+    m_Localized: Niedrig
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30414369765457920
+    m_Localized: Mittel
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30414414493515776
+    m_Localized: Hoch
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30774811398504448
+    m_Localized: "\xDCberlebensmodus"
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []
