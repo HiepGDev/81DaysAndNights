@@ -5,6 +5,7 @@ public class CreditsMenu : MonoBehaviour
 {
     [SerializeField] AudioClip selectSound;
     [SerializeField] private CanvasGroup creditsCanvasGroup;
+    [SerializeField] private CanvasGroup mainTitleCanvasGroup;
     [SerializeField] GameObject creditsButton; // gotta turn this off when player click on developer share
     // [SerializeField] GameObject developerBoard;
     // [SerializeField] Animator CreditMenuAnimator;
@@ -38,6 +39,12 @@ public class CreditsMenu : MonoBehaviour
     {
         if (audioSource != null && selectSound != null)
             audioSource.PlayOneShot(selectSound);
+        
+        if (mainTitleCanvasGroup != null)
+        {
+            mainTitleCanvasGroup.blocksRaycasts = false;
+            mainTitleCanvasGroup.DOFade(0f, transitionDuration);
+        }
 
         if (creditsCanvasGroup != null)
         {
@@ -75,6 +82,13 @@ public class CreditsMenu : MonoBehaviour
             {
                 // Turn off the GameObject entirely
                 creditsCanvasGroup.gameObject.SetActive(false);
+            });
+        }
+        if (mainTitleCanvasGroup != null)
+        {
+            mainTitleCanvasGroup.DOFade(1f, transitionDuration).OnComplete(() =>
+            {
+                mainTitleCanvasGroup.blocksRaycasts = true;
             });
         }
     }

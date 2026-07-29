@@ -63,7 +63,7 @@ MonoBehaviour:
     m_Value: 0
   sharpenIntensity:
     m_OverrideState: 1
-    m_Value: 4
+    m_Value: 5
   sharpenDepthThreshold:
     m_OverrideState: 0
     m_Value: 0.035
@@ -94,7 +94,7 @@ MonoBehaviour:
       m_Bits: 0
   antialiasStrength:
     m_OverrideState: 1
-    m_Value: 2
+    m_Value: 3
   antialiasDepthThreshold:
     m_OverrideState: 0
     m_Value: 0.000001
@@ -843,8 +843,8 @@ MonoBehaviour:
     m_OverrideState: 1
     m_Value: 0.4
   contrast:
-    m_OverrideState: 0
-    m_Value: 15
+    m_OverrideState: 1
+    m_Value: 5
   colorFilter:
     m_OverrideState: 0
     m_Value: {r: 1, g: 1, b: 1, a: 1}

@@ -1,5 +1,20 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!114 &-8540805519695206592
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 90c63f3c785392046a1bd61c8ef1ffec, type: 3}
+  m_Name: Subtitle Marker
+  m_EditorClassIdentifier: Assembly-CSharp::SubtitleMarker
+  m_Time: 29.716666666666665
+  subtitleKey: Level1Cutscene1.D12
+  duration: 2
 --- !u!114 &-8519733389554944593
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -14,6 +29,21 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SubtitleMarker
   m_Time: 4.2
   subtitleKey: Level1Cutscene1.D2
+  duration: 2
+--- !u!114 &-5997631184989421511
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 90c63f3c785392046a1bd61c8ef1ffec, type: 3}
+  m_Name: Subtitle Marker
+  m_EditorClassIdentifier: Assembly-CSharp::SubtitleMarker
+  m_Time: 28.15
+  subtitleKey: Level1Cutscene1.D11
   duration: 2
 --- !u!114 &-5676230649767186736
 MonoBehaviour:
@@ -131,6 +161,14 @@ MonoBehaviour:
     - {fileID: 6471617065082711430}
     - {fileID: -4708771162852024951}
     - {fileID: 42404659970674187}
+    - {fileID: -1163904732386941954}
+    - {fileID: 2476212366339167263}
+    - {fileID: -1918971461381585735}
+    - {fileID: 6681398030806555785}
+    - {fileID: 6453771169670862874}
+    - {fileID: -5997631184989421511}
+    - {fileID: -8540805519695206592}
+    - {fileID: 1937692200463432839}
 --- !u!114 &-3644951825414889884
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -195,7 +233,7 @@ MonoBehaviour:
     m_Start: 0
     m_ClipIn: 0
     m_Asset: {fileID: -1533021410065405605}
-    m_Duration: 22.533333333333335
+    m_Duration: 29.716666666666665
     m_TimeScale: 1
     m_ParentTrack: {fileID: -2504554011055971407}
     m_EaseInDuration: 0
@@ -280,6 +318,21 @@ MonoBehaviour:
   m_OpenClipOffsetRotation: {x: 0, y: 0, z: 0, w: 1}
   m_Rotation: {x: 0, y: 0, z: 0, w: 1}
   m_ApplyOffsets: 0
+--- !u!114 &-1918971461381585735
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 90c63f3c785392046a1bd61c8ef1ffec, type: 3}
+  m_Name: Subtitle Marker
+  m_EditorClassIdentifier: Assembly-CSharp::SubtitleMarker
+  m_Time: 18.183333333333334
+  subtitleKey: Level1Cutscene1.D8
+  duration: 2
 --- !u!114 &-1533021410065405605
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -302,6 +355,21 @@ MonoBehaviour:
   m_Loop: 0
   m_Version: 1
   m_Rotation: {x: 0, y: 0, z: 0, w: 1}
+--- !u!114 &-1163904732386941954
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 90c63f3c785392046a1bd61c8ef1ffec, type: 3}
+  m_Name: Subtitle Marker
+  m_EditorClassIdentifier: Assembly-CSharp::SubtitleMarker
+  m_Time: 13.516666666666667
+  subtitleKey: Level1Cutscene1.D6
+  duration: 2
 --- !u!114 &-593959545230628335
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -327,7 +395,7 @@ MonoBehaviour:
     m_Start: 0
     m_ClipIn: 0
     m_Asset: {fileID: -3644951825414889884}
-    m_Duration: 22.866666666666667
+    m_Duration: 33.6
     m_TimeScale: 1
     m_ParentTrack: {fileID: -593959545230628335}
     m_EaseInDuration: 0
@@ -437,7 +505,7 @@ MonoBehaviour:
     m_Start: 13.45
     m_ClipIn: 0
     m_Asset: {fileID: -33261695896599557}
-    m_Duration: 6.699999999999999
+    m_Duration: 22.000000000000004
     m_TimeScale: 1
     m_ParentTrack: {fileID: -414450266880838493}
     m_EaseInDuration: 0
@@ -565,7 +633,7 @@ MonoBehaviour:
   - {fileID: 4680990686454387448}
   - {fileID: 2664641190687263164}
   - {fileID: 927133843466631109}
-  m_FixedDuration: 0
+  m_FixedDuration: 28.033333333333
   m_EditorSettings:
     m_Framerate: 60
     m_ScenePreview: 1
@@ -801,6 +869,36 @@ MonoBehaviour:
   m_OpenClipOffsetRotation: {x: 0, y: 0, z: 0, w: 1}
   m_Rotation: {x: 0, y: 0, z: 0, w: 1}
   m_ApplyOffsets: 0
+--- !u!114 &1937692200463432839
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 90c63f3c785392046a1bd61c8ef1ffec, type: 3}
+  m_Name: Subtitle Marker
+  m_EditorClassIdentifier: Assembly-CSharp::SubtitleMarker
+  m_Time: 33.516666666666666
+  subtitleKey: Level1Cutscene1.D13
+  duration: 2
+--- !u!114 &2476212366339167263
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 90c63f3c785392046a1bd61c8ef1ffec, type: 3}
+  m_Name: Subtitle Marker
+  m_EditorClassIdentifier: Assembly-CSharp::SubtitleMarker
+  m_Time: 16.733333333333334
+  subtitleKey: Level1Cutscene1.D7
+  duration: 1.5
 --- !u!114 &2491096341563384162
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1240,6 +1338,21 @@ MonoBehaviour:
   m_Clips: []
   m_Markers:
     m_Objects: []
+--- !u!114 &6453771169670862874
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 90c63f3c785392046a1bd61c8ef1ffec, type: 3}
+  m_Name: Subtitle Marker
+  m_EditorClassIdentifier: Assembly-CSharp::SubtitleMarker
+  m_Time: 25.216666666666665
+  subtitleKey: Level1Cutscene1.D10
+  duration: 2
 --- !u!114 &6471617065082711430
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1254,6 +1367,21 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SubtitleMarker
   m_Time: 6.183333333333334
   subtitleKey: Level1Cutscene1.D3
+  duration: 2
+--- !u!114 &6681398030806555785
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 90c63f3c785392046a1bd61c8ef1ffec, type: 3}
+  m_Name: Subtitle Marker
+  m_EditorClassIdentifier: Assembly-CSharp::SubtitleMarker
+  m_Time: 20.316666666666666
+  subtitleKey: Level1Cutscene1.D9
   duration: 2
 --- !u!114 &7697825818868782798
 MonoBehaviour:

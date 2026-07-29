@@ -93,6 +93,21 @@ MonoBehaviour:
   m_Markers:
     m_Objects: []
   m_PostPlaybackState: 3
+--- !u!114 &-8622311655323101368
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 90c63f3c785392046a1bd61c8ef1ffec, type: 3}
+  m_Name: Subtitle Marker
+  m_EditorClassIdentifier: Assembly-CSharp::SubtitleMarker
+  m_Time: 2.7333333333333334
+  subtitleKey: Level1Cutscene2.D1
+  duration: 2
 --- !u!114 &-7824473341402787015
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -301,7 +316,12 @@ MonoBehaviour:
   m_Children: []
   m_Clips: []
   m_Markers:
-    m_Objects: []
+    m_Objects:
+    - {fileID: -8622311655323101368}
+    - {fileID: -1776015451867618908}
+    - {fileID: 2658692944742986597}
+    - {fileID: -2279458338275616507}
+    - {fileID: 2464807498588684356}
 --- !u!114 &-4183953968723371064
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -875,6 +895,21 @@ MonoBehaviour:
   m_OpenClipOffsetRotation: {x: 0, y: 0, z: 0, w: 1}
   m_Rotation: {x: 0, y: 0, z: 0, w: 1}
   m_ApplyOffsets: 0
+--- !u!114 &-2279458338275616507
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 90c63f3c785392046a1bd61c8ef1ffec, type: 3}
+  m_Name: Subtitle Marker
+  m_EditorClassIdentifier: Assembly-CSharp::SubtitleMarker
+  m_Time: 12.033333333333333
+  subtitleKey: Level1Cutscene2.D4
+  duration: 2
 --- !u!114 &-1812851657727530204
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -887,6 +922,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fde0d25a170598d46a0b9dc16b4527a5, type: 3}
   m_Name: ActivationPlayableAsset
   m_EditorClassIdentifier: Unity.Timeline::UnityEngine.Timeline.ActivationPlayableAsset
+--- !u!114 &-1776015451867618908
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 90c63f3c785392046a1bd61c8ef1ffec, type: 3}
+  m_Name: Subtitle Marker
+  m_EditorClassIdentifier: Assembly-CSharp::SubtitleMarker
+  m_Time: 6.5
+  subtitleKey: Level1Cutscene2.D2
+  duration: 2
 --- !u!114 &-1754719235751181354
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1365,6 +1415,36 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fde0d25a170598d46a0b9dc16b4527a5, type: 3}
   m_Name: ActivationPlayableAsset
   m_EditorClassIdentifier: Unity.Timeline::UnityEngine.Timeline.ActivationPlayableAsset
+--- !u!114 &2464807498588684356
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 90c63f3c785392046a1bd61c8ef1ffec, type: 3}
+  m_Name: Subtitle Marker
+  m_EditorClassIdentifier: Assembly-CSharp::SubtitleMarker
+  m_Time: 16.45
+  subtitleKey: Level1Cutscene2.D5
+  duration: 2
+--- !u!114 &2658692944742986597
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 90c63f3c785392046a1bd61c8ef1ffec, type: 3}
+  m_Name: Subtitle Marker
+  m_EditorClassIdentifier: Assembly-CSharp::SubtitleMarker
+  m_Time: 8.766666666666667
+  subtitleKey: Level1Cutscene2.D3
+  duration: 2
 --- !u!114 &3335141554230647540
 MonoBehaviour:
   m_ObjectHideFlags: 1
