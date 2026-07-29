@@ -214,6 +214,38 @@ MonoBehaviour:
     m_Localized: Clique para continuar
     m_Metadata:
       m_Items: []
+  - m_Id: 30409331575881728
+    m_Localized: Voltar
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30409880257953792
+    m_Localized: Tela Cheia
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30410026257481728
+    m_Localized: Sem Bordas
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30410252988973056
+    m_Localized: Em Janela
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30414332822028288
+    m_Localized: Baixo
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30414369765457920
+    m_Localized: "M\xE9dio"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30414414493515776
+    m_Localized: Alto
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30774811398504448
+    m_Localized: "Modo Sobreviv\xEAncia"
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

@@ -398,6 +398,7 @@ GameObject:
   - component: {fileID: 1001362393}
   - component: {fileID: 1001362395}
   - component: {fileID: 1001362394}
+  - component: {fileID: 1001362396}
   m_Layer: 5
   m_Name: Disclaimer text
   m_TagString: Untagged
@@ -448,7 +449,7 @@ MonoBehaviour:
     is inspired by the 1972 Battle of Quang Tri - Viet Nam\ncertain characters, locations,
     and events have been fictionalized for gameplay and dramatic purposes.\n\nThis
     experience is intended for commemorative and entertainment purposes \nand does
-    not claim 100% historical accuracy"
+    not claim to be 100% historically accuracy"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 9d24e6b3ecd1d2b479a31d3d0e7b1f9e, type: 2}
   m_sharedMaterial: {fileID: 21148088844906328, guid: 9d24e6b3ecd1d2b479a31d3d0e7b1f9e, type: 2}
@@ -528,6 +529,46 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1001362392}
   m_CullTransparentMesh: 1
+--- !u!114 &1001362396
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1001362392}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 56eb0353ae6e5124bb35b17aff880f16, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.Localization::UnityEngine.Localization.Components.LocalizeStringEvent
+  m_StringReference:
+    m_TableReference:
+      m_TableCollectionName: GUID:b7e7f395dbc411c42ab85d0f06167a3a
+    m_TableEntryReference:
+      m_KeyId: 3970655216205824
+      m_Key: 
+    m_FallbackState: 0
+    m_WaitForCompletion: 0
+    m_LocalVariables: []
+  m_FormatArguments: []
+  m_UpdateString:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 1001362394}
+        m_TargetAssemblyTypeName: TMPro.TMP_Text, Unity.TextMeshPro
+        m_MethodName: set_text
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: 
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 1
+  references:
+    version: 2
+    RefIds: []
 --- !u!1 &1195692799
 GameObject:
   m_ObjectHideFlags: 0
