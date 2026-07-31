@@ -158,24 +158,35 @@ return aimError <= allowedAimError;
             );
     }
 
-    private void SpawnOptionalEffects()
+private void SpawnOptionalEffects()
+{
+    if (muzzleEffectPrefab != null)
     {
-        if (muzzleEffectPrefab != null)
-        {
-            GameObject muzzleEffect = Instantiate(
-                muzzleEffectPrefab,
-                firePoint.position,
-                firePoint.rotation
-            );
+        GameObject muzzleEffect = Instantiate(
+            muzzleEffectPrefab,
+            firePoint.position,
+            firePoint.rotation,
+            firePoint
+        );
 
-            muzzleEffect.transform.SetParent(firePoint);
+        // Play toàn bộ Particle System bên trong Tank_Blast_VFX
+        ParticleSystem[] particles =
+            muzzleEffect.GetComponentsInChildren<ParticleSystem>();
+
+        foreach (ParticleSystem particle in particles)
+        {
+            particle.Play();
         }
 
-        if (audioSource != null && fireSound != null)
-        {
-            audioSource.PlayOneShot(fireSound);
-        }
+        // Xóa VFX sau khi chạy xong
+        Destroy(muzzleEffect, 3f);
     }
+
+    if (audioSource != null && fireSound != null)
+    {
+        audioSource.PlayOneShot(fireSound);
+    }
+}
 
     private void OnValidate()
     {
