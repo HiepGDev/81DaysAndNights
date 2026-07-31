@@ -29,6 +29,9 @@ public class EnemyBehaviorAgent : MonoBehaviour
     [SerializeField] private float minEngagementDist = 8.0f; 
     [SerializeField] private float rangeSpread = 3.0f;       
     [SerializeField] private float destinationSpread = 2.0f;
+
+    [Header("Aiming Settings")]
+    [SerializeField] private float aimingOffsetAngle = 0f;
     
     private Transform playerTransform;
     private Vector3 spawnPoint;
@@ -54,6 +57,31 @@ public class EnemyBehaviorAgent : MonoBehaviour
     public Transform CurrentAmbushTarget { get; private set; }
     public Transform PlayerTransform => playerTransform;
     public EnemySO EnemyData => enemyData;
+
+    private Transform designatedSniperPoint;
+    public void SetDesignatedSniperPoint(Transform point) 
+    { 
+        designatedSniperPoint = point; 
+        if (point != null)
+        {
+            Vector3 navPos = point.position;
+            NavMeshHit hit;
+            if (NavMesh.SamplePosition(point.position, out hit, 3.0f, NavMesh.AllAreas))
+            {
+                navPos = hit.position;
+            }
+
+            // Waypoints are in the open, not treated as physical cover
+            isInCover = false;
+            hasSearchedForCover = true; // Prevents the AI from searching for other covers
+
+            if (agent != null && agent.isOnNavMesh)
+            {
+                agent.isStopped = false;
+                agent.SetDestination(navPos);
+            }
+        }
+    }
 
     private void Awake()
     {
@@ -115,6 +143,13 @@ public class EnemyBehaviorAgent : MonoBehaviour
     {
         if (!agent.isOnNavMesh) return;
         transform.position = agent.nextPosition;
+
+        // Pathing Safety Check: Ensure the agent has a path if they have a designated waypoint and are in cover mode
+        if (isInCover && activeCover.found && !agent.hasPath && !agent.pathPending)
+        {
+            agent.isStopped = false;
+            agent.SetDestination(activeCover.position);
+        }
 
         IsReadyToShoot = false;
 
@@ -204,6 +239,21 @@ public class EnemyBehaviorAgent : MonoBehaviour
 
         if (shooting != null && shooting.IsOutOfAmmo)
         {
+            if (designatedSniperPoint != null)
+            {
+                float distToWaypoint = Vector3.Distance(transform.position, designatedSniperPoint.position);
+                if (distToWaypoint > agent.stoppingDistance + 0.2f)
+                {
+                    if (agent.isStopped) agent.isStopped = false;
+                    agent.SetDestination(designatedSniperPoint.position);
+                    return;
+                }
+
+                if (!agent.isStopped) StopAgent();
+                shooting.TriggerReload();
+                return;
+            }
+
             if (!isInCover) FindAndGoToCover();
             else HandleCoverLogic(inShootingRange);
             return;
@@ -260,6 +310,18 @@ public class EnemyBehaviorAgent : MonoBehaviour
             }
             else
             {
+                if (designatedSniperPoint != null)
+                {
+                    float distToWaypoint = Vector3.Distance(transform.position, designatedSniperPoint.position);
+                    if (distToWaypoint > agent.stoppingDistance + 0.2f)
+                    {
+                        if (agent.isStopped) agent.isStopped = false;
+                        agent.SetDestination(designatedSniperPoint.position);
+                        IsReadyToShoot = false;
+                        return;
+                    }
+                }
+
                 if (!agent.isStopped) StopAgent();
                 FaceTarget();
                 IsReadyToShoot = true;
@@ -315,6 +377,17 @@ public class EnemyBehaviorAgent : MonoBehaviour
 
         if (currentMode == EnemyMode.Sniper)
         {
+            if (designatedSniperPoint != null)
+            {
+                float distToWaypoint = Vector3.Distance(transform.position, designatedSniperPoint.position);
+                if (distToWaypoint > agent.stoppingDistance + 0.2f)
+                {
+                    if (agent.isStopped) agent.isStopped = false;
+                    agent.SetDestination(designatedSniperPoint.position);
+                    return;
+                }
+            }
+
             if (!agent.isStopped) StopAgent();
             return;
         }
@@ -442,7 +515,10 @@ public class EnemyBehaviorAgent : MonoBehaviour
             Vector3 dir = (t.position - transform.position);
             dir.y = 0;
             if (dir != Vector3.zero)
-                transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(dir), Time.deltaTime * 5f);
+            {
+                Quaternion targetRot = Quaternion.LookRotation(dir) * Quaternion.Euler(0, aimingOffsetAngle, 0);
+                transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, Time.deltaTime * 5f);
+            }
         }
     }
 
