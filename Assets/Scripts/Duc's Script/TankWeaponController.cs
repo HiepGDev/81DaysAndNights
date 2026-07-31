@@ -21,10 +21,11 @@ public class TankWeaponController : MonoBehaviour
     [SerializeField, Range(0f, 180f)]
     private float allowedAimError = 8f;
 
-    [Header("Optional Effects")]
-    [SerializeField] private GameObject muzzleEffectPrefab;
-    [SerializeField] private AudioSource audioSource;
-    [SerializeField] private AudioClip fireSound;
+[Header("Optional Effects")]
+[SerializeField] private GameObject muzzleEffectPrefab;
+[SerializeField] private AudioSource audioSource;
+[SerializeField] private AudioClip fireSound;
+[SerializeField, Min(0f)] private float muzzleEffectLifetime = 3f;
 
     private float nextFireTime;
 
@@ -179,7 +180,7 @@ private void SpawnOptionalEffects()
         }
 
         // Xóa VFX sau khi chạy xong
-        Destroy(muzzleEffect, 3f);
+        Destroy(muzzleEffect, muzzleEffectLifetime);
     }
 
     if (audioSource != null && fireSound != null)
