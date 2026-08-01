@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: TeammateSO
   m_EditorClassIdentifier: Assembly-CSharp::TeammateSO
   maxHealth: 100
-  detectionRadius: 15
+  detectionRadius: 25
   rotationSpeed: 8
   followTriggerDistance: 10
   stopFollowDistance: 2.5

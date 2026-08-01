@@ -8051,6 +8051,8 @@ MonoBehaviour:
   maxHealth: 2000
   currentHealth: 0
   teammateData: {fileID: 11400000, guid: 7c6ff9ee23f0c784c823ea9003f8bfb7, type: 2}
+  lidBottomL: {fileID: 0}
+  lidBottomR: {fileID: 0}
 --- !u!4 &1281227116111986488
 Transform:
   m_ObjectHideFlags: 0
@@ -15671,7 +15673,7 @@ MonoBehaviour:
   walkSize: 35
   sprintSize: 62
   lerpSpeed: 15
-  movement: {fileID: 4886734217944789826}
+  sprintSpeedThreshold: 6
   gun: {fileID: 0}
   controller: {fileID: 3519686539868715685}
 --- !u!4 &2836885935716823994
@@ -33507,7 +33509,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WeaponSwitchManager
   gunObject: {fileID: 2703838841956694177}
-  riceObject: {fileID: 4058443410153286818}
+  SecondObject: {fileID: 0}
   normalArm: {fileID: 582468411308439705}
   startingState: 0
 --- !u!4 &7292870497694061361

@@ -18351,10 +18351,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: Teammate Defender
       objectReference: {fileID: 0}
-    - target: {fileID: 3462982725432306100, guid: 8a4319ac8fcdaf64e820bc078d5f16d2, type: 3}
-      propertyPath: m_IsActive
-      value: 1
-      objectReference: {fileID: 0}
     - target: {fileID: 8224298779817141450, guid: 8a4319ac8fcdaf64e820bc078d5f16d2, type: 3}
       propertyPath: m_LocalPosition.x
       value: 8.24
@@ -33704,7 +33700,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1585243770
 Transform:
   m_ObjectHideFlags: 0
