@@ -26,6 +26,8 @@ public class LoadingController : MonoBehaviour
 
     void Start() 
     {
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
         if (string.IsNullOrEmpty(sceneToLoad))
         {
             Debug.LogError("[LoadingController] Scene to load is missing! Please type it into the Inspector.");

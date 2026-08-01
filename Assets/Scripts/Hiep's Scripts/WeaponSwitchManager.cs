@@ -5,15 +5,15 @@ public class WeaponSwitchManager : MonoBehaviour
     public enum HandState
     {
         Gun,
-        Rice,
+        SecondObject,
         NormalArm
     }
     [SerializeField] private GameObject gunObject;
-    [SerializeField] private GameObject riceObject;
+    [SerializeField] private GameObject SecondObject;
     [SerializeField] private GameObject normalArm;
-    [SerializeField] private HandState startingState = HandState.Rice;
+    [SerializeField] private HandState startingState = HandState.SecondObject;
     public HandState CurrentState { get; private set; }
-    public bool IsHoldingRice => CurrentState == HandState.Rice;
+    public bool IsHoldingRice => CurrentState == HandState.SecondObject;
     public bool IsUnarmed => CurrentState == HandState.NormalArm;
     private bool hasInitialized = false;
     private PlayerMovement playerMovement;
@@ -36,7 +36,7 @@ public class WeaponSwitchManager : MonoBehaviour
 
         // Turn EVERYTHING off first to guarantee no overlapping models
         if (gunObject != null) gunObject.SetActive(false);
-        if (riceObject != null) riceObject.SetActive(false);
+        if (SecondObject != null) SecondObject.SetActive(false);
         if (normalArm != null) normalArm.SetActive(false);
 
         // Turn on ONLY the requested model and store it temporarily
@@ -47,9 +47,9 @@ public class WeaponSwitchManager : MonoBehaviour
                 if (gunObject != null) { gunObject.SetActive(true); activeModel = gunObject; }
                 Debug.Log("Holding Gun");
                 break;
-            case HandState.Rice:
-                if (riceObject != null) { riceObject.SetActive(true); activeModel = riceObject; }
-                Debug.Log("Holding Rice");
+            case HandState.SecondObject:
+                if (SecondObject != null) { SecondObject.SetActive(true); activeModel = SecondObject; }
+                Debug.Log("Holding SecondObject");
                 break;
             case HandState.NormalArm:
                 if (normalArm != null) { normalArm.SetActive(true); activeModel = normalArm; }
@@ -79,9 +79,9 @@ public class WeaponSwitchManager : MonoBehaviour
         SetHandState(HandState.Gun);
     }
 
-    public void SwitchToRice()
+    public void SwitchToSecondObject()
     {
-        SetHandState(HandState.Rice);
+        SetHandState(HandState.SecondObject);
     }
 
     public void SwitchToNormalArm()

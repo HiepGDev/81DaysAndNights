@@ -38,6 +38,91 @@ MonoBehaviour:
     m_Localized: ...noch wohlauf ist.
     m_Metadata:
       m_Items: []
+  - m_Id: 8144330131767296
+    m_Localized: Kameraden
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8144372737507328
+    m_Localized: Wir haben Reis
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8144386729705472
+    m_Localized: "Gerade \xFCber den Thach-Han-Fluss gebracht"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8144412667281408
+    m_Localized: Puh... Endlich etwas zu essen
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8144424818180096
+    m_Localized: Iss etwas Reis, Kamerad
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8148263583612928
+    m_Localized: Du hast hart gearbeitet, Kamerad
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8148397071532032
+    m_Localized: Ruh dich hier aus. Lass mich das an die anderen verteilen
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8148571055456256
+    m_Localized: "Dann \xFCberlasse ich das dir... Ich muss mich setzen und zu Atem
+      kommen"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8186587102838784
+    m_Localized: Hier, iss etwas Reis, Kamerad
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8186625958871040
+    m_Localized: KAMERAD! KAMERAD!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8186641863671808
+    m_Localized: Habt ihr Reis ? Gib mir auch was
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8186652735307776
+    m_Localized: Moment, ich bin gleich da
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8187705438502912
+    m_Localized: FEINDLICHER ARTILLERIEBESCHUSS! SCHNELL IN DEN BUNKER !
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9255412959281152
+    m_Localized: LOS, LOS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9255455799902208
+    m_Localized: "SANIT\xC4TER!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9255469150371840
+    m_Localized: "Gl\xFCck gehabt, nur 'ne leichte Wunde"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9255480462409728
+    m_Localized: Daran stirbst du nicht
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9255490260303872
+    m_Localized: Wo ist Nam? Gib mir die AK
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9256520280702976
+    m_Localized: Hier, Sir
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9256541046702080
+    m_Localized: nimm sie
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9256553700917248
+    m_Localized: Wenn du noch laufen kannst, ab auf deine Position. Los
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []
