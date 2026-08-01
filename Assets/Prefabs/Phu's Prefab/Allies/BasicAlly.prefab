@@ -1984,6 +1984,7 @@ MonoBehaviour:
   waypointStopDistance: 0.5
   waypointWaitTime: 1.5
   loopPatrol: 1
+  patrolStartDistance: 15
 --- !u!114 &255411995923892643
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1996,7 +1997,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5ca613f1872007c4d9f494f3925aef84, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TeammateDetection
-  detectionRadius: 80
+  detectionRadius: 160
   targetTags:
   - Enemy
   teammateData: {fileID: 11400000, guid: 7c6ff9ee23f0c784c823ea9003f8bfb7, type: 2}

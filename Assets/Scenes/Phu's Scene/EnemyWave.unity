@@ -1911,11 +1911,11 @@ PrefabInstance:
     - target: {fileID: 9205480752589030539, guid: 38f12c28eef824149901662790ab910c, type: 3}
       propertyPath: 'allySpawnPoints.Array.data[1]'
       value: 
-      objectReference: {fileID: 800301}
+      objectReference: {fileID: 1656033751}
     - target: {fileID: 9205480752589030539, guid: 38f12c28eef824149901662790ab910c, type: 3}
       propertyPath: 'allySpawnPoints.Array.data[2]'
       value: 
-      objectReference: {fileID: 800401}
+      objectReference: {fileID: 2062202969}
     - target: {fileID: 9205480752589030539, guid: 38f12c28eef824149901662790ab910c, type: 3}
       propertyPath: enemyRules.Array.data[0].enemyPrefab
       value: 

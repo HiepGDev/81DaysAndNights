@@ -16,6 +16,7 @@ public class EnemyTacticalPeek : MonoBehaviour
     private Vector3 originalCoverPos;
     private Vector3 peekPos;
     private bool isCurrentlyPeeking = false;
+    private bool hasArrivedAtPeek = false;
 
     public bool IsPeeking => isCurrentlyPeeking;
 
@@ -70,17 +71,24 @@ public class EnemyTacticalPeek : MonoBehaviour
         // 3. SHOOT CONTROL: 
         if (isCurrentlyPeeking)
         {
-            // THE FIX: Use flat distance (ignore Y) so ground height doesn't break the trigger
-            Vector3 flatSelf = new Vector3(transform.position.x, 0, transform.position.z);
-            Vector3 flatTarget = new Vector3(peekPos.x, 0, peekPos.z);
-            float distToPeek = Vector3.Distance(flatSelf, flatTarget);
+            if (!hasArrivedAtPeek)
+            {
+                // THE FIX: Use flat distance (ignore Y) so ground height doesn't break the trigger
+                Vector3 flatSelf = new Vector3(transform.position.x, 0, transform.position.z);
+                Vector3 flatTarget = new Vector3(peekPos.x, 0, peekPos.z);
+                float distToPeek = Vector3.Distance(flatSelf, flatTarget);
 
-            // Allow firing if we are roughly at the peek spot (Loosened to 0.6m)
-            shooting.allowFiring = (distToPeek <= 0.6f);
+                if (distToPeek <= 0.6f)
+                {
+                    hasArrivedAtPeek = true;
+                }
+            }
+
+            shooting.allowFiring = hasArrivedAtPeek;
         }
         else
         {
-            // ALWAYS pause while sitting behind the wall
+            hasArrivedAtPeek = false;
             shooting.allowFiring = false;
         }
     }

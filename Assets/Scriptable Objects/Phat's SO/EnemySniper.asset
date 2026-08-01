@@ -21,7 +21,7 @@ MonoBehaviour:
   minEngagementDist: 25
   rangeSpread: 5
   destinationSpread: 2
-  fireRate: 1.5
+  fireRate: 2
   fireDistance: 60
   damagePerShot: 40
   magazineSize: 5

@@ -29,7 +29,530 @@ ModelImporter:
     animationWrapMode: 0
     extraExposedTransformPaths: []
     extraUserProperties: []
-    clipAnimations: []
+    clipAnimations:
+    - serializedVersion: 16
+      name: Rig|Running
+      takeName: Rig|Running
+      internalID: -4958343593826856169
+      firstFrame: 0
+      lastFrame: 23
+      wrapMode: 0
+      orientationOffsetY: 0
+      level: 0
+      cycleOffset: 0
+      loop: 0
+      hasAdditiveReferencePose: 0
+      loopTime: 0
+      loopBlend: 0
+      loopBlendOrientation: 0
+      loopBlendPositionY: 0
+      loopBlendPositionXZ: 0
+      keepOriginalOrientation: 0
+      keepOriginalPositionY: 1
+      keepOriginalPositionXZ: 0
+      heightFromFeet: 0
+      mirror: 0
+      bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
+      curves: []
+      events: []
+      transformMask:
+      - path: 
+        weight: 1
+      - path: Body
+        weight: 1
+      - path: Brows
+        weight: 1
+      - path: Hat
+        weight: 1
+      - path: Lids
+        weight: 1
+      - path: Pack
+        weight: 1
+      - path: Pupils
+        weight: 1
+      - path: Rig
+        weight: 1
+      - path: Rig/Spine
+        weight: 1
+      - path: Rig/Spine/Spine1
+        weight: 1
+      - path: Rig/Spine/Spine1/Spine2
+        weight: 1
+      - path: Rig/Spine/Spine1/Spine2/Neck
+        weight: 1
+      - path: Rig/Spine/Spine1/Spine2/Neck/Head
+        weight: 1
+      - path: Rig/Spine/Spine1/Spine2/Neck/Head/Brow.L
+        weight: 1
+      - path: Rig/Spine/Spine1/Spine2/Neck/Head/Brow.L/Brow.L_end
+        weight: 1
+      - path: Rig/Spine/Spine1/Spine2/Neck/Head/Brow.L.001
+        weight: 1
+      - path: Rig/Spine/Spine1/Spine2/Neck/Head/Brow.L.001/Brow.L.001_end
+        weight: 1
+      - path: Rig/Spine/Spine1/Spine2/Neck/Head/Brow.L.002
+        weight: 1
+      - path: Rig/Spine/Spine1/Spine2/Neck/Head/Brow.L.002/Brow.L.002_end
+        weight: 1
+      - path: Rig/Spine/Spine1/Spine2/Neck/Head/Brow.L.003
+        weight: 1
+      - path: Rig/Spine/Spine1/Spine2/Neck/Head/Brow.L.003/Brow.L.003_end
+        weight: 1
+      - path: Rig/Spine/Spine1/Spine2/Neck/Head/Brow.L.004
+        weight: 1
+      - path: Rig/Spine/Spine1/Spine2/Neck/Head/Brow.L.004/Brow.L.004_end
+        weight: 1
+      - path: Rig/Spine/Spine1/Spine2/Neck/Head/Brow.R
+        weight: 1
+      - path: Rig/Spine/Spine1/Spine2/Neck/Head/Brow.R/Brow.R_end
+        weight: 1
+      - path: Rig/Spine/Spine1/Spine2/Neck/Head/Brow.R.001
+        weight: 1
+      - path: Rig/Spine/Spine1/Spine2/Neck/Head/Brow.R.001/Brow.R.001_end
+        weight: 1
+      - path: Rig/Spine/Spine1/Spine2/Neck/Head/Brow.R.002
+        weight: 1
+      - path: Rig/Spine/Spine1/Spine2/Neck/Head/Brow.R.002/Brow.R.002_end
+        weight: 1
+      - path: Rig/Spine/Spine1/Spine2/Neck/Head/Brow.R.003
+        weight: 1
+      - path: Rig/Spine/Spine1/Spine2/Neck/Head/Brow.R.003/Brow.R.003_end
+        weight: 1
+      - path: Rig/Spine/Spine1/Spine2/Neck/Head/Brow.R.004
+        weight: 1
+      - path: Rig/Spine/Spine1/Spine2/Neck/Head/Brow.R.004/Brow.R.004_end
+        weight: 1
+      - path: Rig/Spine/Spine1/Spine2/Neck/Head/Eye.L
+        weight: 1
+      - path: Rig/Spine/Spine1/Spine2/Neck/Head/Eye.L/Eye.L_end
+        weight: 1
+      - path: Rig/Spine/Spine1/Spine2/Neck/Head/Eye.R
+        weight: 1
+      - path: Rig/Spine/Spine1/Spine2/Neck/Head/Eye.R/Eye.R_end
+        weight: 1
+      - path: Rig/Spine/Spine1/Spine2/Neck/Head/HeadTop_End
+        weight: 1
+      - path: Rig/Spine/Spine1/Spine2/Neck/Head/HeadTop_End/HeadTop_End_end
+        weight: 1
+      - path: Rig/Spine/Spine1/Spine2/Neck/Head/HeadTop_End/HeadTop_End_end/HeadTop_End_end_end
+        weight: 1
+      - path: Rig/Spine/Spine1/Spine2/Neck/Head/LidBottom.L
+        weight: 1
+      - path: Rig/Spine/Spine1/Spine2/Neck/Head/LidBottom.L/LidBottom.L_end
+        weight: 1
+      - path: Rig/Spine/Spine1/Spine2/Neck/Head/LidBottom.R
+        weight: 1
+      - path: Rig/Spine/Spine1/Spine2/Neck/Head/LidBottom.R/LidBottom.R_end
+        weight: 1
+      - path: Rig/Spine/Spine1/Spine2/Shoulder.L
+        weight: 1
+      - path: Rig/Spine/Spine1/Spine2/Shoulder.L/Arm.L
+        weight: 1
+      - path: Rig/Spine/Spine1/Spine2/Shoulder.L/Arm.L/ForeArm.L
+        weight: 1
+      - path: Rig/Spine/Spine1/Spine2/Shoulder.L/Arm.L/ForeArm.L/Hand.L
+        weight: 1
+      - path: Rig/Spine/Spine1/Spine2/Shoulder.L/Arm.L/ForeArm.L/Hand.L/HandIndex1.L
+        weight: 1
+      - path: Rig/Spine/Spine1/Spine2/Shoulder.L/Arm.L/ForeArm.L/Hand.L/HandIndex1.L/HandIndex2.L
+        weight: 1
+      - path: Rig/Spine/Spine1/Spine2/Shoulder.L/Arm.L/ForeArm.L/Hand.L/HandIndex1.L/HandIndex2.L/HandIndex3.L
+        weight: 1
+      - path: Rig/Spine/Spine1/Spine2/Shoulder.L/Arm.L/ForeArm.L/Hand.L/HandIndex1.L/HandIndex2.L/HandIndex3.L/HandIndex4.L
+        weight: 1
+      - path: Rig/Spine/Spine1/Spine2/Shoulder.L/Arm.L/ForeArm.L/Hand.L/HandIndex1.L/HandIndex2.L/HandIndex3.L/HandIndex4.L/HandIndex4.L_end
+        weight: 1
+      - path: Rig/Spine/Spine1/Spine2/Shoulder.L/Arm.L/ForeArm.L/Hand.L/HandIndex1.L/HandIndex2.L/HandIndex3.L/HandIndex4.L/HandIndex4.L_end/HandIndex4.L_end_end
+        weight: 1
+      - path: Rig/Spine/Spine1/Spine2/Shoulder.L/Arm.L/ForeArm.L/Hand.L/HandMiddle1.L
+        weight: 1
+      - path: Rig/Spine/Spine1/Spine2/Shoulder.L/Arm.L/ForeArm.L/Hand.L/HandMiddle1.L/HandMiddle2.L
+        weight: 1
+      - path: Rig/Spine/Spine1/Spine2/Shoulder.L/Arm.L/ForeArm.L/Hand.L/HandMiddle1.L/HandMiddle2.L/HandMiddle3.L
+        weight: 1
+      - path: Rig/Spine/Spine1/Spine2/Shoulder.L/Arm.L/ForeArm.L/Hand.L/HandMiddle1.L/HandMiddle2.L/HandMiddle3.L/HandMiddle4.L
+        weight: 1
+      - path: Rig/Spine/Spine1/Spine2/Shoulder.L/Arm.L/ForeArm.L/Hand.L/HandMiddle1.L/HandMiddle2.L/HandMiddle3.L/HandMiddle4.L/HandMiddle4.L_end
+        weight: 1
+      - path: Rig/Spine/Spine1/Spine2/Shoulder.L/Arm.L/ForeArm.L/Hand.L/HandMiddle1.L/HandMiddle2.L/HandMiddle3.L/HandMiddle4.L/HandMiddle4.L_end/HandMiddle4.L_end_end
+        weight: 1
+      - path: Rig/Spine/Spine1/Spine2/Shoulder.L/Arm.L/ForeArm.L/Hand.L/HandPinky1.L
+        weight: 1
+      - path: Rig/Spine/Spine1/Spine2/Shoulder.L/Arm.L/ForeArm.L/Hand.L/HandPinky1.L/HandPinky2.L
+        weight: 1
+      - path: Rig/Spine/Spine1/Spine2/Shoulder.L/Arm.L/ForeArm.L/Hand.L/HandPinky1.L/HandPinky2.L/HandPinky3.L
+        weight: 1
+      - path: Rig/Spine/Spine1/Spine2/Shoulder.L/Arm.L/ForeArm.L/Hand.L/HandPinky1.L/HandPinky2.L/HandPinky3.L/HandPinky4.L
+        weight: 1
+      - path: Rig/Spine/Spine1/Spine2/Shoulder.L/Arm.L/ForeArm.L/Hand.L/HandPinky1.L/HandPinky2.L/HandPinky3.L/HandPinky4.L/HandPinky4.L_end
+        weight: 1
+      - path: Rig/Spine/Spine1/Spine2/Shoulder.L/Arm.L/ForeArm.L/Hand.L/HandPinky1.L/HandPinky2.L/HandPinky3.L/HandPinky4.L/HandPinky4.L_end/HandPinky4.L_end_end
+        weight: 1
+      - path: Rig/Spine/Spine1/Spine2/Shoulder.L/Arm.L/ForeArm.L/Hand.L/HandRing1.L
+        weight: 1
+      - path: Rig/Spine/Spine1/Spine2/Shoulder.L/Arm.L/ForeArm.L/Hand.L/HandRing1.L/HandRing2.L
+        weight: 1
+      - path: Rig/Spine/Spine1/Spine2/Shoulder.L/Arm.L/ForeArm.L/Hand.L/HandRing1.L/HandRing2.L/HandRing3.L
+        weight: 1
+      - path: Rig/Spine/Spine1/Spine2/Shoulder.L/Arm.L/ForeArm.L/Hand.L/HandRing1.L/HandRing2.L/HandRing3.L/HandRing4.L
+        weight: 1
+      - path: Rig/Spine/Spine1/Spine2/Shoulder.L/Arm.L/ForeArm.L/Hand.L/HandRing1.L/HandRing2.L/HandRing3.L/HandRing4.L/HandRing4.L_end
+        weight: 1
+      - path: Rig/Spine/Spine1/Spine2/Shoulder.L/Arm.L/ForeArm.L/Hand.L/HandRing1.L/HandRing2.L/HandRing3.L/HandRing4.L/HandRing4.L_end/HandRing4.L_end_end
+        weight: 1
+      - path: Rig/Spine/Spine1/Spine2/Shoulder.L/Arm.L/ForeArm.L/Hand.L/HandThumb1.L
+        weight: 1
+      - path: Rig/Spine/Spine1/Spine2/Shoulder.L/Arm.L/ForeArm.L/Hand.L/HandThumb1.L/HandThumb2.L
+        weight: 1
+      - path: Rig/Spine/Spine1/Spine2/Shoulder.L/Arm.L/ForeArm.L/Hand.L/HandThumb1.L/HandThumb2.L/HandThumb3.L
+        weight: 1
+      - path: Rig/Spine/Spine1/Spine2/Shoulder.L/Arm.L/ForeArm.L/Hand.L/HandThumb1.L/HandThumb2.L/HandThumb3.L/HandThumb4.L
+        weight: 1
+      - path: Rig/Spine/Spine1/Spine2/Shoulder.L/Arm.L/ForeArm.L/Hand.L/HandThumb1.L/HandThumb2.L/HandThumb3.L/HandThumb4.L/HandThumb4.L_end
+        weight: 1
+      - path: Rig/Spine/Spine1/Spine2/Shoulder.L/Arm.L/ForeArm.L/Hand.L/HandThumb1.L/HandThumb2.L/HandThumb3.L/HandThumb4.L/HandThumb4.L_end/HandThumb4.L_end_end
+        weight: 1
+      - path: Rig/Spine/Spine1/Spine2/Shoulder.R
+        weight: 1
+      - path: Rig/Spine/Spine1/Spine2/Shoulder.R/Arm.R
+        weight: 1
+      - path: Rig/Spine/Spine1/Spine2/Shoulder.R/Arm.R/ForeArm.R
+        weight: 1
+      - path: Rig/Spine/Spine1/Spine2/Shoulder.R/Arm.R/ForeArm.R/Hand.R
+        weight: 1
+      - path: Rig/Spine/Spine1/Spine2/Shoulder.R/Arm.R/ForeArm.R/Hand.R/Gun
+        weight: 1
+      - path: Rig/Spine/Spine1/Spine2/Shoulder.R/Arm.R/ForeArm.R/Hand.R/Gun/Mag
+        weight: 1
+      - path: Rig/Spine/Spine1/Spine2/Shoulder.R/Arm.R/ForeArm.R/Hand.R/Gun/Mag/Mag_end
+        weight: 1
+      - path: Rig/Spine/Spine1/Spine2/Shoulder.R/Arm.R/ForeArm.R/Hand.R/Gun/Mag/Western_auto_rifle_2.001
+        weight: 1
+      - path: Rig/Spine/Spine1/Spine2/Shoulder.R/Arm.R/ForeArm.R/Hand.R/Gun/Western_auto_rifle_2
+        weight: 1
+      - path: Rig/Spine/Spine1/Spine2/Shoulder.R/Arm.R/ForeArm.R/Hand.R/HandIndex1.R
+        weight: 1
+      - path: Rig/Spine/Spine1/Spine2/Shoulder.R/Arm.R/ForeArm.R/Hand.R/HandIndex1.R/HandIndex2.R
+        weight: 1
+      - path: Rig/Spine/Spine1/Spine2/Shoulder.R/Arm.R/ForeArm.R/Hand.R/HandIndex1.R/HandIndex2.R/HandIndex3.R
+        weight: 1
+      - path: Rig/Spine/Spine1/Spine2/Shoulder.R/Arm.R/ForeArm.R/Hand.R/HandIndex1.R/HandIndex2.R/HandIndex3.R/HandIndex4.R
+        weight: 1
+      - path: Rig/Spine/Spine1/Spine2/Shoulder.R/Arm.R/ForeArm.R/Hand.R/HandIndex1.R/HandIndex2.R/HandIndex3.R/HandIndex4.R/HandIndex4.R_end
+        weight: 1
+      - path: Rig/Spine/Spine1/Spine2/Shoulder.R/Arm.R/ForeArm.R/Hand.R/HandIndex1.R/HandIndex2.R/HandIndex3.R/HandIndex4.R/HandIndex4.R_end/HandIndex4.R_end_end
+        weight: 1
+      - path: Rig/Spine/Spine1/Spine2/Shoulder.R/Arm.R/ForeArm.R/Hand.R/HandMiddle1.R
+        weight: 1
+      - path: Rig/Spine/Spine1/Spine2/Shoulder.R/Arm.R/ForeArm.R/Hand.R/HandMiddle1.R/HandMiddle2.R
+        weight: 1
+      - path: Rig/Spine/Spine1/Spine2/Shoulder.R/Arm.R/ForeArm.R/Hand.R/HandMiddle1.R/HandMiddle2.R/HandMiddle3.R
+        weight: 1
+      - path: Rig/Spine/Spine1/Spine2/Shoulder.R/Arm.R/ForeArm.R/Hand.R/HandMiddle1.R/HandMiddle2.R/HandMiddle3.R/HandMiddle4.R
+        weight: 1
+      - path: Rig/Spine/Spine1/Spine2/Shoulder.R/Arm.R/ForeArm.R/Hand.R/HandMiddle1.R/HandMiddle2.R/HandMiddle3.R/HandMiddle4.R/HandMiddle4.R_end
+        weight: 1
+      - path: Rig/Spine/Spine1/Spine2/Shoulder.R/Arm.R/ForeArm.R/Hand.R/HandMiddle1.R/HandMiddle2.R/HandMiddle3.R/HandMiddle4.R/HandMiddle4.R_end/HandMiddle4.R_end_end
+        weight: 1
+      - path: Rig/Spine/Spine1/Spine2/Shoulder.R/Arm.R/ForeArm.R/Hand.R/HandPinky1.R
+        weight: 1
+      - path: Rig/Spine/Spine1/Spine2/Shoulder.R/Arm.R/ForeArm.R/Hand.R/HandPinky1.R/HandPinky2.R
+        weight: 1
+      - path: Rig/Spine/Spine1/Spine2/Shoulder.R/Arm.R/ForeArm.R/Hand.R/HandPinky1.R/HandPinky2.R/HandPinky3.R
+        weight: 1
+      - path: Rig/Spine/Spine1/Spine2/Shoulder.R/Arm.R/ForeArm.R/Hand.R/HandPinky1.R/HandPinky2.R/HandPinky3.R/HandPinky4.R
+        weight: 1
+      - path: Rig/Spine/Spine1/Spine2/Shoulder.R/Arm.R/ForeArm.R/Hand.R/HandPinky1.R/HandPinky2.R/HandPinky3.R/HandPinky4.R/HandPinky4.R_end
+        weight: 1
+      - path: Rig/Spine/Spine1/Spine2/Shoulder.R/Arm.R/ForeArm.R/Hand.R/HandPinky1.R/HandPinky2.R/HandPinky3.R/HandPinky4.R/HandPinky4.R_end/HandPinky4.R_end_end
+        weight: 1
+      - path: Rig/Spine/Spine1/Spine2/Shoulder.R/Arm.R/ForeArm.R/Hand.R/HandRing1.R
+        weight: 1
+      - path: Rig/Spine/Spine1/Spine2/Shoulder.R/Arm.R/ForeArm.R/Hand.R/HandRing1.R/HandRing2.R
+        weight: 1
+      - path: Rig/Spine/Spine1/Spine2/Shoulder.R/Arm.R/ForeArm.R/Hand.R/HandRing1.R/HandRing2.R/HandRing3.R
+        weight: 1
+      - path: Rig/Spine/Spine1/Spine2/Shoulder.R/Arm.R/ForeArm.R/Hand.R/HandRing1.R/HandRing2.R/HandRing3.R/HandRing4.R
+        weight: 1
+      - path: Rig/Spine/Spine1/Spine2/Shoulder.R/Arm.R/ForeArm.R/Hand.R/HandRing1.R/HandRing2.R/HandRing3.R/HandRing4.R/HandRing4.R_end
+        weight: 1
+      - path: Rig/Spine/Spine1/Spine2/Shoulder.R/Arm.R/ForeArm.R/Hand.R/HandRing1.R/HandRing2.R/HandRing3.R/HandRing4.R/HandRing4.R_end/HandRing4.R_end_end
+        weight: 1
+      - path: Rig/Spine/Spine1/Spine2/Shoulder.R/Arm.R/ForeArm.R/Hand.R/HandThumb1.R
+        weight: 1
+      - path: Rig/Spine/Spine1/Spine2/Shoulder.R/Arm.R/ForeArm.R/Hand.R/HandThumb1.R/HandThumb2.R
+        weight: 1
+      - path: Rig/Spine/Spine1/Spine2/Shoulder.R/Arm.R/ForeArm.R/Hand.R/HandThumb1.R/HandThumb2.R/HandThumb3.R
+        weight: 1
+      - path: Rig/Spine/Spine1/Spine2/Shoulder.R/Arm.R/ForeArm.R/Hand.R/HandThumb1.R/HandThumb2.R/HandThumb3.R/HandThumb4.R
+        weight: 1
+      - path: Rig/Spine/Spine1/Spine2/Shoulder.R/Arm.R/ForeArm.R/Hand.R/HandThumb1.R/HandThumb2.R/HandThumb3.R/HandThumb4.R/HandThumb4.R_end
+        weight: 1
+      - path: Rig/Spine/Spine1/Spine2/Shoulder.R/Arm.R/ForeArm.R/Hand.R/HandThumb1.R/HandThumb2.R/HandThumb3.R/HandThumb4.R/HandThumb4.R_end/HandThumb4.R_end_end
+        weight: 1
+      - path: Rig/UpLeg.L
+        weight: 1
+      - path: Rig/UpLeg.L/Leg.L
+        weight: 1
+      - path: Rig/UpLeg.L/Leg.L/Foot.L
+        weight: 1
+      - path: Rig/UpLeg.L/Leg.L/Foot.L/ToeBase.L
+        weight: 1
+      - path: Rig/UpLeg.L/Leg.L/Foot.L/ToeBase.L/Toe_End.L
+        weight: 1
+      - path: Rig/UpLeg.L/Leg.L/Foot.L/ToeBase.L/Toe_End.L/Toe_End.L_end
+        weight: 1
+      - path: Rig/UpLeg.L/Leg.L/Foot.L/ToeBase.L/Toe_End.L/Toe_End.L_end/Toe_End.L_end_end
+        weight: 1
+      - path: Rig/UpLeg.R
+        weight: 1
+      - path: Rig/UpLeg.R/Leg.R
+        weight: 1
+      - path: Rig/UpLeg.R/Leg.R/Foot.R
+        weight: 1
+      - path: Rig/UpLeg.R/Leg.R/Foot.R/ToeBase.R
+        weight: 1
+      - path: Rig/UpLeg.R/Leg.R/Foot.R/ToeBase.R/Toe_End.R
+        weight: 1
+      - path: Rig/UpLeg.R/Leg.R/Foot.R/ToeBase.R/Toe_End.R/Toe_End.R_end
+        weight: 1
+      - path: Rig/UpLeg.R/Leg.R/Foot.R/ToeBase.R/Toe_End.R/Toe_End.R_end/Toe_End.R_end_end
+        weight: 1
+      maskType: 0
+      maskSource: {instanceID: 0}
+      additiveReferencePoseFrame: 0
+    - serializedVersion: 16
+      name: Rig|Rig|Cover_Crouching
+      takeName: Rig|Rig|Cover_Crouching
+      internalID: -8794102117174433107
+      firstFrame: 0
+      lastFrame: 23
+      wrapMode: 0
+      orientationOffsetY: 0
+      level: 0
+      cycleOffset: 0
+      loop: 0
+      hasAdditiveReferencePose: 0
+      loopTime: 0
+      loopBlend: 0
+      loopBlendOrientation: 0
+      loopBlendPositionY: 0
+      loopBlendPositionXZ: 0
+      keepOriginalOrientation: 0
+      keepOriginalPositionY: 1
+      keepOriginalPositionXZ: 0
+      heightFromFeet: 0
+      mirror: 0
+      bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
+      curves: []
+      events: []
+      transformMask: []
+      maskType: 3
+      maskSource: {instanceID: 0}
+      additiveReferencePoseFrame: 0
+    - serializedVersion: 16
+      name: Rig|Rig|Crouching_Reload
+      takeName: Rig|Rig|Crouching_Reload
+      internalID: -1842325149694242359
+      firstFrame: 0
+      lastFrame: 24
+      wrapMode: 0
+      orientationOffsetY: 0
+      level: 0
+      cycleOffset: 0
+      loop: 0
+      hasAdditiveReferencePose: 0
+      loopTime: 0
+      loopBlend: 0
+      loopBlendOrientation: 0
+      loopBlendPositionY: 0
+      loopBlendPositionXZ: 0
+      keepOriginalOrientation: 0
+      keepOriginalPositionY: 1
+      keepOriginalPositionXZ: 0
+      heightFromFeet: 0
+      mirror: 0
+      bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
+      curves: []
+      events: []
+      transformMask: []
+      maskType: 3
+      maskSource: {instanceID: 0}
+      additiveReferencePoseFrame: 0
+    - serializedVersion: 16
+      name: Rig|Rig|Crouching_Shooting
+      takeName: Rig|Rig|Crouching_Shooting
+      internalID: 6271582843035399375
+      firstFrame: 0
+      lastFrame: 24
+      wrapMode: 0
+      orientationOffsetY: 0
+      level: 0
+      cycleOffset: 0
+      loop: 0
+      hasAdditiveReferencePose: 0
+      loopTime: 0
+      loopBlend: 0
+      loopBlendOrientation: 0
+      loopBlendPositionY: 0
+      loopBlendPositionXZ: 0
+      keepOriginalOrientation: 0
+      keepOriginalPositionY: 1
+      keepOriginalPositionXZ: 0
+      heightFromFeet: 0
+      mirror: 0
+      bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
+      curves: []
+      events: []
+      transformMask: []
+      maskType: 3
+      maskSource: {instanceID: 0}
+      additiveReferencePoseFrame: 0
+    - serializedVersion: 16
+      name: Rig|Rig|Idle
+      takeName: Rig|Rig|Idle
+      internalID: -2598669472189357961
+      firstFrame: 0
+      lastFrame: 24
+      wrapMode: 0
+      orientationOffsetY: 0
+      level: 0
+      cycleOffset: 0
+      loop: 0
+      hasAdditiveReferencePose: 0
+      loopTime: 0
+      loopBlend: 0
+      loopBlendOrientation: 0
+      loopBlendPositionY: 0
+      loopBlendPositionXZ: 0
+      keepOriginalOrientation: 0
+      keepOriginalPositionY: 1
+      keepOriginalPositionXZ: 0
+      heightFromFeet: 0
+      mirror: 0
+      bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
+      curves: []
+      events: []
+      transformMask: []
+      maskType: 3
+      maskSource: {instanceID: 0}
+      additiveReferencePoseFrame: 0
+    - serializedVersion: 16
+      name: Rig|Rig|Patrolling
+      takeName: Rig|Rig|Patrolling
+      internalID: 7130572160107014041
+      firstFrame: 0
+      lastFrame: 24
+      wrapMode: 0
+      orientationOffsetY: 0
+      level: 0
+      cycleOffset: 0
+      loop: 0
+      hasAdditiveReferencePose: 0
+      loopTime: 0
+      loopBlend: 0
+      loopBlendOrientation: 0
+      loopBlendPositionY: 0
+      loopBlendPositionXZ: 0
+      keepOriginalOrientation: 0
+      keepOriginalPositionY: 1
+      keepOriginalPositionXZ: 0
+      heightFromFeet: 0
+      mirror: 0
+      bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
+      curves: []
+      events: []
+      transformMask: []
+      maskType: 3
+      maskSource: {instanceID: 0}
+      additiveReferencePoseFrame: 0
+    - serializedVersion: 16
+      name: Rig|Rig|Running
+      takeName: Rig|Rig|Running
+      internalID: -3204653510903664716
+      firstFrame: 0
+      lastFrame: 24
+      wrapMode: 0
+      orientationOffsetY: 0
+      level: 0
+      cycleOffset: 0
+      loop: 0
+      hasAdditiveReferencePose: 0
+      loopTime: 0
+      loopBlend: 0
+      loopBlendOrientation: 0
+      loopBlendPositionY: 0
+      loopBlendPositionXZ: 0
+      keepOriginalOrientation: 0
+      keepOriginalPositionY: 1
+      keepOriginalPositionXZ: 0
+      heightFromFeet: 0
+      mirror: 0
+      bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
+      curves: []
+      events: []
+      transformMask: []
+      maskType: 3
+      maskSource: {instanceID: 0}
+      additiveReferencePoseFrame: 0
+    - serializedVersion: 16
+      name: Rig|Rig|Shooting
+      takeName: Rig|Rig|Shooting
+      internalID: -3327851496280947087
+      firstFrame: 0
+      lastFrame: 24
+      wrapMode: 0
+      orientationOffsetY: 0
+      level: 0
+      cycleOffset: 0
+      loop: 0
+      hasAdditiveReferencePose: 0
+      loopTime: 0
+      loopBlend: 0
+      loopBlendOrientation: 0
+      loopBlendPositionY: 0
+      loopBlendPositionXZ: 0
+      keepOriginalOrientation: 0
+      keepOriginalPositionY: 1
+      keepOriginalPositionXZ: 0
+      heightFromFeet: 0
+      mirror: 0
+      bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
+      curves: []
+      events: []
+      transformMask: []
+      maskType: 3
+      maskSource: {instanceID: 0}
+      additiveReferencePoseFrame: 0
+    - serializedVersion: 16
+      name: Rig|Rig|Standing_Reload
+      takeName: Rig|Rig|Standing_Reload
+      internalID: -4994492060766798633
+      firstFrame: 0
+      lastFrame: 24
+      wrapMode: 0
+      orientationOffsetY: 0
+      level: 0
+      cycleOffset: 0
+      loop: 0
+      hasAdditiveReferencePose: 0
+      loopTime: 0
+      loopBlend: 0
+      loopBlendOrientation: 0
+      loopBlendPositionY: 0
+      loopBlendPositionXZ: 0
+      keepOriginalOrientation: 0
+      keepOriginalPositionY: 1
+      keepOriginalPositionXZ: 0
+      heightFromFeet: 0
+      mirror: 0
+      bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
+      curves: []
+      events: []
+      transformMask: []
+      maskType: 3
+      maskSource: {instanceID: 0}
+      additiveReferencePoseFrame: 0
     isReadable: 0
   meshes:
     lODScreenPercentages: []

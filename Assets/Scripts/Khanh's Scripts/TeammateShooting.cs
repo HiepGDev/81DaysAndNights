@@ -152,19 +152,25 @@ public class TeammateShooting : MonoBehaviour
         if (audioSource != null && shootSound != null)
             audioSource.PlayOneShot(shootSound, shootVolume);
 
-        if (muzzleFlashPrefab != null)
+        if (muzzleFlashPrefab != null && firePoint != null)
         {
-            GameObject muzzleFlash = Instantiate(muzzleFlashPrefab, firePoint.position, firePoint.rotation);
-            muzzleFlash.transform.SetParent(firePoint);
-            Destroy(muzzleFlash, 0.05f);
+            GameObject flash = Instantiate(muzzleFlashPrefab, firePoint.position, firePoint.rotation);
+
+            ParticleSystem ps = flash.GetComponent<ParticleSystem>();
+            if (ps != null) ps.Play();
+            else
+            {
+                foreach (var childPs in flash.GetComponentsInChildren<ParticleSystem>())
+                    childPs.Play();
+            }
+
+            Destroy(flash, 1.0f);
         }
 
-        // Tính toán Bloom (Độ giật nảy ngẫu nhiên)
         float totalSpread = minSpread + currentBloom;
         float spreadX = Random.Range(-totalSpread, totalSpread);
         float spreadY = Random.Range(-totalSpread, totalSpread);
 
-        // Áp dụng độ tản mát đạn vào hướng nòng súng
         Vector3 baseDir = firePoint.forward;
         Quaternion bloomRot = Quaternion.Euler(spreadY * 20f, spreadX * 20f, 0);
         Vector3 shootDir = (Quaternion.LookRotation(baseDir) * bloomRot) * Vector3.forward;
