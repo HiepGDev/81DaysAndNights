@@ -41,6 +41,7 @@ public class EnemyShooting : MonoBehaviour
     private float stopShootingTimer = 0f;
 
     [HideInInspector] public bool allowFiring = true;
+    [HideInInspector] public int totalDamageDealt = 0;
 
     public bool IsOutOfAmmo => currentAmmo <= 0;
     public bool IsReloading => isReloading;
@@ -247,13 +248,25 @@ public class EnemyShooting : MonoBehaviour
         {
             endPoint = hit.point;
             var player = hit.collider.GetComponentInParent<PlayerHealth>();
-            if (player != null) player.TakeDamage(damagePerShot);
+            if (player != null)
+            {
+                player.TakeDamage(damagePerShot);
+                totalDamageDealt += damagePerShot;
+            }
             
             var enemy = hit.collider.GetComponentInParent<EnemyHealth>();
-            if (enemy != null && enemy.gameObject != gameObject) enemy.TakeDamage(damagePerShot);
+            if (enemy != null && enemy.gameObject != gameObject)
+            {
+                enemy.TakeDamage(damagePerShot);
+                totalDamageDealt += damagePerShot;
+            }
 
             var teammate = hit.collider.GetComponentInParent<TeammateHealth>();
-            if (teammate != null && teammate.gameObject != gameObject) teammate.TakeDamage(damagePerShot);
+            if (teammate != null && teammate.gameObject != gameObject)
+            {
+                teammate.TakeDamage(damagePerShot);
+                totalDamageDealt += damagePerShot;
+            }
 
             if (impactVfxPrefab != null)
             {

@@ -4,6 +4,9 @@ public class EnemyHealth : MonoBehaviour
 {
     [SerializeField] private int health = 100;
     [SerializeField] private EnemySO enemyData;
+
+    public int CurrentHealth => health;
+    public int MaxHealth => (enemyData != null) ? enemyData.maxHealth : 100;
     
     // Track all dead bodies across the whole game
     private static System.Collections.Generic.List<GameObject> ragdollPool = new System.Collections.Generic.List<GameObject>();
