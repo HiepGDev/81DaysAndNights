@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8fa208e34f0a2594eb82083c1d94985b, type: 3}
   m_Name: TeammateSO
   m_EditorClassIdentifier: Assembly-CSharp::TeammateSO
-  maxHealth: 100
+  maxHealth: 60
   detectionRadius: 24
   rotationSpeed: 8
   obstacleLayer:
