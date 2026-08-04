@@ -932,13 +932,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AISpawner
   aiPrefabs:
-  - {fileID: 2069129159604702209, guid: 0ae54a5f061143540a2393c93f78d894, type: 3}
-  maxAliveAI: 10
-  spawnInterval: 3
+  - {fileID: 3462982725432306100, guid: 8a4319ac8fcdaf64e820bc078d5f16d2, type: 3}
+  maxAliveAI: 1
+  spawnInterval: 1
   spawnPoints:
   - {fileID: 138585822}
-  - {fileID: 526770853}
-  - {fileID: 565364134}
 --- !u!4 &34137094
 Transform:
   m_ObjectHideFlags: 0
@@ -961,7 +959,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 34137092}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0a709ed34bd29714f900b7e4e6b4e962, type: 3}
   m_Name: 
@@ -23181,7 +23179,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1041379899
 Transform:
   m_ObjectHideFlags: 0
@@ -33750,6 +33748,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DefendPoint
   isOccupied: 0
+  occupiedBy: {fileID: 0}
 --- !u!1 &1588918349
 GameObject:
   m_ObjectHideFlags: 0
@@ -37079,6 +37078,52 @@ Transform:
   m_Children: []
   m_Father: {fileID: 184701523}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1737291325
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1737291326}
+  - component: {fileID: 1737291327}
+  m_Layer: 0
+  m_Name: DefendPoints
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1737291326
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1737291325}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 30.54, y: -0.02, z: -32.54}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1737291327
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1737291325}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d423fdf4cbf484d44a58f0a3d450c529, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DefendPoint
+  isOccupied: 0
+  occupiedBy: {fileID: 0}
 --- !u!1 &1737772652
 GameObject:
   m_ObjectHideFlags: 0
@@ -43997,7 +44042,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &2099738872
 Transform:
   m_ObjectHideFlags: 0
@@ -56420,6 +56465,7 @@ MonoBehaviour:
   minEngagementDist: 15
   rangeSpread: 15
   destinationSpread: 15
+  aimingOffsetAngle: 0
 --- !u!1 &2521123262070968122
 GameObject:
   m_ObjectHideFlags: 0
@@ -60687,7 +60733,7 @@ MonoBehaviour:
   walkSize: 30
   sprintSize: 60
   lerpSpeed: 15
-  movement: {fileID: 7184097533511711329}
+  sprintSpeedThreshold: 6
   gun: {fileID: 3658133990270472615}
   controller: {fileID: 1205363841563161478}
 --- !u!23 &4040721107190364135
@@ -91134,3 +91180,4 @@ SceneRoots:
   - {fileID: 5289352835582318033}
   - {fileID: 796019058}
   - {fileID: 8414772034453913706}
+  - {fileID: 1737291326}
