@@ -368,9 +368,21 @@ public class EnemyBehaviorAgent : MonoBehaviour
             }
             else
             {
-                if (!agent.isStopped) StopAgent();
-                FaceTarget();
-                IsReadyToShoot = true;
+                // In range, but check if we have a clear line of sight to shoot
+                if (HasLineOfSight(target))
+                {
+                    if (!agent.isStopped) StopAgent();
+                    FaceTarget();
+                    IsReadyToShoot = true;
+                }
+                else
+                {
+                    // Blocked by a wall: continue chasing directly to the target's position to see them
+                    if (agent.isStopped) agent.isStopped = false;
+                    agent.SetDestination(target.position);
+                    FaceTarget();
+                    IsReadyToShoot = false;
+                }
             }
             return;
         }
@@ -389,6 +401,21 @@ public class EnemyBehaviorAgent : MonoBehaviour
             }
 
             if (!agent.isStopped) StopAgent();
+            return;
+        }
+
+        if (currentMode == EnemyMode.Ambush)
+        {
+            float distToSpawn = Vector3.Distance(transform.position, spawnPoint);
+            if (distToSpawn > agent.stoppingDistance + 0.2f)
+            {
+                if (agent.isStopped) agent.isStopped = false;
+                agent.SetDestination(spawnPoint);
+            }
+            else
+            {
+                if (!agent.isStopped) StopAgent();
+            }
             return;
         }
 
@@ -573,6 +600,25 @@ public class EnemyBehaviorAgent : MonoBehaviour
             agent.ResetPath();
             agent.velocity = Vector3.zero;
         }
+    }
+
+    private bool HasLineOfSight(Transform target)
+    {
+        if (target == null) return false;
+        Vector3 origin = transform.position + Vector3.up * 1.5f; // Eye level of enemy
+        Vector3 targetCenter = target.position + Vector3.up * 1.0f; // Target center
+        Vector3 direction = targetCenter - origin;
+        float distance = direction.magnitude;
+
+        // Raycast to check for obstacles, ignoring trigger colliders
+        if (Physics.Raycast(origin, direction.normalized, out RaycastHit hit, distance, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
+        {
+            if (hit.transform.root != target.root && hit.transform.root != transform.root)
+            {
+                return false; // Blocked by physical obstacle
+            }
+        }
+        return true; // Clear line of sight
     }
 
     private Transform GetClosestTarget()
