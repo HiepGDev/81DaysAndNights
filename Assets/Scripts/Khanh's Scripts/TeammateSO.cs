@@ -10,7 +10,7 @@ public class TeammateSO : ScriptableObject
     public float detectionRadius = 15.0f;
     public float rotationSpeed = 8f;
     [Header("Line of Sight (Vật cản)")]
-    public LayerMask obstacleLayer;
+    //public LayerMask obstacleLayer;
     //public string[] obstacleTags = { "Wall", "Obstacle" };
     public Transform idleLookTarget;
 
