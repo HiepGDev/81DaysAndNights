@@ -140,7 +140,7 @@ namespace PhuScene
         {
             if (isSpawned)
             {
-                var players = FindObjectsByType<SurvivalPlayerHealth>(FindObjectsSortMode.None);
+                var players = FindObjectsByType<PlayerHealth>(FindObjectsSortMode.None);
                 float minDistance = float.MaxValue;
                 Transform nearestPlayer = null;
                 foreach (var p in players)
@@ -210,7 +210,7 @@ namespace PhuScene
         {
             if (targetPlayer == null) return;
 
-            var netHealth = targetPlayer.GetComponent<SurvivalPlayerHealth>();
+            var netHealth = targetPlayer.GetComponent<PlayerHealth>();
             if (netHealth != null)
             {
                 Debug.Log($"[MockEnemy] {gameObject.name} attacks networked player for {damage} damage!");

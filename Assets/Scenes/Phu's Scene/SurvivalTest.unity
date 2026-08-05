@@ -212,6 +212,11 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &2098291 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 9112743097798552508, guid: f6ed0df78f073c74dbf9afc32f130468, type: 3}
+  m_PrefabInstance: {fileID: 1563864957}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &50264759
 GameObject:
   m_ObjectHideFlags: 0
@@ -722,73 +727,6 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 7820579933318383363, guid: 6a7c0da316f1c9c4ba51678e3d10911d, type: 3}
   m_PrefabInstance: {fileID: 1116511384}
   m_PrefabAsset: {fileID: 0}
---- !u!4 &1230339631 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 6739673578214737814, guid: f6ed0df78f073c74dbf9afc32f130468, type: 3}
-  m_PrefabInstance: {fileID: 1563864957}
-  m_PrefabAsset: {fileID: 0}
---- !u!1 &1262743720 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 5916145969810567567, guid: f6ed0df78f073c74dbf9afc32f130468, type: 3}
-  m_PrefabInstance: {fileID: 1563864957}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &1262743732
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1262743720}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bf732b63f4fc9d648b1d4f8a08d0143b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PlayerHealth
-  maxHealth: 100
-  currentHealth: 0
-  regenRate: 10
-  regenDelay: 2
-  healthBar: {fileID: 653631795}
-  gameOverCanvas: {fileID: 1116511385}
-  hitsfx: {fileID: 8300000, guid: aa272b6788c6d4e42995a283d9511276, type: 3}
-  pitchVariation: 0.1
-  deathSound: {fileID: 8300000, guid: 084d54b4212f0e14e82cd39a78f98725, type: 3}
-  damageFlashImage: {fileID: 2066910864}
-  damageFlashDuration: 0.55
-  maxFlashAlpha: 0.15
-  injuredOverlay: {fileID: 277455461}
-  injuredThreshold: 40
-  maxInjuredAlpha: 0.35
-  effectTransitionSpeed: 1.5
-  weaponCameraObject: {fileID: 0}
---- !u!114 &1262743733
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1262743720}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9cb858c4807e1684f8239b8d6e1e6f8e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PlayerMovement
-  animator: {fileID: 0}
-  playerCamera: {fileID: 1230339631}
-  walkSpeed: 5
-  sprintSpeed: 7
-  jumpHeight: 1.5
-  gravity: -45
-  lookSensitivity: 11
-  jumpBufferTime: 0.2
-  isSprinting: 0
-  canSprint: 1
-  canMove: 1
-  crouchHeight: 1.4
-  standingHeight: 2
-  crouchSpeed: 2.5
-  crouchTransitionSpeed: 8
-  isCrouching: 0
 --- !u!1 &1347247938
 GameObject:
   m_ObjectHideFlags: 0
@@ -1078,26 +1016,30 @@ PrefabInstance:
       propertyPath: scopeOverlayUI
       value: 
       objectReference: {fileID: 1079942607}
-    - target: {fileID: 828329808282041533, guid: f6ed0df78f073c74dbf9afc32f130468, type: 3}
-      propertyPath: m_Name
-      value: MosinNagant
-      objectReference: {fileID: 0}
-    - target: {fileID: 3524481189943586878, guid: f6ed0df78f073c74dbf9afc32f130468, type: 3}
-      propertyPath: m_Name
-      value: AK47
-      objectReference: {fileID: 0}
     - target: {fileID: 3600196546041164477, guid: f6ed0df78f073c74dbf9afc32f130468, type: 3}
       propertyPath: ammoText
       value: 
       objectReference: {fileID: 831171331}
-    - target: {fileID: 3600196546041164477, guid: f6ed0df78f073c74dbf9afc32f130468, type: 3}
-      propertyPath: crosshair
+    - target: {fileID: 3705702580586261421, guid: f6ed0df78f073c74dbf9afc32f130468, type: 3}
+      propertyPath: healthBar
       value: 
-      objectReference: {fileID: 321061161}
-    - target: {fileID: 3600196546041164477, guid: f6ed0df78f073c74dbf9afc32f130468, type: 3}
-      propertyPath: switchCooldown
-      value: 0.1
-      objectReference: {fileID: 0}
+      objectReference: {fileID: 653631795}
+    - target: {fileID: 3705702580586261421, guid: f6ed0df78f073c74dbf9afc32f130468, type: 3}
+      propertyPath: gameOverCanvas
+      value: 
+      objectReference: {fileID: 1116511385}
+    - target: {fileID: 3705702580586261421, guid: f6ed0df78f073c74dbf9afc32f130468, type: 3}
+      propertyPath: injuredOverlay
+      value: 
+      objectReference: {fileID: 277455461}
+    - target: {fileID: 3705702580586261421, guid: f6ed0df78f073c74dbf9afc32f130468, type: 3}
+      propertyPath: damageFlashImage
+      value: 
+      objectReference: {fileID: 2066910864}
+    - target: {fileID: 3705702580586261421, guid: f6ed0df78f073c74dbf9afc32f130468, type: 3}
+      propertyPath: weaponCameraObject
+      value: 
+      objectReference: {fileID: 2098291}
     - target: {fileID: 5916145969810567567, guid: f6ed0df78f073c74dbf9afc32f130468, type: 3}
       propertyPath: m_Name
       value: Survival_Player
@@ -1110,26 +1052,6 @@ PrefabInstance:
       propertyPath: crosshair
       value: 
       objectReference: {fileID: 321061161}
-    - target: {fileID: 7151689680903248314, guid: f6ed0df78f073c74dbf9afc32f130468, type: 3}
-      propertyPath: m_Name
-      value: M1911
-      objectReference: {fileID: 0}
-    - target: {fileID: 7333842697424536873, guid: f6ed0df78f073c74dbf9afc32f130468, type: 3}
-      propertyPath: healthBar
-      value: 
-      objectReference: {fileID: 653631795}
-    - target: {fileID: 7333842697424536873, guid: f6ed0df78f073c74dbf9afc32f130468, type: 3}
-      propertyPath: gameOverCanvas
-      value: 
-      objectReference: {fileID: 1116511385}
-    - target: {fileID: 7333842697424536873, guid: f6ed0df78f073c74dbf9afc32f130468, type: 3}
-      propertyPath: injuredOverlay
-      value: 
-      objectReference: {fileID: 277455461}
-    - target: {fileID: 7333842697424536873, guid: f6ed0df78f073c74dbf9afc32f130468, type: 3}
-      propertyPath: damageFlashImage
-      value: 
-      objectReference: {fileID: 2066910864}
     - target: {fileID: 7890280526517747140, guid: f6ed0df78f073c74dbf9afc32f130468, type: 3}
       propertyPath: ammoText
       value: 
@@ -1138,18 +1060,10 @@ PrefabInstance:
       propertyPath: crosshair
       value: 
       objectReference: {fileID: 321061161}
-    m_RemovedComponents:
-    - {fileID: 3356427865825249160, guid: f6ed0df78f073c74dbf9afc32f130468, type: 3}
-    - {fileID: 7333842697424536873, guid: f6ed0df78f073c74dbf9afc32f130468, type: 3}
+    m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 5916145969810567567, guid: f6ed0df78f073c74dbf9afc32f130468, type: 3}
-      insertIndex: 3
-      addedObject: {fileID: 1262743733}
-    - targetCorrespondingSourceObject: {fileID: 5916145969810567567, guid: f6ed0df78f073c74dbf9afc32f130468, type: 3}
-      insertIndex: 4
-      addedObject: {fileID: 1262743732}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: f6ed0df78f073c74dbf9afc32f130468, type: 3}
 --- !u!1 &1656033750
 GameObject:
@@ -2007,6 +1921,22 @@ PrefabInstance:
       propertyPath: enemyRules.Array.data[0].enemyPrefab
       value: 
       objectReference: {fileID: 4332525836642206128, guid: 482b25f8137bb3a4a87909c289d99f23, type: 3}
+    - target: {fileID: 9205480752589030539, guid: 38f12c28eef824149901662790ab910c, type: 3}
+      propertyPath: enemyRules.Array.data[0].spawnPoints.Array.size
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 9205480752589030539, guid: 38f12c28eef824149901662790ab910c, type: 3}
+      propertyPath: 'enemyRules.Array.data[0].spawnPoints.Array.data[0]'
+      value: 
+      objectReference: {fileID: 800201}
+    - target: {fileID: 9205480752589030539, guid: 38f12c28eef824149901662790ab910c, type: 3}
+      propertyPath: 'enemyRules.Array.data[0].spawnPoints.Array.data[1]'
+      value: 
+      objectReference: {fileID: 800301}
+    - target: {fileID: 9205480752589030539, guid: 38f12c28eef824149901662790ab910c, type: 3}
+      propertyPath: 'enemyRules.Array.data[0].spawnPoints.Array.data[2]'
+      value: 
+      objectReference: {fileID: 800401}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

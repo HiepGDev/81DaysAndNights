@@ -393,13 +393,13 @@ namespace PhuScene
                 activePlayerGun = targetChild.GetComponent<PlayerGun>();
 
                 // Sync weapon animator with movement script to restore walk/run sway
-                SurvivalPlayerMovement survivalMovement = GetComponentInParent<SurvivalPlayerMovement>();
-                if (survivalMovement != null)
+                PlayerMovement playerMovement = GetComponentInParent<PlayerMovement>();
+                if (playerMovement != null)
                 {
                     Animator newAnim = targetChild.GetComponentInChildren<Animator>(true);
                     if (newAnim != null)
                     {
-                        survivalMovement.SetAnimator(newAnim);
+                        playerMovement.SetAnimator(newAnim);
                     }
                 }
 

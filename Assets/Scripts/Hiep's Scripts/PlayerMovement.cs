@@ -72,6 +72,7 @@ public class PlayerMovement : MonoBehaviour
 
     void Update()
     {
+        HandleMouseLock();
         HandleMove();
         HandleLook();
         HandleJump();
@@ -88,6 +89,25 @@ public class PlayerMovement : MonoBehaviour
         Cursor.visible = false;
         Cursor.lockState = CursorLockMode.Locked;
     }
+
+    public void HandleMouseLock()
+    {
+        // Press Alt to toggle mouse lock state
+        if (Input.GetKeyDown(KeyCode.LeftAlt) || Input.GetKeyDown(KeyCode.RightAlt))
+        {
+            if (Cursor.lockState == CursorLockMode.Locked)
+            {
+                Cursor.lockState = CursorLockMode.None;
+                Cursor.visible = true;
+            }
+            else
+            {
+                Cursor.lockState = CursorLockMode.Locked;
+                Cursor.visible = false;
+            }
+        }
+    }
+
     void HandleMove()
     {
         // get vector from input 
@@ -134,6 +154,9 @@ public class PlayerMovement : MonoBehaviour
     
     void HandleLook()
     {
+        if (Cursor.lockState == CursorLockMode.None)
+            return;
+
         // Read the mouse delta
         Vector2 lookValue = lookAction.ReadValue<Vector2>();
 

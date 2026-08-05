@@ -23,6 +23,9 @@ public struct EnemySpawnRule
 
     [Tooltip("Relative weight of spawning this enemy type when active.")]
     [Range(0f, 100f)] public float spawnChanceWeight;
+
+    [Tooltip("Spawn points dedicated for spawning this specific enemy type.")]
+    public Transform[] spawnPoints;
 }
 
 [System.Serializable]
@@ -173,7 +176,6 @@ public class WaveManager : MonoBehaviour
 
     [Header("Enemy Configurations")]
     [SerializeField] private List<EnemySpawnRule> enemyRules = new List<EnemySpawnRule>();
-    [SerializeField] private Transform[] spawnPoints;      // Where to spawn enemies
 
     [Header("Ally Configurations")]
     [SerializeField] private Transform[] allySpawnPoints;
@@ -447,29 +449,47 @@ public class WaveManager : MonoBehaviour
     {
         Vector3 spawnPos = Vector3.zero;
         Quaternion spawnRot = Quaternion.identity;
+        GameObject spawnedObj = null;
 
-        if (spawnPoints != null && spawnPoints.Length > 0)
+        if (TryChooseEnemyRuleForWave(currentWave, out EnemySpawnRule rule))
         {
-            Transform sp = spawnPoints[UnityEngine.Random.Range(0, spawnPoints.Length)];
-            spawnPos = sp.position;
-            spawnRot = sp.rotation;
+            if (rule.spawnPoints != null && rule.spawnPoints.Length > 0)
+            {
+                List<Transform> validPoints = new List<Transform>();
+                foreach (var sp in rule.spawnPoints)
+                {
+                    if (sp != null) validPoints.Add(sp);
+                }
+
+                if (validPoints.Count > 0)
+                {
+                    Transform chosenPoint = validPoints[UnityEngine.Random.Range(0, validPoints.Count)];
+                    spawnPos = chosenPoint.position;
+                    spawnRot = chosenPoint.rotation;
+                }
+                else
+                {
+                    spawnPos = new Vector3(UnityEngine.Random.Range(-10f, 10f), 0f, UnityEngine.Random.Range(-10f, 10f));
+                }
+            }
+            else
+            {
+                spawnPos = new Vector3(UnityEngine.Random.Range(-10f, 10f), 0f, UnityEngine.Random.Range(-10f, 10f));
+            }
+
+            if (rule.enemyPrefab != null)
+            {
+                spawnedObj = Instantiate(rule.enemyPrefab, spawnPos, spawnRot);
+                spawnedObj.SetActive(true);
+            }
+            else
+            {
+                spawnedObj = CreateProceduralMockEnemy(spawnPos, spawnRot);
+            }
         }
         else
         {
             spawnPos = new Vector3(UnityEngine.Random.Range(-10f, 10f), 0f, UnityEngine.Random.Range(-10f, 10f));
-        }
-
-        GameObject spawnedObj = null;
-
-        GameObject prefab = ChooseEnemyPrefabForWave(currentWave);
-
-        if (prefab != null)
-        {
-            spawnedObj = Instantiate(prefab, spawnPos, spawnRot);
-            spawnedObj.SetActive(true);
-        }
-        else
-        {
             spawnedObj = CreateProceduralMockEnemy(spawnPos, spawnRot);
         }
 
@@ -630,8 +650,8 @@ public class WaveManager : MonoBehaviour
 
     private bool IsPlayerDead()
     {
-        // First check for SurvivalPlayerHealth (since Survival_Player uses it)
-        var netPlayers = FindObjectsByType<SurvivalPlayerHealth>(FindObjectsSortMode.None);
+        // First check for PlayerHealth (since Survival_Player uses it)
+        var netPlayers = FindObjectsByType<PlayerHealth>(FindObjectsSortMode.None);
         if (netPlayers.Length > 0)
         {
             foreach (var p in netPlayers)
@@ -767,14 +787,15 @@ public class WaveManager : MonoBehaviour
         }
     }
 
-    private GameObject ChooseEnemyPrefabForWave(int wave)
+    private bool TryChooseEnemyRuleForWave(int wave, out EnemySpawnRule selectedRule)
     {
+        selectedRule = default;
         List<EnemySpawnRule> activeRules = new List<EnemySpawnRule>();
         float totalWeight = 0f;
 
         foreach (var rule in enemyRules)
         {
-            if (rule.enemyPrefab != null && wave >= rule.startWave && rule.spawnChanceWeight > 0f)
+            if (wave >= rule.startWave && rule.spawnChanceWeight > 0f)
             {
                 activeRules.Add(rule);
                 totalWeight += rule.spawnChanceWeight;
@@ -783,7 +804,7 @@ public class WaveManager : MonoBehaviour
 
         if (activeRules.Count == 0)
         {
-            return null;
+            return false;
         }
 
         // Weighted random selection
@@ -795,11 +816,13 @@ public class WaveManager : MonoBehaviour
             currentSum += rule.spawnChanceWeight;
             if (randomValue <= currentSum)
             {
-                return rule.enemyPrefab;
+                selectedRule = rule;
+                return true;
             }
         }
 
-        return activeRules[0].enemyPrefab;
+        selectedRule = activeRules[0];
+        return true;
     }
 
     public void SpawnAlly(GameObject allyPrefab)
@@ -824,7 +847,7 @@ public class WaveManager : MonoBehaviour
 
         if (!spawnFound)
         {
-            var player = FindFirstObjectByType<SurvivalPlayerHealth>();
+            var player = FindFirstObjectByType<PlayerHealth>();
             if (player != null)
             {
                 spawnPos = player.transform.position + player.transform.forward * 2f + Vector3.up * 0.5f;
