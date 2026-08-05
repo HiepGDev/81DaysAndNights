@@ -264,8 +264,14 @@ public class EnemyShooting : MonoBehaviour
             var teammate = hit.collider.GetComponentInParent<TeammateHealth>();
             if (teammate != null && teammate.gameObject != gameObject)
             {
-                teammate.TakeDamage(damagePerShot);
-                totalDamageDealt += damagePerShot;
+                int finalDamage = damagePerShot;
+                var bodyPart = hit.collider.GetComponent<TeammateBodyPart>();
+                if (bodyPart != null)
+                {
+                    finalDamage = Mathf.RoundToInt(damagePerShot * bodyPart.damageMultiplier);
+                }
+                teammate.TakeDamage(finalDamage);
+                totalDamageDealt += finalDamage;
             }
 
             if (impactVfxPrefab != null)
