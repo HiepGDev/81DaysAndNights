@@ -2,6 +2,7 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.Playables;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public class CutsceneManager : MonoBehaviour
 {
@@ -10,6 +11,11 @@ public class CutsceneManager : MonoBehaviour
     [Tooltip("Check this if this is the opening level cutscene. Uncheck for mid-level cutscenes.")]
     [SerializeField] private bool playOnStart = false;
     [SerializeField] private bool seamlessMidLevel = true;
+    
+    [Header("End Game Settings")]
+    [Tooltip("Check this if this cutscene ends the level/game.")]
+    [SerializeField] private bool isFinalCutscene = false;
+    [SerializeField] private string sceneToLoadAfter = "Main Menu";
 
     [Header("Post-Cutscene Placement")]
     [Tooltip("Create an Empty GameObject where player stand and face when cutscene end")]
@@ -147,7 +153,14 @@ public class CutsceneManager : MonoBehaviour
         }
 
         cutsceneTimeline.stopped -= OnTimelineFinished;
-        StartCoroutine(TransitionToGameplay());
+        if (isFinalCutscene)
+        {
+            StartCoroutine(TransitionToMainMenu());
+        }
+        else
+        {
+            StartCoroutine(TransitionToGameplay());
+        }
     }
 
     private IEnumerator TransitionToGameplay()
@@ -264,5 +277,27 @@ public class CutsceneManager : MonoBehaviour
         {
             cutsceneTimeline.Stop(); 
         }
+    }
+    public void PlayCutsceneExternally()
+    {
+        if (!hasPlayed)
+        {
+            StartCoroutine(TransitionIntoMidLevelCutscene());
+        }
+    }
+    private IEnumerator TransitionToMainMenu()
+    {
+        // Fade the screen to absolute black
+        yield return StartCoroutine(FadeToBlack());
+        
+        //  Wait an extra second for dramatic effect after the screen goes black
+        yield return new WaitForSeconds(1f); 
+
+        //  Free the player's mouse cursor so they can click the menu buttons!
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
+
+        // Load the Main Menu scene
+        SceneManager.LoadScene(sceneToLoadAfter);
     }
 }

@@ -14,7 +14,6 @@ public class TeammateShooting : MonoBehaviour
     [Header("Weapon Stats")]
     [SerializeField] private FireMode currentFireMode = FireMode.SemiAuto;
 
-    // Đã thay thế Bullet Prefab bằng Tracer và Impact VFX (Hitscan)
     [SerializeField] private GameObject impactVfxPrefab;
     [SerializeField] private GameObject tracerPrefab;
     [SerializeField] private Transform firePoint;
@@ -26,13 +25,12 @@ public class TeammateShooting : MonoBehaviour
     [SerializeField] private int damagePerShot = 15;
 
     [Header("Hitscan Settings")]
-    [Tooltip("Chọn những Layer mà đạn có thể bắn trúng (Enemy, Ground, Wall...)")]
     [SerializeField] private LayerMask hitLayers;
 
     [Header("Bloom (Recoil) Settings")]
-    [SerializeField] private float minSpread = 0.01f;     
-    [SerializeField] private float maxSpread = 0.08f;     
-    [SerializeField] private float bloomIncrease = 0.01f;  
+    [SerializeField] private float minSpread = 0.01f;
+    [SerializeField] private float maxSpread = 0.08f;
+    [SerializeField] private float bloomIncrease = 0.01f;
     private float currentBloom = 0f;
 
     [Header("Ammo Settings")]
@@ -62,17 +60,17 @@ public class TeammateShooting : MonoBehaviour
 
         if (teammateData != null)
         {
-            //currentFireMode = teammateData.fireMode;
-            //autoFireRate = teammateData.autoFireRate;
-            //semiFireRateMin = teammateData.semiFireRateMin;
-            //semiFireRateMax = teammateData.semiFireRateMax;
-            //fireDistance = teammateData.fireDistance;
-            //damagePerShot = teammateData.damagePerShot;
-            //magazineSize = teammateData.magazineSize;
-            //reloadTime = teammateData.reloadTime;
-            //minSpread = teammateData.minSpread;
-            //maxSpread = teammateData.maxSpread;
-            //bloomIncrease = teammateData.bloomIncrease;
+            currentFireMode = teammateData.fireMode;
+            autoFireRate = teammateData.autoFireRate;
+            semiFireRateMin = teammateData.semiFireRateMin;
+            semiFireRateMax = teammateData.semiFireRateMax;
+            fireDistance = teammateData.fireDistance;
+            damagePerShot = teammateData.damagePerShot;
+            magazineSize = teammateData.magazineSize;
+            reloadTime = teammateData.reloadTime;
+            minSpread = teammateData.minSpread;
+            maxSpread = teammateData.maxSpread;
+            bloomIncrease = teammateData.bloomIncrease;
 
             if (teammateData.impactVfxPrefab != null) impactVfxPrefab = teammateData.impactVfxPrefab;
             if (teammateData.muzzleFlashPrefab != null) muzzleFlashPrefab = teammateData.muzzleFlashPrefab;
@@ -104,19 +102,19 @@ public class TeammateShooting : MonoBehaviour
             return;
         }
 
-        float distanceToTarget = Vector3.Distance(transform.position, detection.CurrentTarget.position);
-        if (distanceToTarget > fireDistance)
-        {
-            if (isShootingInProgress) EndShooting();
-            return;
-        }
+        //float distanceToTarget = Vector3.Distance(transform.position, detection.CurrentTarget.position);
+        //if (distanceToTarget > fireDistance)
+        //{
+        //    if (isShootingInProgress) EndShooting();
+        //    return;
+        //}
 
         if (!isShootingInProgress) StartShooting();
 
         if (Time.time >= nextFireTime)
         {
             AimAtTarget();
-            ShootHitscan(); // Chuyển sang dùng hàm Hitscan
+            ShootHitscan();
 
             if (currentFireMode == FireMode.Auto)
                 nextFireTime = Time.time + autoFireRate;
@@ -152,19 +150,25 @@ public class TeammateShooting : MonoBehaviour
         if (audioSource != null && shootSound != null)
             audioSource.PlayOneShot(shootSound, shootVolume);
 
-        if (muzzleFlashPrefab != null)
+        if (muzzleFlashPrefab != null && firePoint != null)
         {
-            GameObject muzzleFlash = Instantiate(muzzleFlashPrefab, firePoint.position, firePoint.rotation);
-            muzzleFlash.transform.SetParent(firePoint);
-            Destroy(muzzleFlash, 0.05f);
+            GameObject flash = Instantiate(muzzleFlashPrefab, firePoint.position, firePoint.rotation);
+
+            ParticleSystem ps = flash.GetComponent<ParticleSystem>();
+            if (ps != null) ps.Play();
+            else
+            {
+                foreach (var childPs in flash.GetComponentsInChildren<ParticleSystem>())
+                    childPs.Play();
+            }
+
+            Destroy(flash, 1.0f);
         }
 
-        // Tính toán Bloom (Độ giật nảy ngẫu nhiên)
         float totalSpread = minSpread + currentBloom;
         float spreadX = Random.Range(-totalSpread, totalSpread);
         float spreadY = Random.Range(-totalSpread, totalSpread);
 
-        // Áp dụng độ tản mát đạn vào hướng nòng súng
         Vector3 baseDir = firePoint.forward;
         Quaternion bloomRot = Quaternion.Euler(spreadY * 20f, spreadX * 20f, 0);
         Vector3 shootDir = (Quaternion.LookRotation(baseDir) * bloomRot) * Vector3.forward;
@@ -177,7 +181,12 @@ public class TeammateShooting : MonoBehaviour
             endPoint = hit.point;
 
             var enemy = hit.collider.GetComponentInParent<EnemyHealth>();
-            if (enemy != null) enemy.TakeDamage(damagePerShot);
+            var finalDamage = damagePerShot;
+            var bodyPart = hit.collider.GetComponent<EnemyBodyPart>();
+            if (bodyPart != null)
+            {
+                finalDamage = Mathf.RoundToInt(damagePerShot * bodyPart.damageMultiplier);
+            }
 
             if (impactVfxPrefab != null)
             {
@@ -185,13 +194,11 @@ public class TeammateShooting : MonoBehaviour
             }
         }
 
-        // Vẽ vệt đạn Laser bay đi
         if (tracerPrefab != null)
         {
             StartCoroutine(SpawnMovingTracer(firePoint.position, endPoint));
         }
 
-        // Tăng độ nở tâm (Sấy càng lâu đạn càng giật)
         currentBloom = Mathf.Min(currentBloom + bloomIncrease, maxSpread);
 
         if (currentAmmo <= 0) EndShooting();
@@ -235,7 +242,7 @@ public class TeammateShooting : MonoBehaviour
     private void StartShooting()
     {
         isShootingInProgress = true;
-        currentBloom = 0f; // Bắt đầu xả đạn thì tâm phải chuẩn
+        currentBloom = 0f;
         nextFireTime = Time.time + 0.25f;
         isCrouched = false;
 
@@ -243,18 +250,21 @@ public class TeammateShooting : MonoBehaviour
         {
             if (HasParameter("isCrouching", animator)) animator.SetBool("isCrouching", false);
             if (HasParameter("isShooting", animator)) animator.SetBool("isShooting", true);
-            animator.CrossFade("Enemy_Shooting", 0.1f);
+            animator.CrossFade("Enemy_Shooting", 0.1f, 0,0f);
         }
     }
 
     public void EndShooting()
     {
         isShootingInProgress = false;
-        currentBloom = 0f; // Ngừng xả đạn -> reset tâm
+        currentBloom = 0f;
         if (animator != null)
         {
             if (HasParameter("isShooting", animator)) animator.SetBool("isShooting", false);
-            animator.CrossFade("Enemy_Idle", 0.2f);
+            if (currentAmmo > 0)
+            {
+                animator.CrossFade("Enemy_Idle", 0.2f);
+            }
         }
     }
 
@@ -272,13 +282,9 @@ public class TeammateShooting : MonoBehaviour
         if (audioSource != null && reloadSound != null)
             audioSource.PlayOneShot(reloadSound, shootVolume);
 
-        TeammateAI behavior = GetComponent<TeammateAI>();
-        bool inCover = (behavior != null && behavior.CurrentState == TeammateAI.TeammateState.SeekingCover);
-
         if (animator != null)
         {
             if (HasParameter("isShooting", animator)) animator.SetBool("isShooting", false);
-
             if (HasParameter("isCrouching", animator)) animator.SetBool("isCrouching", false);
             if (HasParameter("isReloading", animator)) animator.SetBool("isReloading", true);
 
@@ -286,11 +292,6 @@ public class TeammateShooting : MonoBehaviour
 
             float animDuration = 2.5f;
             yield return new WaitForSeconds(animDuration);
-
-            if (isReloading && inCover)
-            {
-                animator.CrossFade("Cover_Crouching", 0.2f);
-            }
 
             float remaining = Mathf.Max(0, reloadTime - animDuration);
             if (remaining > 0) yield return new WaitForSeconds(remaining);
@@ -301,18 +302,21 @@ public class TeammateShooting : MonoBehaviour
         }
 
         currentAmmo = magazineSize;
-        isReloading = false;
-
+        
         if (animator != null)
         {
             if (HasParameter("isReloading", animator)) animator.SetBool("isReloading", false);
+            if (HasParameter("isCrouching", animator)) animator.SetBool("isCrouching", false);
 
-            if (!inCover)
+            if (detection == null || detection.CurrentTarget == null)
             {
-                if (HasParameter("isCrouching", animator)) animator.SetBool("isCrouching", false);
                 animator.CrossFade("Enemy_Idle", 0.1f);
             }
         }
+
+        yield return null;
+
+        isReloading = false;
 
         Debug.Log("[Teammate Weapon] Tactical Crouch Reload Complete.");
     }

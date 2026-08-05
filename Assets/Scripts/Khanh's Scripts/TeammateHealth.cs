@@ -8,6 +8,9 @@ public class TeammateHealth : MonoBehaviour
     [SerializeField] private float currentHealth;
     [SerializeField] private TeammateSO teammateData;
 
+    [Header("Face References (Dead State)")]
+    [SerializeField] private Transform lidBottomL;
+    [SerializeField] private Transform lidBottomR;
 
     private static System.Collections.Generic.List<GameObject> ragdollPool = new System.Collections.Generic.List<GameObject>();
     private const int MAX_RAGDOLLS = 10;
@@ -29,12 +32,16 @@ public class TeammateHealth : MonoBehaviour
         ragdollRigidbodies = GetComponentsInChildren<Rigidbody>();
         ragdollColliders = GetComponentsInChildren<Collider>();
 
+        FindLidReferences();
+
         SetRagdollState(false);
     }
+
     public void Update()
     {
-        //CheckIfDied();
+        CheckIfDied();
     }
+
     public void CheckIfDied()
     {
         if (currentHealth <= 0 && !isDead)
@@ -42,6 +49,7 @@ public class TeammateHealth : MonoBehaviour
             Die();
         }
     }
+
     public void TakeDamage(float damage)
     {
         if (isDead) return;
@@ -64,6 +72,13 @@ public class TeammateHealth : MonoBehaviour
 
         gameObject.tag = "Untagged";
 
+        TeammateAI aiScript = GetComponent<TeammateAI>();
+        if (aiScript != null)
+        {
+            aiScript.ReleaseDefendPoint();
+            Debug.Log($"[TeammateHealth] Cảnh báo: {gameObject.name} đã tử trận và vừa nhả trống Defend Point!");
+        }
+
         NavMeshAgent agent = GetComponent<NavMeshAgent>();
         if (agent != null) agent.enabled = false;
 
@@ -83,6 +98,8 @@ public class TeammateHealth : MonoBehaviour
         }
 
         SetRagdollState(true);
+
+        CloseEyes();
 
         foreach (var rb in ragdollRigidbodies)
         {
@@ -106,6 +123,37 @@ public class TeammateHealth : MonoBehaviour
                 Debug.Log($"[Pool] Limit reached. Destroying oldest teammate ragdoll: {oldest.name}");
                 Destroy(oldest);
             }
+        }
+    }
+
+
+    private void FindLidReferences()
+    {
+        if (lidBottomL == null || lidBottomR == null)
+        {
+            Transform[] allChildren = GetComponentsInChildren<Transform>();
+            foreach (Transform t in allChildren)
+            {
+                if (t.name == "LidBottom.L") lidBottomL = t;
+                else if (t.name == "LidBottom.R") lidBottomR = t;
+            }
+        }
+    }
+
+    private void CloseEyes()
+    {
+        if (lidBottomL != null)
+        {
+            Vector3 posL = lidBottomL.localPosition;
+            posL.y = 0.1f;
+            lidBottomL.localPosition = posL;
+        }
+
+        if (lidBottomR != null)
+        {
+            Vector3 posR = lidBottomR.localPosition;
+            posR.y = 0.1f;
+            lidBottomR.localPosition = posR;
         }
     }
 

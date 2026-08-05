@@ -16,7 +16,8 @@ public class TeammateCover : MonoBehaviour
     {
         if (teammateData != null)
         {
-            searchRadius = teammateData.coverSearchRadius;
+            //searchRadius = teammateData.coverSearchRadius;
+            searchRadius = 25f;
         }
         agent = GetComponent<NavMeshAgent>();       
     }

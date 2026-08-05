@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 [CreateAssetMenu(fileName = "TeammateSO", menuName = "Scriptable Objects/TeammateSO")]
 public class TeammateSO : ScriptableObject
@@ -9,6 +9,10 @@ public class TeammateSO : ScriptableObject
     [Header("AI & Detection Settings")]
     public float detectionRadius = 15.0f;
     public float rotationSpeed = 8f;
+    [Header("Line of Sight (Vật cản)")]
+    //public LayerMask obstacleLayer;
+    //public string[] obstacleTags = { "Wall", "Obstacle" };
+    public Transform idleLookTarget;
 
     [Header("Follow Settings")]
     public float followTriggerDistance = 10f;
@@ -28,7 +32,7 @@ public class TeammateSO : ScriptableObject
     public int damagePerShot = 4;
 
     [Header("Ammo Settings")]
-    public int magazineSize = 1;
+    public int magazineSize = 30;
     public float reloadTime = 2.5f;
 
     [Header("Bloom (Recoil) Settings")]
@@ -36,8 +40,8 @@ public class TeammateSO : ScriptableObject
     public float maxSpread = 0.15f;
     public float bloomIncrease = 0.025f;
 
-    [Header("Cover Settings")]
-    public float coverSearchRadius = 25f;
+    //[Header("Cover Settings")]
+    //public float coverSearchRadius = 25f;
 
     [Header("Asset References")]
     public GameObject teammatePrefab; 
