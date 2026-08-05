@@ -430,13 +430,13 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1092719766019172935}
-  - component: {fileID: 4568266141384324812}
-  - component: {fileID: 5416500087753036241}
-  - component: {fileID: 6520559606047370687}
   - component: {fileID: 2179100340882606329}
+  - component: {fileID: 5071545507620538418}
+  - component: {fileID: 1408495204767673048}
+  - component: {fileID: 6327743307176986899}
   m_Layer: 0
   m_Name: Head
-  m_TagString: Untagged
+  m_TagString: Teammate
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -471,7 +471,21 @@ Transform:
   - {fileID: 4738198002315828220}
   m_Father: {fileID: 7119672215626140238}
   m_LocalEulerAnglesHint: {x: 1.1567861, y: -45.62053, z: 0.110939674}
---- !u!135 &4568266141384324812
+--- !u!114 &2179100340882606329
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1277704422594902528}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e61ab73dc8e497e458b2f0a2f4bbdee7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TeammateBodyPart
+  damageMultiplier: 5
+  partName: Body
+--- !u!135 &5071545507620538418
 SphereCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -492,7 +506,7 @@ SphereCollider:
   serializedVersion: 3
   m_Radius: 0.13
   m_Center: {x: 0, y: 0.12275505, z: 0}
---- !u!54 &5416500087753036241
+--- !u!54 &1408495204767673048
 Rigidbody:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -519,7 +533,7 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
---- !u!144 &6520559606047370687
+--- !u!144 &6327743307176986899
 CharacterJoint:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -527,7 +541,7 @@ CharacterJoint:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1277704422594902528}
   serializedVersion: 3
-  m_ConnectedBody: {fileID: 0}
+  m_ConnectedBody: {fileID: 2989764930996614994}
   m_ConnectedArticulationBody: {fileID: 0}
   m_Anchor: {x: 0, y: 0, z: 0}
   m_Axis: {x: 1, y: 0, z: 0}
@@ -565,20 +579,6 @@ CharacterJoint:
   m_EnablePreprocessing: 0
   m_MassScale: 1
   m_ConnectedMassScale: 1
---- !u!114 &2179100340882606329
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1277704422594902528}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e61ab73dc8e497e458b2f0a2f4bbdee7, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::TeammateBodyPart
-  damageMultiplier: 5
-  partName: Body
 --- !u!1 &1575380832371933349
 GameObject:
   m_ObjectHideFlags: 0
@@ -622,13 +622,12 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6499146136867285949}
-  - component: {fileID: 185685587896683831}
-  - component: {fileID: 2615887457805219519}
-  - component: {fileID: 1868419546053183442}
   - component: {fileID: 5339329178338760875}
+  - component: {fileID: 6395761453232136394}
+  - component: {fileID: 214300554540642822}
   m_Layer: 0
   m_Name: Spine1
-  m_TagString: Untagged
+  m_TagString: Teammate
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -649,7 +648,21 @@ Transform:
   - {fileID: 1783850423507437297}
   m_Father: {fileID: 1034138636543858938}
   m_LocalEulerAnglesHint: {x: -0.022885835, y: 5.2065897, z: 0.5401437}
---- !u!65 &185685587896683831
+--- !u!114 &5339329178338760875
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1762210617726481304}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e61ab73dc8e497e458b2f0a2f4bbdee7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TeammateBodyPart
+  damageMultiplier: 1
+  partName: Body
+--- !u!65 &6395761453232136394
 BoxCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -670,7 +683,7 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.24552035, y: 0.63, z: 0.24551019}
   m_Center: {x: 0.12275997, y: -0.027430087, z: -0.004128903}
---- !u!54 &2615887457805219519
+--- !u!54 &214300554540642822
 Rigidbody:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -697,66 +710,6 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
---- !u!144 &1868419546053183442
-CharacterJoint:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1762210617726481304}
-  serializedVersion: 3
-  m_ConnectedBody: {fileID: 0}
-  m_ConnectedArticulationBody: {fileID: 0}
-  m_Anchor: {x: 0, y: 0, z: 0}
-  m_Axis: {x: 1, y: 0, z: 0}
-  m_AutoConfigureConnectedAnchor: 1
-  m_ConnectedAnchor: {x: 0, y: 0, z: 0}
-  m_SwingAxis: {x: 0, y: 0, z: 1}
-  m_TwistLimitSpring:
-    spring: 0
-    damper: 0
-  m_LowTwistLimit:
-    limit: -20
-    bounciness: 0
-    contactDistance: 0
-  m_HighTwistLimit:
-    limit: 20
-    bounciness: 0
-    contactDistance: 0
-  m_SwingLimitSpring:
-    spring: 0
-    damper: 0
-  m_Swing1Limit:
-    limit: 10
-    bounciness: 0
-    contactDistance: 0
-  m_Swing2Limit:
-    limit: 0
-    bounciness: 0
-    contactDistance: 0
-  m_EnableProjection: 0
-  m_ProjectionDistance: 0.1
-  m_ProjectionAngle: 180
-  m_BreakForce: Infinity
-  m_BreakTorque: Infinity
-  m_EnableCollision: 0
-  m_EnablePreprocessing: 0
-  m_MassScale: 1
-  m_ConnectedMassScale: 1
---- !u!114 &5339329178338760875
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1762210617726481304}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e61ab73dc8e497e458b2f0a2f4bbdee7, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::TeammateBodyPart
-  damageMultiplier: 1
-  partName: Body
 --- !u!1 &1841377572681582209
 GameObject:
   m_ObjectHideFlags: 0
@@ -955,13 +908,13 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 209154490685398992}
-  - component: {fileID: 292533315493410226}
-  - component: {fileID: 1741187897685768288}
-  - component: {fileID: 1043125036645914345}
   - component: {fileID: 7417289299168555540}
+  - component: {fileID: 6475344208355335315}
+  - component: {fileID: 2914446027386508465}
+  - component: {fileID: 4818478938039558748}
   m_Layer: 0
   m_Name: Leg.L
-  m_TagString: Untagged
+  m_TagString: Teammate
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -982,7 +935,21 @@ Transform:
   - {fileID: 2253786778662236428}
   m_Father: {fileID: 5155250110470886117}
   m_LocalEulerAnglesHint: {x: -19.450483, y: -1.9153435, z: 7.393161}
---- !u!136 &292533315493410226
+--- !u!114 &7417289299168555540
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2558880629276712453}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e61ab73dc8e497e458b2f0a2f4bbdee7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TeammateBodyPart
+  damageMultiplier: 0.5
+  partName: Body
+--- !u!136 &6475344208355335315
 CapsuleCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1005,7 +972,7 @@ CapsuleCollider:
   m_Height: 0.53634155
   m_Direction: 1
   m_Center: {x: 0, y: 0.26817077, z: 0}
---- !u!54 &1741187897685768288
+--- !u!54 &2914446027386508465
 Rigidbody:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1032,7 +999,7 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
---- !u!144 &1043125036645914345
+--- !u!144 &4818478938039558748
 CharacterJoint:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1040,7 +1007,7 @@ CharacterJoint:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2558880629276712453}
   serializedVersion: 3
-  m_ConnectedBody: {fileID: 0}
+  m_ConnectedBody: {fileID: 8132869471828839953}
   m_ConnectedArticulationBody: {fileID: 0}
   m_Anchor: {x: 0, y: 0, z: 0}
   m_Axis: {x: -1, y: 0, z: 0}
@@ -1078,20 +1045,6 @@ CharacterJoint:
   m_EnablePreprocessing: 0
   m_MassScale: 1
   m_ConnectedMassScale: 1
---- !u!114 &7417289299168555540
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2558880629276712453}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e61ab73dc8e497e458b2f0a2f4bbdee7, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::TeammateBodyPart
-  damageMultiplier: 0.5
-  partName: Body
 --- !u!1 &2593564198552368434
 GameObject:
   m_ObjectHideFlags: 0
@@ -1302,13 +1255,13 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 8193367246993274191}
-  - component: {fileID: 1557987146298122605}
-  - component: {fileID: 5177221453530208770}
-  - component: {fileID: 3524422741484891830}
   - component: {fileID: 7399333004894094327}
+  - component: {fileID: 3084608283331079504}
+  - component: {fileID: 3471350109206510739}
+  - component: {fileID: 1802274541186785016}
   m_Layer: 0
   m_Name: UpLeg.R
-  m_TagString: Untagged
+  m_TagString: Teammate
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -1329,7 +1282,21 @@ Transform:
   - {fileID: 3855316191522307610}
   m_Father: {fileID: 5988465546464588391}
   m_LocalEulerAnglesHint: {x: -5.9865723, y: 15.366051, z: -160.78627}
---- !u!136 &1557987146298122605
+--- !u!114 &7399333004894094327
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2607520466882291334}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e61ab73dc8e497e458b2f0a2f4bbdee7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TeammateBodyPart
+  damageMultiplier: 0.5
+  partName: Body
+--- !u!136 &3084608283331079504
 CapsuleCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1352,7 +1319,7 @@ CapsuleCollider:
   m_Height: 0.4339044
   m_Direction: 1
   m_Center: {x: 0, y: 0.2169522, z: 0}
---- !u!54 &5177221453530208770
+--- !u!54 &3471350109206510739
 Rigidbody:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1379,7 +1346,7 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
---- !u!144 &3524422741484891830
+--- !u!144 &1802274541186785016
 CharacterJoint:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1387,7 +1354,7 @@ CharacterJoint:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2607520466882291334}
   serializedVersion: 3
-  m_ConnectedBody: {fileID: 0}
+  m_ConnectedBody: {fileID: 214300554540642822}
   m_ConnectedArticulationBody: {fileID: 0}
   m_Anchor: {x: 0, y: 0, z: 0}
   m_Axis: {x: -1, y: 0, z: 0}
@@ -1425,20 +1392,6 @@ CharacterJoint:
   m_EnablePreprocessing: 0
   m_MassScale: 1
   m_ConnectedMassScale: 1
---- !u!114 &7399333004894094327
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2607520466882291334}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e61ab73dc8e497e458b2f0a2f4bbdee7, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::TeammateBodyPart
-  damageMultiplier: 0.5
-  partName: Body
 --- !u!1 &2820030221470966258
 GameObject:
   m_ObjectHideFlags: 0
@@ -2198,13 +2151,13 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4193943731795391824}
-  - component: {fileID: 8195277751875493331}
-  - component: {fileID: 4695372040389667838}
-  - component: {fileID: 8207431852915798499}
   - component: {fileID: 331112747225282556}
+  - component: {fileID: 1375587125137745203}
+  - component: {fileID: 66389192950841160}
+  - component: {fileID: 3276219377597486730}
   m_Layer: 0
   m_Name: Arm.R
-  m_TagString: Untagged
+  m_TagString: Teammate
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -2225,7 +2178,21 @@ Transform:
   - {fileID: 3357289832386308073}
   m_Father: {fileID: 2315925072533957664}
   m_LocalEulerAnglesHint: {x: 35.699486, y: 94.7935, z: 79.36064}
---- !u!136 &8195277751875493331
+--- !u!114 &331112747225282556
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4227147928514476018}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e61ab73dc8e497e458b2f0a2f4bbdee7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TeammateBodyPart
+  damageMultiplier: 0.5
+  partName: Body
+--- !u!136 &1375587125137745203
 CapsuleCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -2248,7 +2215,7 @@ CapsuleCollider:
   m_Height: 0.23188816
   m_Direction: 1
   m_Center: {x: 0, y: 0.11594408, z: 0}
---- !u!54 &4695372040389667838
+--- !u!54 &66389192950841160
 Rigidbody:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -2275,7 +2242,7 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
---- !u!144 &8207431852915798499
+--- !u!144 &3276219377597486730
 CharacterJoint:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -2283,7 +2250,7 @@ CharacterJoint:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4227147928514476018}
   serializedVersion: 3
-  m_ConnectedBody: {fileID: 0}
+  m_ConnectedBody: {fileID: 2989764930996614994}
   m_ConnectedArticulationBody: {fileID: 0}
   m_Anchor: {x: 0, y: 0, z: 0}
   m_Axis: {x: 0, y: 0, z: -1}
@@ -2321,20 +2288,6 @@ CharacterJoint:
   m_EnablePreprocessing: 0
   m_MassScale: 1
   m_ConnectedMassScale: 1
---- !u!114 &331112747225282556
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4227147928514476018}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e61ab73dc8e497e458b2f0a2f4bbdee7, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::TeammateBodyPart
-  damageMultiplier: 0.5
-  partName: Body
 --- !u!1 &4236379276306206604
 GameObject:
   m_ObjectHideFlags: 0
@@ -2685,13 +2638,13 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5155250110470886117}
-  - component: {fileID: 358984156095605222}
-  - component: {fileID: 4504315568838330410}
-  - component: {fileID: 4794679250221536177}
   - component: {fileID: 6599309588642687451}
+  - component: {fileID: 8628120426012132452}
+  - component: {fileID: 8132869471828839953}
+  - component: {fileID: 9095015477969914405}
   m_Layer: 0
   m_Name: UpLeg.L
-  m_TagString: Untagged
+  m_TagString: Teammate
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -2712,7 +2665,21 @@ Transform:
   - {fileID: 209154490685398992}
   m_Father: {fileID: 5988465546464588391}
   m_LocalEulerAnglesHint: {x: -25.006664, y: -56.729366, z: 170.16248}
---- !u!136 &358984156095605222
+--- !u!114 &6599309588642687451
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5067980274258440739}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e61ab73dc8e497e458b2f0a2f4bbdee7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TeammateBodyPart
+  damageMultiplier: 0.5
+  partName: Body
+--- !u!136 &8628120426012132452
 CapsuleCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -2735,7 +2702,7 @@ CapsuleCollider:
   m_Height: 0.43392897
   m_Direction: 1
   m_Center: {x: 0, y: 0.21696448, z: 0}
---- !u!54 &4504315568838330410
+--- !u!54 &8132869471828839953
 Rigidbody:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -2762,7 +2729,7 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
---- !u!144 &4794679250221536177
+--- !u!144 &9095015477969914405
 CharacterJoint:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -2770,7 +2737,7 @@ CharacterJoint:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5067980274258440739}
   serializedVersion: 3
-  m_ConnectedBody: {fileID: 0}
+  m_ConnectedBody: {fileID: 214300554540642822}
   m_ConnectedArticulationBody: {fileID: 0}
   m_Anchor: {x: 0, y: 0, z: 0}
   m_Axis: {x: -1, y: 0, z: 0}
@@ -2808,20 +2775,6 @@ CharacterJoint:
   m_EnablePreprocessing: 0
   m_MassScale: 1
   m_ConnectedMassScale: 1
---- !u!114 &6599309588642687451
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5067980274258440739}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e61ab73dc8e497e458b2f0a2f4bbdee7, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::TeammateBodyPart
-  damageMultiplier: 0.5
-  partName: Body
 --- !u!1 &5207209441505850008
 GameObject:
   m_ObjectHideFlags: 0
@@ -2943,13 +2896,13 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3357289832386308073}
-  - component: {fileID: 799871490524925874}
-  - component: {fileID: 8024236175755601828}
-  - component: {fileID: 7433300876418510411}
   - component: {fileID: 3958170849498989396}
+  - component: {fileID: 3540454680734673301}
+  - component: {fileID: 3616305867468551311}
+  - component: {fileID: 7339531426800668253}
   m_Layer: 0
   m_Name: ForeArm.R
-  m_TagString: Untagged
+  m_TagString: Teammate
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -2970,7 +2923,21 @@ Transform:
   - {fileID: 4841777015113835163}
   m_Father: {fileID: 4193943731795391824}
   m_LocalEulerAnglesHint: {x: 67.017265, y: 33.990147, z: 135.97615}
---- !u!136 &799871490524925874
+--- !u!114 &3958170849498989396
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5362451268503808771}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e61ab73dc8e497e458b2f0a2f4bbdee7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TeammateBodyPart
+  damageMultiplier: 0.5
+  partName: Body
+--- !u!136 &3540454680734673301
 CapsuleCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -2993,7 +2960,7 @@ CapsuleCollider:
   m_Height: 0.83903164
   m_Direction: 1
   m_Center: {x: 0, y: 0.41951582, z: 0}
---- !u!54 &8024236175755601828
+--- !u!54 &3616305867468551311
 Rigidbody:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -3020,7 +2987,7 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
---- !u!144 &7433300876418510411
+--- !u!144 &7339531426800668253
 CharacterJoint:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -3028,7 +2995,7 @@ CharacterJoint:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5362451268503808771}
   serializedVersion: 3
-  m_ConnectedBody: {fileID: 0}
+  m_ConnectedBody: {fileID: 66389192950841160}
   m_ConnectedArticulationBody: {fileID: 0}
   m_Anchor: {x: 0, y: 0, z: 0}
   m_Axis: {x: -1, y: 0, z: 0}
@@ -3066,20 +3033,6 @@ CharacterJoint:
   m_EnablePreprocessing: 0
   m_MassScale: 1
   m_ConnectedMassScale: 1
---- !u!114 &3958170849498989396
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5362451268503808771}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e61ab73dc8e497e458b2f0a2f4bbdee7, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::TeammateBodyPart
-  damageMultiplier: 0.5
-  partName: Body
 --- !u!1 &5508455693792634178
 GameObject:
   m_ObjectHideFlags: 0
@@ -3695,13 +3648,13 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3855316191522307610}
-  - component: {fileID: 2404203103870700821}
-  - component: {fileID: 1514337117187793473}
-  - component: {fileID: 9129561331348848399}
   - component: {fileID: 4255092363700390463}
+  - component: {fileID: 2478807611930259032}
+  - component: {fileID: 5266487347450825042}
+  - component: {fileID: 8638368679054972865}
   m_Layer: 0
   m_Name: Leg.R
-  m_TagString: Untagged
+  m_TagString: Teammate
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -3722,7 +3675,21 @@ Transform:
   - {fileID: 7732815323480048374}
   m_Father: {fileID: 8193367246993274191}
   m_LocalEulerAnglesHint: {x: -14.543461, y: -0.004994154, z: -2.0121179}
---- !u!136 &2404203103870700821
+--- !u!114 &4255092363700390463
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6450433890963503274}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e61ab73dc8e497e458b2f0a2f4bbdee7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TeammateBodyPart
+  damageMultiplier: 0.5
+  partName: Body
+--- !u!136 &2478807611930259032
 CapsuleCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -3745,7 +3712,7 @@ CapsuleCollider:
   m_Height: 0.53770924
   m_Direction: 1
   m_Center: {x: 0, y: 0.26885462, z: 0}
---- !u!54 &1514337117187793473
+--- !u!54 &5266487347450825042
 Rigidbody:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -3772,7 +3739,7 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
---- !u!144 &9129561331348848399
+--- !u!144 &8638368679054972865
 CharacterJoint:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -3780,7 +3747,7 @@ CharacterJoint:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6450433890963503274}
   serializedVersion: 3
-  m_ConnectedBody: {fileID: 0}
+  m_ConnectedBody: {fileID: 3471350109206510739}
   m_ConnectedArticulationBody: {fileID: 0}
   m_Anchor: {x: 0, y: 0, z: 0}
   m_Axis: {x: -1, y: 0, z: 0}
@@ -3818,20 +3785,6 @@ CharacterJoint:
   m_EnablePreprocessing: 0
   m_MassScale: 1
   m_ConnectedMassScale: 1
---- !u!114 &4255092363700390463
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6450433890963503274}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e61ab73dc8e497e458b2f0a2f4bbdee7, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::TeammateBodyPart
-  damageMultiplier: 0.5
-  partName: Body
 --- !u!1 &6630978701090012402
 GameObject:
   m_ObjectHideFlags: 0
@@ -3841,13 +3794,13 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1034138636543858938}
-  - component: {fileID: 3241930910698757821}
-  - component: {fileID: 6875439650067371824}
-  - component: {fileID: 7020372494305336880}
   - component: {fileID: 407529514108640572}
+  - component: {fileID: 6167404308983422644}
+  - component: {fileID: 2989764930996614994}
+  - component: {fileID: 3183994026680530109}
   m_Layer: 0
   m_Name: Spine
-  m_TagString: Untagged
+  m_TagString: Teammate
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -3868,7 +3821,21 @@ Transform:
   - {fileID: 6499146136867285949}
   m_Father: {fileID: 5988465546464588391}
   m_LocalEulerAnglesHint: {x: -5.929064, y: -29.735382, z: 0.00047067716}
---- !u!65 &3241930910698757821
+--- !u!114 &407529514108640572
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6630978701090012402}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e61ab73dc8e497e458b2f0a2f4bbdee7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TeammateBodyPart
+  damageMultiplier: 1
+  partName: Body
+--- !u!65 &6167404308983422644
 BoxCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -3889,7 +3856,7 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.24550003, y: 0.63, z: 0.24551019}
   m_Center: {x: -0.12275022, y: 0.08067554, z: -0.0041288882}
---- !u!54 &6875439650067371824
+--- !u!54 &2989764930996614994
 Rigidbody:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -3916,7 +3883,7 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
---- !u!144 &7020372494305336880
+--- !u!144 &3183994026680530109
 CharacterJoint:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -3924,7 +3891,7 @@ CharacterJoint:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6630978701090012402}
   serializedVersion: 3
-  m_ConnectedBody: {fileID: 0}
+  m_ConnectedBody: {fileID: 214300554540642822}
   m_ConnectedArticulationBody: {fileID: 0}
   m_Anchor: {x: 0, y: 0, z: 0}
   m_Axis: {x: 1, y: 0, z: 0}
@@ -3962,20 +3929,6 @@ CharacterJoint:
   m_EnablePreprocessing: 0
   m_MassScale: 1
   m_ConnectedMassScale: 1
---- !u!114 &407529514108640572
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6630978701090012402}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e61ab73dc8e497e458b2f0a2f4bbdee7, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::TeammateBodyPart
-  damageMultiplier: 1
-  partName: Body
 --- !u!1 &6835693856924108616
 GameObject:
   m_ObjectHideFlags: 0
@@ -5287,13 +5240,13 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1230038002691923794}
-  - component: {fileID: 7868970555520202826}
-  - component: {fileID: 5444089272272242741}
-  - component: {fileID: 1418041040092366471}
   - component: {fileID: 3954118315645215654}
+  - component: {fileID: 6535573707179959884}
+  - component: {fileID: 3571938917381910517}
+  - component: {fileID: 8876017786659622985}
   m_Layer: 0
   m_Name: Arm.L
-  m_TagString: Untagged
+  m_TagString: Teammate
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -5314,7 +5267,21 @@ Transform:
   - {fileID: 3226124445354328634}
   m_Father: {fileID: 3976769672800170003}
   m_LocalEulerAnglesHint: {x: -19.57988, y: 98.19648, z: 52.27529}
---- !u!136 &7868970555520202826
+--- !u!114 &3954118315645215654
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9078778997764229307}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e61ab73dc8e497e458b2f0a2f4bbdee7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TeammateBodyPart
+  damageMultiplier: 0.5
+  partName: Body
+--- !u!136 &6535573707179959884
 CapsuleCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -5337,7 +5304,7 @@ CapsuleCollider:
   m_Height: 0.23189026
   m_Direction: 1
   m_Center: {x: 0, y: 0.11594513, z: 0}
---- !u!54 &5444089272272242741
+--- !u!54 &3571938917381910517
 Rigidbody:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -5364,7 +5331,7 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
---- !u!144 &1418041040092366471
+--- !u!144 &8876017786659622985
 CharacterJoint:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -5372,7 +5339,7 @@ CharacterJoint:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 9078778997764229307}
   serializedVersion: 3
-  m_ConnectedBody: {fileID: 0}
+  m_ConnectedBody: {fileID: 2989764930996614994}
   m_ConnectedArticulationBody: {fileID: 0}
   m_Anchor: {x: 0, y: 0, z: 0}
   m_Axis: {x: 0, y: 0, z: -1}
@@ -5410,20 +5377,6 @@ CharacterJoint:
   m_EnablePreprocessing: 0
   m_MassScale: 1
   m_ConnectedMassScale: 1
---- !u!114 &3954118315645215654
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 9078778997764229307}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e61ab73dc8e497e458b2f0a2f4bbdee7, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::TeammateBodyPart
-  damageMultiplier: 0.5
-  partName: Body
 --- !u!1 &9156341886261127349
 GameObject:
   m_ObjectHideFlags: 0
@@ -5433,13 +5386,13 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3226124445354328634}
-  - component: {fileID: 8002860432006989885}
-  - component: {fileID: 8319481620370517362}
-  - component: {fileID: 1762066333634994541}
   - component: {fileID: 5205239618958959954}
+  - component: {fileID: 8667862252200949936}
+  - component: {fileID: 6688978335264961168}
+  - component: {fileID: 312856779892270167}
   m_Layer: 0
   m_Name: ForeArm.L
-  m_TagString: Untagged
+  m_TagString: Teammate
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -5460,7 +5413,21 @@ Transform:
   - {fileID: 4047577715945520158}
   m_Father: {fileID: 1230038002691923794}
   m_LocalEulerAnglesHint: {x: 41.723766, y: -140.76755, z: -110.71268}
---- !u!136 &8002860432006989885
+--- !u!114 &5205239618958959954
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9156341886261127349}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e61ab73dc8e497e458b2f0a2f4bbdee7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TeammateBodyPart
+  damageMultiplier: 0.5
+  partName: Body
+--- !u!136 &8667862252200949936
 CapsuleCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -5483,7 +5450,7 @@ CapsuleCollider:
   m_Height: 0.42807764
   m_Direction: 1
   m_Center: {x: 0, y: 0.21403882, z: 0}
---- !u!54 &8319481620370517362
+--- !u!54 &6688978335264961168
 Rigidbody:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -5510,7 +5477,7 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
---- !u!144 &1762066333634994541
+--- !u!144 &312856779892270167
 CharacterJoint:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -5518,7 +5485,7 @@ CharacterJoint:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 9156341886261127349}
   serializedVersion: 3
-  m_ConnectedBody: {fileID: 0}
+  m_ConnectedBody: {fileID: 3571938917381910517}
   m_ConnectedArticulationBody: {fileID: 0}
   m_Anchor: {x: 0, y: 0, z: 0}
   m_Axis: {x: 1, y: 0, z: 0}
@@ -5556,17 +5523,3 @@ CharacterJoint:
   m_EnablePreprocessing: 0
   m_MassScale: 1
   m_ConnectedMassScale: 1
---- !u!114 &5205239618958959954
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 9156341886261127349}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e61ab73dc8e497e458b2f0a2f4bbdee7, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::TeammateBodyPart
-  damageMultiplier: 0.5
-  partName: Body
