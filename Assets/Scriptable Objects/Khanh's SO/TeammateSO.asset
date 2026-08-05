@@ -13,11 +13,8 @@ MonoBehaviour:
   m_Name: TeammateSO
   m_EditorClassIdentifier: Assembly-CSharp::TeammateSO
   maxHealth: 60
-  detectionRadius: 24
+  detectionRadius: 29
   rotationSpeed: 8
-  obstacleLayer:
-    serializedVersion: 2
-    m_Bits: 64
   idleLookTarget: {fileID: 0}
   followTriggerDistance: 10
   stopFollowDistance: 2.5
@@ -28,7 +25,7 @@ MonoBehaviour:
   autoFireRate: 0.3
   semiFireRateMin: 0.6
   semiFireRateMax: 1.2
-  fireDistance: 25
+  fireDistance: 30
   damagePerShot: 1
   magazineSize: 30
   reloadTime: 2.5
