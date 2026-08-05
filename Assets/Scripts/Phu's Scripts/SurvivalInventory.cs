@@ -36,8 +36,59 @@ namespace PhuScene
             TrySwitchWeapon(0);
         }
 
+        private PlayerGun lastMonitoredGun = null;
+        private int lastAmmoCount = -1;
+
+        private void MonitorShotTracking()
+        {
+            if (activePlayerGun != null && activePlayerGun.WeaponData != null)
+            {
+                // If weapon model/reference changed (player switched guns), reset baseline ammo tracker
+                if (activePlayerGun != lastMonitoredGun)
+                {
+                    lastMonitoredGun = activePlayerGun;
+                    lastAmmoCount = activePlayerGun.WeaponData.currentAmmo;
+                    return;
+                }
+
+                int currentAmmo = activePlayerGun.WeaponData.currentAmmo;
+                if (lastAmmoCount != -1 && currentAmmo < lastAmmoCount)
+                {
+                    int shotsFiredThisFrame = lastAmmoCount - currentAmmo;
+                    for (int i = 0; i < shotsFiredThisFrame; i++)
+                    {
+                        if (WaveManager.Instance != null)
+                        {
+                            WaveManager.Instance.RecordShotFired();
+
+                            if (Camera.main != null)
+                            {
+                                RaycastHit hit;
+                                LayerMask mask = LayerMask.GetMask("Default", "Enemy", "Hitbox");
+                                if (Physics.Raycast(Camera.main.transform.position, Camera.main.transform.forward, out hit, activePlayerGun.WeaponData.MaxDistance, mask))
+                                {
+                                    if (hit.collider != null && (hit.collider.CompareTag("Enemy") || hit.collider.GetComponentInParent<EnemyHealth>() != null || hit.collider.GetComponentInParent<MockEnemy>() != null))
+                                    {
+                                        WaveManager.Instance.RecordShotHit();
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                lastAmmoCount = currentAmmo;
+            }
+            else
+            {
+                lastMonitoredGun = null;
+                lastAmmoCount = -1;
+            }
+        }
+
         private void Update()
         {
+            MonitorShotTracking();
+
             // Weapon switching numeric keys based on unlocked order sequence
             if (Input.GetKeyDown(KeyCode.Alpha1)) SwitchToUnlockedWeaponNumber(0);
             else if (Input.GetKeyDown(KeyCode.Alpha2)) SwitchToUnlockedWeaponNumber(1);

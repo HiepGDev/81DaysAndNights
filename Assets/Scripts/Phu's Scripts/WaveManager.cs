@@ -39,6 +39,28 @@ public struct WaveStatusReport
     public float difficultyMultiplier;
 }
 
+[System.Serializable]
+public struct ScoreReport
+{
+    public float baseKillScore;
+    public float totalKillScore;
+    public int totalKills;
+    public int waveKills;
+    public float economyBonus;
+    public float economyDecayFactor;
+    public float moneyGainedInWave;
+    public float moneySpentInIntermission;
+    public int totalMoneyGained;
+    public float unspentMoney;
+    public float waveMultiplier;
+    public float accuracyPercent;
+    public float efficiencyMultiplier;
+    public int waveScore;
+    public int totalGameScore;
+    public int shotsFired;
+    public int shotsHit;
+}
+
 public class WaveManager : MonoBehaviour
 {
     public static WaveManager Instance { get; private set; }
@@ -48,9 +70,101 @@ public class WaveManager : MonoBehaviour
     private WaveState currentState = (WaveState)(-1);
     [SerializeField] private int totalWaves = 10; // Capped at 10 (set to 0 for endless)
 
+    [Header("Scoring Formula Parameters & Multipliers")]
+    [Tooltip("Multiplier applied to net wave savings (Money Gained - Money Spent) for Economy Bonus.")]
+    [SerializeField] private float economyBonusMultiplier = 2f;
+
+    [Tooltip("Total lifetime money earned threshold where Economy Bonus efficiency diminishes by 50%. Higher values allow the bonus to stay active longer.")]
+    [SerializeField] private float economyDecayThreshold = 5000;
+
+    [Tooltip("Weight multiplied by accuracy percentage for Efficiency Multiplier: 1 + (Accuracy% * Weight).")]
+    [SerializeField] private float accuracyEfficiencyWeight = 0.25f;
+
+    [Tooltip("Divisor for quadratic wave multiplier: 1 + (waves_survived^2 / Divisor).")]
+    [SerializeField] private float waveMultiplierDivisor = 100f;
+
+    [Tooltip("Per-wave scaling factor for kill score: basePoints * typeMultiplier * (1 + (wave * Factor)).")]
+    [SerializeField] private float killScoreWaveScaleFactor = 0.05f;
+
+    [Tooltip("Default base points awarded per kill if not specified by EnemyReward.")]
+    [SerializeField] private float defaultBaseKillPoints = 100f;
+
+    [Header("Enemy Type Multipliers")]
+    [SerializeField] private float basicEnemyMultiplier = 1.0f;
+    [SerializeField] private float eliteEnemyMultiplier = 1.5f;
+    [SerializeField] private float bossEnemyMultiplier = 2.0f;
+
     [Header("Economy System")]
     [SerializeField] private int money = 0;
     [SerializeField] private int points = 0;
+
+    [Header("Scoring System Metrics")]
+    [SerializeField] private int cumulativeGameScore = 0;
+    [SerializeField] private float waveKillScore = 0f;
+    [SerializeField] private int waveKills = 0;
+    [SerializeField] private int totalMoneyGained = 0;
+    [SerializeField] private int totalMoneySpent = 0;
+    [SerializeField] private int moneyGainedInWave = 0;
+    [SerializeField] private int moneySpentInIntermission = 0;
+    [SerializeField] private int totalKills = 0;
+    [SerializeField] private float totalKillScore = 0f;
+    [SerializeField] private int shotsFired = 0;
+    [SerializeField] private int shotsHit = 0;
+
+    public int CumulativeGameScore => cumulativeGameScore;
+    public float WaveKillScore => waveKillScore;
+    public int WaveKills => waveKills;
+    public int TotalMoneyGained => totalMoneyGained;
+    public int TotalMoneySpent => totalMoneySpent;
+    public int MoneyGainedInWave => moneyGainedInWave;
+    public int MoneySpentInIntermission => moneySpentInIntermission;
+    public int TotalKills => totalKills;
+    public float TotalKillScore => totalKillScore;
+    public int ShotsFired => shotsFired;
+    public int ShotsHit => shotsHit;
+
+    public float AccuracyPercent => shotsFired > 0 ? (float)shotsHit / (float)shotsFired : 0f;
+    public float EfficiencyMultiplier => 1f + (AccuracyPercent * accuracyEfficiencyWeight);
+    public float NetWaveSavings => Mathf.Max(0f, moneyGainedInWave - moneySpentInIntermission);
+    public float EconomyDecayFactor => 1f / (1f + ((float)totalMoneyGained / Mathf.Max(1f, economyDecayThreshold)));
+    public float EconomyBonus => NetWaveSavings * economyBonusMultiplier * EconomyDecayFactor;
+    public float WaveMultiplier => 1f + (Mathf.Pow(Mathf.Max(0, currentWave), 2f) / Mathf.Max(1f, waveMultiplierDivisor));
+
+    public int CalculateCurrentWaveScore()
+    {
+        float subtotal = waveKillScore + EconomyBonus;
+        float finalScore = subtotal * WaveMultiplier * EfficiencyMultiplier;
+        return Mathf.RoundToInt(finalScore);
+    }
+
+    public int CalculateTotalGameScore()
+    {
+        return cumulativeGameScore + CalculateCurrentWaveScore();
+    }
+
+    public ScoreReport GetScoreReport()
+    {
+        return new ScoreReport
+        {
+            baseKillScore = waveKillScore,
+            totalKillScore = totalKillScore,
+            totalKills = totalKills,
+            waveKills = waveKills,
+            economyBonus = EconomyBonus,
+            economyDecayFactor = EconomyDecayFactor,
+            moneyGainedInWave = moneyGainedInWave,
+            moneySpentInIntermission = moneySpentInIntermission,
+            totalMoneyGained = totalMoneyGained,
+            unspentMoney = NetWaveSavings,
+            waveMultiplier = WaveMultiplier,
+            accuracyPercent = AccuracyPercent,
+            efficiencyMultiplier = EfficiencyMultiplier,
+            waveScore = CalculateCurrentWaveScore(),
+            totalGameScore = CalculateTotalGameScore(),
+            shotsFired = shotsFired,
+            shotsHit = shotsHit
+        };
+    }
 
     [Header("Timers")]
     [SerializeField] private float prepDuration = 15f;      // Preparation time before first wave
@@ -108,6 +222,8 @@ public class WaveManager : MonoBehaviour
     public event System.Action<bool> OnSpawningStatusChanged; // fires when spawning finishes
     public event System.Action<int> OnMoneyChanged;
     public event System.Action<int> OnPointsChanged;
+    public event System.Action<float, string> OnKillScoreRecorded; // (killScore, enemyName)
+    public event System.Action<ScoreReport> OnScoreReportUpdated;
 
     private void Awake()
     {
@@ -133,7 +249,31 @@ public class WaveManager : MonoBehaviour
             }
         }
 
+        if (FindFirstObjectByType<MockScoreUI>() == null)
+        {
+            GameObject mockUI = new GameObject("MockScoreUI");
+            mockUI.AddComponent<MockScoreUI>();
+        }
+
         gameLoopCoroutine = StartCoroutine(GameLoop());
+    }
+
+    private bool IsEnemyDead(GameObject enemy)
+    {
+        if (enemy == null) return true;
+
+        if (!enemy.CompareTag("Enemy"))
+        {
+            return true;
+        }
+
+        UnityEngine.AI.NavMeshAgent navAgent = enemy.GetComponent<UnityEngine.AI.NavMeshAgent>();
+        if (navAgent != null && !navAgent.enabled)
+        {
+            return true;
+        }
+
+        return false;
     }
 
     private void CleanUpDeadEnemies()
@@ -290,8 +430,13 @@ public class WaveManager : MonoBehaviour
                 deathMonitorCoroutine = null;
             }
 
+            // Award completion money reward FIRST before calculating end-of-wave bonuses
+            int completionMoney = 100 * currentWave;
+            money += completionMoney;
+            totalMoneyGained += completionMoney;
+            OnMoneyChanged?.Invoke(money);
+
             SetState(WaveState.WaveCompleted);
-            AddMoneyAndPoints(100 * currentWave, 500 * currentWave);
             OnWaveCompleted?.Invoke(currentWave);
             
             yield return new WaitForSeconds(1.5f);
@@ -378,6 +523,26 @@ public class WaveManager : MonoBehaviour
         }
     }
 
+    public void ReportMockEnemyDeath(GameObject mockEnemy)
+    {
+        if (mockEnemy != null && activeEnemies.Contains(mockEnemy))
+        {
+            AwardDeathRewards(mockEnemy);
+
+            activeEnemies.Remove(mockEnemy);
+            remainingEnemies = activeEnemies.Count;
+            OnEnemyCountChanged?.Invoke(activeEnemies.Count, spawnedEnemiesCount);
+        }
+    }
+
+    public void ReportMockEnemyDeath(MockEnemy mockEnemy)
+    {
+        if (mockEnemy != null)
+        {
+            ReportMockEnemyDeath(mockEnemy.gameObject);
+        }
+    }
+
     private void CalculateWaveParameters(out int count, out float interval)
     {
         count = baseEnemyCount + (currentWave - 1) * enemiesPerWaveIncrease;
@@ -389,60 +554,78 @@ public class WaveManager : MonoBehaviour
         return 1.0f + (wave - 1) * 0.25f;
     }
 
-    private bool IsEnemyDead(GameObject enemy)
-    {
-        if (enemy == null) return true;
-
-        if (!enemy.CompareTag("Enemy"))
-        {
-            return true;
-        }
-
-        UnityEngine.AI.NavMeshAgent navAgent = enemy.GetComponent<UnityEngine.AI.NavMeshAgent>();
-        if (navAgent != null && !navAgent.enabled)
-        {
-            return true;
-        }
-
-        return false;
-    }
-
-    public void ReportMockEnemyDeath(GameObject mockEnemy)
-    {
-        if (activeEnemies.Contains(mockEnemy))
-        {
-            AwardDeathRewards(mockEnemy);
-
-            activeEnemies.Remove(mockEnemy);
-            remainingEnemies = activeEnemies.Count;
-            OnEnemyCountChanged?.Invoke(activeEnemies.Count, spawnedEnemiesCount);
-        }
-    }
-
     private void AwardDeathRewards(GameObject enemy)
     {
         int moneyReward = 10;
-        int pointsReward = 50;
+        float basePoints = defaultBaseKillPoints;
+        float enemyTypeMultiplier = basicEnemyMultiplier;
+        string enemyName = "Enemy";
 
-        // Try getting reward from EnemyReward component
-        EnemyReward rewardComp = enemy.GetComponent<EnemyReward>();
-        if (rewardComp != null)
+        if (enemy != null)
         {
-            moneyReward = rewardComp.moneyAwarded;
-            pointsReward = rewardComp.pointsAwarded;
-        }
-        else
-        {
-            // Try getting reward from MockEnemy component
+            enemyName = enemy.name;
+
+            EnemyReward rewardComp = enemy.GetComponent<EnemyReward>();
+            if (rewardComp != null)
+            {
+                moneyReward = rewardComp.moneyAwarded;
+                basePoints = rewardComp.pointsAwarded;
+            }
+
             MockEnemy mockComp = enemy.GetComponent<MockEnemy>();
             if (mockComp != null)
             {
                 moneyReward = mockComp.moneyAwarded;
-                pointsReward = mockComp.pointsAwarded;
+                basePoints = mockComp.pointsAwarded;
+                if (mockComp.Type == EnemyType.Elite) enemyTypeMultiplier = eliteEnemyMultiplier;
+                else if (mockComp.Type == EnemyType.Boss) enemyTypeMultiplier = bossEnemyMultiplier;
+            }
+            else if (enemy.name.ToLower().Contains("elite"))
+            {
+                enemyTypeMultiplier = eliteEnemyMultiplier;
+            }
+            else if (enemy.name.ToLower().Contains("boss") || enemy.name.ToLower().Contains("sniper"))
+            {
+                enemyTypeMultiplier = bossEnemyMultiplier;
             }
         }
 
-        AddMoneyAndPoints(moneyReward, pointsReward);
+        // Calculation: kill_score = basePoints * enemyTypeMultiplier * (1 + (waves_survived * killScoreWaveScaleFactor))
+        float waveScale = 1f + (Mathf.Max(1, currentWave) * killScoreWaveScaleFactor);
+        float killScore = basePoints * enemyTypeMultiplier * waveScale;
+
+        waveKills++;
+        totalKills++;
+        waveKillScore += killScore;
+        totalKillScore += killScore;
+        totalMoneyGained += moneyReward;
+        moneyGainedInWave += moneyReward;
+        money += moneyReward;
+
+        // In active combat, live points increase with total game score
+        points = CalculateTotalGameScore();
+
+        OnMoneyChanged?.Invoke(money);
+        OnPointsChanged?.Invoke(points);
+        OnKillScoreRecorded?.Invoke(killScore, enemyName);
+        OnScoreReportUpdated?.Invoke(GetScoreReport());
+    }
+
+    public void RecordShotFired()
+    {
+        shotsFired++;
+    }
+
+    public void RecordShotHit()
+    {
+        shotsHit++;
+    }
+
+    public void RecalculatePoints()
+    {
+        points = CalculateTotalGameScore();
+        OnPointsChanged?.Invoke(points);
+        OnScoreReportUpdated?.Invoke(GetScoreReport());
     }
 
     private bool IsPlayerDead()
@@ -477,6 +660,36 @@ public class WaveManager : MonoBehaviour
         if (currentState != newState)
         {
             currentState = newState;
+
+            // When entering intermission (Preparing phase), reset per-wave economy & wave metrics
+            if (currentState == WaveState.Preparing)
+            {
+                moneyGainedInWave = 0;
+                moneySpentInIntermission = 0;
+                waveKillScore = 0f;
+                waveKills = 0;
+            }
+
+            // Reset accuracy shot counters per wave when combat starts
+            if (currentState == WaveState.WaveActive)
+            {
+                shotsFired = 0;
+                shotsHit = 0;
+                OnScoreReportUpdated?.Invoke(GetScoreReport());
+            }
+
+            // Apply full formula multipliers & bonuses at wave end or game over/victory
+            if (currentState == WaveState.WaveCompleted)
+            {
+                int waveScore = CalculateCurrentWaveScore();
+                cumulativeGameScore += waveScore;
+                RecalculatePoints();
+            }
+            else if (currentState == WaveState.GameOver || currentState == WaveState.Victory)
+            {
+                RecalculatePoints();
+            }
+
             OnWaveStateChanged?.Invoke(currentState);
             Debug.Log($"[WaveManager] State transitioned to: {currentState}");
 
@@ -525,9 +738,10 @@ public class WaveManager : MonoBehaviour
     public void AddMoneyAndPoints(int moneyAwarded, int pointsAwarded)
     {
         money += moneyAwarded;
-        points += pointsAwarded;
+        totalMoneyGained += moneyAwarded;
+        moneyGainedInWave += moneyAwarded;
         OnMoneyChanged?.Invoke(money);
-        OnPointsChanged?.Invoke(points);
+        RecalculatePoints();
     }
 
     public bool TrySpendMoney(int amount)
@@ -535,7 +749,10 @@ public class WaveManager : MonoBehaviour
         if (money >= amount)
         {
             money -= amount;
+            totalMoneySpent += amount;
+            moneySpentInIntermission += amount;
             OnMoneyChanged?.Invoke(money);
+            RecalculatePoints();
             return true;
         }
         return false;

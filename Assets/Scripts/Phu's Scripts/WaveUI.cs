@@ -153,7 +153,7 @@ public class WaveUI : MonoBehaviour
 
         if (pointsText != null)
         {
-            pointsText.text = WaveManager.Instance.Points.ToString();
+            pointsText.text = WaveManager.Instance.Points.ToString("N0");
         }
 
         CheckMouseUnlockHint(report.state, report.currentWave);
@@ -594,7 +594,7 @@ public class WaveUI : MonoBehaviour
     {
         if (pointsText != null)
         {
-            pointsText.text = value.ToString();
+            pointsText.text = value.ToString("N0");
         }
     }
 
