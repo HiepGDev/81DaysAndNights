@@ -176,6 +176,8 @@ public class WaveManager : MonoBehaviour
 
     [Header("Enemy Configurations")]
     [SerializeField] private List<EnemySpawnRule> enemyRules = new List<EnemySpawnRule>();
+    [Tooltip("Minimum distance from the player to consider a spawn point valid (when multiple options exist).")]
+    [SerializeField] private float minSpawnDistanceFromPlayer = 10f;
 
     [Header("Ally Configurations")]
     [SerializeField] private Transform[] allySpawnPoints;
@@ -445,8 +447,65 @@ public class WaveManager : MonoBehaviour
         }
     }
 
+    private Transform SelectBestSpawnPoint(List<Transform> validPoints, Vector3 playerPos)
+    {
+        if (validPoints == null || validPoints.Count == 0) return null;
+        if (validPoints.Count == 1) return validPoints[0];
+
+        // Filter points that meet minimum distance threshold
+        List<Transform> candidatePoints = new List<Transform>();
+        foreach (var pt in validPoints)
+        {
+            if (pt != null && Vector3.Distance(playerPos, pt.position) >= minSpawnDistanceFromPlayer)
+            {
+                candidatePoints.Add(pt);
+            }
+        }
+
+        // If no points pass the minimum distance threshold, use all valid points as candidate pool
+        if (candidatePoints.Count == 0)
+        {
+            candidatePoints = validPoints;
+        }
+
+        if (candidatePoints.Count == 1) return candidatePoints[0];
+
+        // Pick 2 candidate points and select the one further away from the player
+        int indexA = UnityEngine.Random.Range(0, candidatePoints.Count);
+        int indexB = UnityEngine.Random.Range(0, candidatePoints.Count);
+        int attempts = 0;
+        while (indexB == indexA && candidatePoints.Count > 1 && attempts < 10)
+        {
+            indexB = UnityEngine.Random.Range(0, candidatePoints.Count);
+            attempts++;
+        }
+
+        Transform pointA = candidatePoints[indexA];
+        Transform pointB = candidatePoints[indexB];
+
+        float distA = Vector3.Distance(playerPos, pointA.position);
+        float distB = Vector3.Distance(playerPos, pointB.position);
+
+        return distA >= distB ? pointA : pointB;
+    }
+
     private void SpawnSingleEnemy()
     {
+        Vector3 playerPos = Vector3.zero;
+        if (playerTransform != null)
+        {
+            playerPos = playerTransform.position;
+        }
+        else
+        {
+            var pObj = GameObject.FindWithTag("Player");
+            if (pObj != null)
+            {
+                playerTransform = pObj.transform;
+                playerPos = playerTransform.position;
+            }
+        }
+
         Vector3 spawnPos = Vector3.zero;
         Quaternion spawnRot = Quaternion.identity;
         GameObject spawnedObj = null;
@@ -461,20 +520,26 @@ public class WaveManager : MonoBehaviour
                     if (sp != null) validPoints.Add(sp);
                 }
 
-                if (validPoints.Count > 0)
+                Transform chosenPoint = SelectBestSpawnPoint(validPoints, playerPos);
+                if (chosenPoint != null)
                 {
-                    Transform chosenPoint = validPoints[UnityEngine.Random.Range(0, validPoints.Count)];
                     spawnPos = chosenPoint.position;
                     spawnRot = chosenPoint.rotation;
                 }
                 else
                 {
-                    spawnPos = new Vector3(UnityEngine.Random.Range(-10f, 10f), 0f, UnityEngine.Random.Range(-10f, 10f));
+                    Vector3 offset = UnityEngine.Random.onUnitSphere;
+                    offset.y = 0;
+                    if (offset.sqrMagnitude > 0.001f) offset.Normalize();
+                    spawnPos = playerPos + offset * UnityEngine.Random.Range(minSpawnDistanceFromPlayer, minSpawnDistanceFromPlayer + 15f);
                 }
             }
             else
             {
-                spawnPos = new Vector3(UnityEngine.Random.Range(-10f, 10f), 0f, UnityEngine.Random.Range(-10f, 10f));
+                Vector3 offset = UnityEngine.Random.onUnitSphere;
+                offset.y = 0;
+                if (offset.sqrMagnitude > 0.001f) offset.Normalize();
+                spawnPos = playerPos + offset * UnityEngine.Random.Range(minSpawnDistanceFromPlayer, minSpawnDistanceFromPlayer + 15f);
             }
 
             if (rule.enemyPrefab != null)
@@ -489,7 +554,10 @@ public class WaveManager : MonoBehaviour
         }
         else
         {
-            spawnPos = new Vector3(UnityEngine.Random.Range(-10f, 10f), 0f, UnityEngine.Random.Range(-10f, 10f));
+            Vector3 offset = UnityEngine.Random.onUnitSphere;
+            offset.y = 0;
+            if (offset.sqrMagnitude > 0.001f) offset.Normalize();
+            spawnPos = playerPos + offset * UnityEngine.Random.Range(minSpawnDistanceFromPlayer, minSpawnDistanceFromPlayer + 15f);
             spawnedObj = CreateProceduralMockEnemy(spawnPos, spawnRot);
         }
 

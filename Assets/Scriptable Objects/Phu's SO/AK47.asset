@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   itemName: AK-47
   itemDescription: Assault rifle with high firing rate. Good for crowd control.
-  price: 300
+  price: 500
   icon: {fileID: 21300000, guid: 8ba5b4f9283577a41afd18e93c31b45a, type: 3}
   specs:
   - 'Damage: 30'

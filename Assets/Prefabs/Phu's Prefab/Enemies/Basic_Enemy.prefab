@@ -3976,7 +3976,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PhuScene.EnemyReward
   enemyType: 0
   pointsAwarded: 50
-  moneyAwarded: 10
+  moneyAwarded: 20
 --- !u!114 &3740863656636659566
 MonoBehaviour:
   m_ObjectHideFlags: 0

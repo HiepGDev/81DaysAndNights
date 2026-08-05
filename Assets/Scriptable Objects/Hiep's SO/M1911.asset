@@ -12,10 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d690b49afd5fe004d98d41ea5bd77115, type: 3}
   m_Name: M1911
   m_EditorClassIdentifier: Assembly-CSharp::WeaponSO
-  Damage: 10
+  Damage: 30
   MaxDistance: 50
   currentAmmo: 9
-  reserveAmmo: 37
+  reserveAmmo: 45
   maxReserveAmmo: 45
   magazineSize: 9
   fireRate: 0.3
