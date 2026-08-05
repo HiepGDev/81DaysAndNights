@@ -18375,53 +18375,9 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 1043125036645914345, guid: 8a4319ac8fcdaf64e820bc078d5f16d2, type: 3}
-      propertyPath: m_ConnectedBody
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 1418041040092366471, guid: 8a4319ac8fcdaf64e820bc078d5f16d2, type: 3}
-      propertyPath: m_ConnectedBody
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 1762066333634994541, guid: 8a4319ac8fcdaf64e820bc078d5f16d2, type: 3}
-      propertyPath: m_ConnectedBody
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 1868419546053183442, guid: 8a4319ac8fcdaf64e820bc078d5f16d2, type: 3}
-      propertyPath: m_ConnectedBody
-      value: 
-      objectReference: {fileID: 0}
     - target: {fileID: 3462982725432306100, guid: 8a4319ac8fcdaf64e820bc078d5f16d2, type: 3}
       propertyPath: m_Name
       value: Teammate Defender
-      objectReference: {fileID: 0}
-    - target: {fileID: 3524422741484891830, guid: 8a4319ac8fcdaf64e820bc078d5f16d2, type: 3}
-      propertyPath: m_ConnectedBody
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 3781802177289973679, guid: 8a4319ac8fcdaf64e820bc078d5f16d2, type: 3}
-      propertyPath: firePoint
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 4794679250221536177, guid: 8a4319ac8fcdaf64e820bc078d5f16d2, type: 3}
-      propertyPath: m_ConnectedBody
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 6520559606047370687, guid: 8a4319ac8fcdaf64e820bc078d5f16d2, type: 3}
-      propertyPath: m_ConnectedBody
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 7020372494305336880, guid: 8a4319ac8fcdaf64e820bc078d5f16d2, type: 3}
-      propertyPath: m_ConnectedBody
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 7433300876418510411, guid: 8a4319ac8fcdaf64e820bc078d5f16d2, type: 3}
-      propertyPath: m_ConnectedBody
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 8207431852915798499, guid: 8a4319ac8fcdaf64e820bc078d5f16d2, type: 3}
-      propertyPath: m_ConnectedBody
-      value: 
       objectReference: {fileID: 0}
     - target: {fileID: 8224298779817141450, guid: 8a4319ac8fcdaf64e820bc078d5f16d2, type: 3}
       propertyPath: m_LocalPosition.x
@@ -18462,10 +18418,6 @@ PrefabInstance:
     - target: {fileID: 8224298779817141450, guid: 8a4319ac8fcdaf64e820bc078d5f16d2, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 9129561331348848399, guid: 8a4319ac8fcdaf64e820bc078d5f16d2, type: 3}
-      propertyPath: m_ConnectedBody
-      value: 
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -19688,6 +19640,75 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 857298113}
   m_Mesh: {fileID: 7414509850709746518, guid: 1a398ac140d03bd49a637bbe347d7507, type: 3}
+--- !u!1001 &858052511
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 1956138645483988755, guid: 0ae54a5f061143540a2393c93f78d894, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 8.48723
+      objectReference: {fileID: 0}
+    - target: {fileID: 1956138645483988755, guid: 0ae54a5f061143540a2393c93f78d894, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 1.20907
+      objectReference: {fileID: 0}
+    - target: {fileID: 1956138645483988755, guid: 0ae54a5f061143540a2393c93f78d894, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -26.28199
+      objectReference: {fileID: 0}
+    - target: {fileID: 1956138645483988755, guid: 0ae54a5f061143540a2393c93f78d894, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1956138645483988755, guid: 0ae54a5f061143540a2393c93f78d894, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1956138645483988755, guid: 0ae54a5f061143540a2393c93f78d894, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1956138645483988755, guid: 0ae54a5f061143540a2393c93f78d894, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1956138645483988755, guid: 0ae54a5f061143540a2393c93f78d894, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1956138645483988755, guid: 0ae54a5f061143540a2393c93f78d894, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1956138645483988755, guid: 0ae54a5f061143540a2393c93f78d894, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2069129159604702209, guid: 0ae54a5f061143540a2393c93f78d894, type: 3}
+      propertyPath: m_Name
+      value: Teammate Follower
+      objectReference: {fileID: 0}
+    - target: {fileID: 5282084904789678566, guid: 0ae54a5f061143540a2393c93f78d894, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5282084904789678566, guid: 0ae54a5f061143540a2393c93f78d894, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5282084904789678566, guid: 0ae54a5f061143540a2393c93f78d894, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 0ae54a5f061143540a2393c93f78d894, type: 3}
 --- !u!1 &858451183
 GameObject:
   m_ObjectHideFlags: 0
@@ -55724,14 +55745,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 382368939284629650, guid: 32a67d9598cf3974d8584aef04dfcbde, type: 3}
-      propertyPath: m_ConnectedBody
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 589296847157255661, guid: 32a67d9598cf3974d8584aef04dfcbde, type: 3}
-      propertyPath: m_ConnectedBody
-      value: 
-      objectReference: {fileID: 0}
     - target: {fileID: 1507195930871928144, guid: 32a67d9598cf3974d8584aef04dfcbde, type: 3}
       propertyPath: m_LocalPosition.x
       value: 7.28854
@@ -55772,45 +55785,21 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 1792163091095347188, guid: 32a67d9598cf3974d8584aef04dfcbde, type: 3}
-      propertyPath: m_ConnectedBody
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 2242396141525910444, guid: 32a67d9598cf3974d8584aef04dfcbde, type: 3}
-      propertyPath: m_ConnectedBody
-      value: 
-      objectReference: {fileID: 0}
     - target: {fileID: 2838897745346657174, guid: 32a67d9598cf3974d8584aef04dfcbde, type: 3}
       propertyPath: m_Name
       value: Teammate Patroller
       objectReference: {fileID: 0}
-    - target: {fileID: 3051766735992472333, guid: 32a67d9598cf3974d8584aef04dfcbde, type: 3}
-      propertyPath: m_ConnectedBody
-      value: 
+    - target: {fileID: 3174471687773158990, guid: 32a67d9598cf3974d8584aef04dfcbde, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 3795345460563329058, guid: 32a67d9598cf3974d8584aef04dfcbde, type: 3}
-      propertyPath: m_ConnectedBody
-      value: 
+    - target: {fileID: 3174471687773158990, guid: 32a67d9598cf3974d8584aef04dfcbde, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 4135742253553522678, guid: 32a67d9598cf3974d8584aef04dfcbde, type: 3}
-      propertyPath: m_ConnectedBody
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 5005586477393115773, guid: 32a67d9598cf3974d8584aef04dfcbde, type: 3}
-      propertyPath: m_ConnectedBody
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 5422860780724784225, guid: 32a67d9598cf3974d8584aef04dfcbde, type: 3}
-      propertyPath: m_ConnectedBody
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 8328025386449426473, guid: 32a67d9598cf3974d8584aef04dfcbde, type: 3}
-      propertyPath: m_ConnectedBody
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 8652794502569001636, guid: 32a67d9598cf3974d8584aef04dfcbde, type: 3}
-      propertyPath: m_ConnectedBody
-      value: 
+    - target: {fileID: 3174471687773158990, guid: 32a67d9598cf3974d8584aef04dfcbde, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -91450,3 +91439,4 @@ SceneRoots:
   - {fileID: 1737291326}
   - {fileID: 2070672646}
   - {fileID: 2206308393835692557}
+  - {fileID: 858052511}

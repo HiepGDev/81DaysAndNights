@@ -470,7 +470,7 @@ GameObject:
   - component: {fileID: 9207581399941687389}
   m_Layer: 0
   m_Name: ForeArm.R
-  m_TagString: Untagged
+  m_TagString: Teammate
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -1008,7 +1008,7 @@ GameObject:
   - component: {fileID: 638909613594875162}
   m_Layer: 0
   m_Name: Spine
-  m_TagString: Untagged
+  m_TagString: Teammate
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -1280,7 +1280,7 @@ GameObject:
   - component: {fileID: 8323421724775319962}
   m_Layer: 0
   m_Name: ForeArm.L
-  m_TagString: Untagged
+  m_TagString: Teammate
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -1426,7 +1426,7 @@ GameObject:
   - component: {fileID: 3557150744696981777}
   m_Layer: 0
   m_Name: Spine1
-  m_TagString: Untagged
+  m_TagString: Teammate
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -2071,7 +2071,7 @@ GameObject:
   - component: {fileID: 308980880981351679}
   m_Layer: 0
   m_Name: Arm.L
-  m_TagString: Untagged
+  m_TagString: Teammate
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -2500,7 +2500,7 @@ GameObject:
   - component: {fileID: 945941184660499717}
   m_Layer: 0
   m_Name: UpLeg.L
-  m_TagString: Untagged
+  m_TagString: Teammate
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -2835,7 +2835,7 @@ GameObject:
   - component: {fileID: 4396610609771952442}
   m_Layer: 0
   m_Name: Leg.R
-  m_TagString: Untagged
+  m_TagString: Teammate
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -3753,7 +3753,7 @@ GameObject:
   - component: {fileID: 2353163142030271941}
   m_Layer: 0
   m_Name: Arm.R
-  m_TagString: Untagged
+  m_TagString: Teammate
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -3899,7 +3899,7 @@ GameObject:
   - component: {fileID: 6347874771349085755}
   m_Layer: 0
   m_Name: Leg.L
-  m_TagString: Untagged
+  m_TagString: Teammate
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -4076,7 +4076,7 @@ GameObject:
   - component: {fileID: 289131931882882978}
   m_Layer: 0
   m_Name: UpLeg.R
-  m_TagString: Untagged
+  m_TagString: Teammate
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -4531,7 +4531,7 @@ Transform:
   m_GameObject: {fileID: 6778761932031278380}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.9268398, y: 0.02, z: 4.6211205}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -4632,7 +4632,7 @@ GameObject:
   - component: {fileID: 598253411174901851}
   m_Layer: 0
   m_Name: Head
-  m_TagString: Untagged
+  m_TagString: Teammate
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

@@ -436,7 +436,7 @@ GameObject:
   - component: {fileID: 2179100340882606329}
   m_Layer: 0
   m_Name: Head
-  m_TagString: Untagged
+  m_TagString: Teammate
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -628,7 +628,7 @@ GameObject:
   - component: {fileID: 5339329178338760875}
   m_Layer: 0
   m_Name: Spine1
-  m_TagString: Untagged
+  m_TagString: Teammate
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -961,7 +961,7 @@ GameObject:
   - component: {fileID: 7417289299168555540}
   m_Layer: 0
   m_Name: Leg.L
-  m_TagString: Untagged
+  m_TagString: Teammate
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -1308,7 +1308,7 @@ GameObject:
   - component: {fileID: 7399333004894094327}
   m_Layer: 0
   m_Name: UpLeg.R
-  m_TagString: Untagged
+  m_TagString: Teammate
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -2204,7 +2204,7 @@ GameObject:
   - component: {fileID: 331112747225282556}
   m_Layer: 0
   m_Name: Arm.R
-  m_TagString: Untagged
+  m_TagString: Teammate
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -2691,7 +2691,7 @@ GameObject:
   - component: {fileID: 6599309588642687451}
   m_Layer: 0
   m_Name: UpLeg.L
-  m_TagString: Untagged
+  m_TagString: Teammate
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -2949,7 +2949,7 @@ GameObject:
   - component: {fileID: 3958170849498989396}
   m_Layer: 0
   m_Name: ForeArm.R
-  m_TagString: Untagged
+  m_TagString: Teammate
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -3701,7 +3701,7 @@ GameObject:
   - component: {fileID: 4255092363700390463}
   m_Layer: 0
   m_Name: Leg.R
-  m_TagString: Untagged
+  m_TagString: Teammate
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -3847,7 +3847,7 @@ GameObject:
   - component: {fileID: 407529514108640572}
   m_Layer: 0
   m_Name: Spine
-  m_TagString: Untagged
+  m_TagString: Teammate
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -5293,7 +5293,7 @@ GameObject:
   - component: {fileID: 3954118315645215654}
   m_Layer: 0
   m_Name: Arm.L
-  m_TagString: Untagged
+  m_TagString: Teammate
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -5439,7 +5439,7 @@ GameObject:
   - component: {fileID: 5205239618958959954}
   m_Layer: 0
   m_Name: ForeArm.L
-  m_TagString: Untagged
+  m_TagString: Teammate
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
