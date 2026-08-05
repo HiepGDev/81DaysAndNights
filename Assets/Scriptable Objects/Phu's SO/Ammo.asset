@@ -17,7 +17,10 @@ MonoBehaviour:
   price: 50
   icon: {fileID: 21300000, guid: d20a0795fbbff9e418b35070a919777f, type: 3}
   specs:
-  - 'Amount: All'
+  - 
+  - 'Amount: Max'
+  - 
+  - 'Applies to: All'
   itemType: 1
   weaponPrefab: {fileID: 0}
   allyPrefab: {fileID: 0}

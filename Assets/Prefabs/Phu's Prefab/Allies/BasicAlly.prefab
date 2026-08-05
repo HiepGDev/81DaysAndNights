@@ -1972,8 +1972,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d4cdb56b10e452b4eaa6bb37275ddc92, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TeammateAI
-  teammateData: {fileID: 11400000, guid: 7c6ff9ee23f0c784c823ea9003f8bfb7, type: 2}
-  aiMode: 1
+  teammateData: {fileID: 0}
+  aiMode: 0
   playerTarget: {fileID: 0}
   defendPoint: {fileID: 0}
   followTriggerDistance: 10
@@ -1997,10 +1997,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5ca613f1872007c4d9f494f3925aef84, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TeammateDetection
-  detectionRadius: 160
+  detectionRadius: 80
   targetTags:
   - Enemy
-  teammateData: {fileID: 11400000, guid: 7c6ff9ee23f0c784c823ea9003f8bfb7, type: 2}
+  teammateData: {fileID: 0}
 --- !u!114 &3882009546457222426
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2013,8 +2013,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 64e3e05966663014d9ab2527f0208a14, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TeammateShooting
-  teammateData: {fileID: 11400000, guid: 7c6ff9ee23f0c784c823ea9003f8bfb7, type: 2}
-  currentFireMode: 1
+  teammateData: {fileID: 0}
+  currentFireMode: 0
   impactVfxPrefab: {fileID: 0}
   tracerPrefab: {fileID: 7048567237833717488, guid: b951bfa1a90276e4b94fe9511357e939, type: 3}
   firePoint: {fileID: 4713321164217777501}
@@ -2022,7 +2022,7 @@ MonoBehaviour:
   autoFireRate: 0.1
   semiFireRateMin: 0.3
   semiFireRateMax: 0.6
-  fireDistance: 20
+  fireDistance: 80
   damagePerShot: 3
   hitLayers:
     serializedVersion: 2
@@ -2050,7 +2050,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::TeammateHealth
   maxHealth: 101
   currentHealth: 0
-  teammateData: {fileID: 11400000, guid: 7c6ff9ee23f0c784c823ea9003f8bfb7, type: 2}
+  teammateData: {fileID: 0}
+  lidBottomL: {fileID: 0}
+  lidBottomR: {fileID: 0}
 --- !u!114 &8595953656602994814
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2067,7 +2069,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 128
   searchRadius: 25
-  teammateData: {fileID: 11400000, guid: 7c6ff9ee23f0c784c823ea9003f8bfb7, type: 2}
+  teammateData: {fileID: 0}
 --- !u!82 &553675118542780945
 AudioSource:
   m_ObjectHideFlags: 0

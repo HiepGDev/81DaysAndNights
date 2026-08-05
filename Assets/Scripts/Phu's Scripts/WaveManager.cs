@@ -1,7 +1,6 @@
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
-using PurrNet;
 using PhuScene;
 
 public enum WaveState
@@ -40,23 +39,23 @@ public struct WaveStatusReport
     public float difficultyMultiplier;
 }
 
-public class WaveManager : NetworkBehaviour
+public class WaveManager : MonoBehaviour
 {
     public static WaveManager Instance { get; private set; }
 
     [Header("Wave State")]
-    [SerializeField] private SyncVar<int> currentWave = new(0);
-    [SerializeField] private SyncVar<WaveState> currentState = new(WaveState.Preparing);
+    private int currentWave = 0;
+    private WaveState currentState = (WaveState)(-1);
     [SerializeField] private int totalWaves = 10; // Capped at 10 (set to 0 for endless)
 
     [Header("Economy System")]
-    [SerializeField] private SyncVar<int> money = new(0);
-    [SerializeField] private SyncVar<int> points = new(0);
+    [SerializeField] private int money = 0;
+    [SerializeField] private int points = 0;
 
     [Header("Timers")]
     [SerializeField] private float prepDuration = 15f;      // Preparation time before first wave
     [SerializeField] private float cooldownDuration = 30f;  // Cooldown time between waves
-    private SyncVar<float> countdownTimer = new(0f);
+    private float countdownTimer = 0f;
 
     [Header("Enemy Configurations")]
     [SerializeField] private List<EnemySpawnRule> enemyRules = new List<EnemySpawnRule>();
@@ -93,10 +92,10 @@ public class WaveManager : NetworkBehaviour
 
     // Runtime Tracking
     private List<GameObject> activeEnemies = new List<GameObject>();
-    private SyncVar<int> totalEnemiesToSpawn = new(0);
-    private SyncVar<int> spawnedEnemiesCount = new(0);
-    private SyncVar<bool> isSpawningCompleted = new(false);
-    private SyncVar<int> remainingEnemies = new(0);
+    private int totalEnemiesToSpawn = 0;
+    private int spawnedEnemiesCount = 0;
+    private bool isSpawningCompleted = false;
+    private int remainingEnemies = 0;
     private Coroutine gameLoopCoroutine;
     private Coroutine deathMonitorCoroutine;
 
@@ -134,59 +133,18 @@ public class WaveManager : NetworkBehaviour
             }
         }
 
-        // Start game loop locally if offline
-        if (!isSpawned)
-        {
-            gameLoopCoroutine = StartCoroutine(GameLoop());
-        }
-    }
-
-    protected override void OnSpawned()
-    {
-        if (isServer)
-        {
-            gameLoopCoroutine = StartCoroutine(GameLoop());
-        }
-
-        if (isClient)
-        {
-            if (!isServer)
-            {
-                currentState.onChanged += (state) => OnWaveStateChanged?.Invoke(state);
-                currentWave.onChangedWithOld += (oldWave, newWave) => {
-                    if (newWave > oldWave) OnWaveStarted?.Invoke(newWave);
-                };
-                countdownTimer.onChanged += (time) => OnCountdownTick?.Invoke(time);
-                isSpawningCompleted.onChanged += (comp) => OnSpawningStatusChanged?.Invoke(comp);
-                
-                remainingEnemies.onChanged += (rem) => OnEnemyCountChanged?.Invoke(rem, spawnedEnemiesCount.value);
-                spawnedEnemiesCount.onChanged += (spawned) => OnEnemyCountChanged?.Invoke(remainingEnemies.value, spawned);
-
-                money.onChanged += (val) => OnMoneyChanged?.Invoke(val);
-                points.onChanged += (val) => OnPointsChanged?.Invoke(val);
-            }
-
-            // Trigger initial events for all clients (including host) so UI initializes state correctly on spawn
-            OnWaveStateChanged?.Invoke(currentState.value);
-            OnCountdownTick?.Invoke(countdownTimer.value);
-            OnEnemyCountChanged?.Invoke(remainingEnemies.value, spawnedEnemiesCount.value);
-            OnMoneyChanged?.Invoke(money.value);
-            OnPointsChanged?.Invoke(points.value);
-        }
+        gameLoopCoroutine = StartCoroutine(GameLoop());
     }
 
     private void CleanUpDeadEnemies()
     {
         int previousCount = activeEnemies.Count;
 
-        if (!isSpawned || isServer)
+        foreach (var enemy in activeEnemies)
         {
-            foreach (var enemy in activeEnemies)
+            if (enemy != null && IsEnemyDead(enemy))
             {
-                if (enemy != null && IsEnemyDead(enemy))
-                {
-                    AwardDeathRewards(enemy);
-                }
+                AwardDeathRewards(enemy);
             }
         }
 
@@ -194,9 +152,9 @@ public class WaveManager : NetworkBehaviour
         
         if (activeEnemies.Count != previousCount)
         {
-            remainingEnemies.value = activeEnemies.Count;
-            OnEnemyCountChanged?.Invoke(activeEnemies.Count, spawnedEnemiesCount.value);
-            Debug.Log($"[WaveManager] Enemies remaining: {activeEnemies.Count}/{spawnedEnemiesCount.value}");
+            remainingEnemies = activeEnemies.Count;
+            OnEnemyCountChanged?.Invoke(activeEnemies.Count, spawnedEnemiesCount);
+            Debug.Log($"[WaveManager] Enemies remaining: {activeEnemies.Count}/{spawnedEnemiesCount}");
         }
     }
 
@@ -204,7 +162,7 @@ public class WaveManager : NetworkBehaviour
     {
         WaitForSeconds waitDelay = new WaitForSeconds(deathCheckInterval);
 
-        while (currentState.value == WaveState.WaveActive)
+        while (currentState == WaveState.WaveActive)
         {
             CleanUpDeadEnemies();
             yield return waitDelay;
@@ -213,13 +171,13 @@ public class WaveManager : NetworkBehaviour
 
     private IEnumerator GameLoop()
     {
-        currentWave.value = 0;
+        currentWave = 0;
 
         while (true)
         {
             // 1. Preparation Phase (Countdown to next wave)
-            currentWave.value++;
-            if (totalWaves > 0 && currentWave.value > totalWaves)
+            currentWave++;
+            if (totalWaves > 0 && currentWave > totalWaves)
             {
                 SetState(WaveState.Victory);
                 Debug.Log("[WaveManager] Game Victory! Completed all waves.");
@@ -227,10 +185,10 @@ public class WaveManager : NetworkBehaviour
             }
 
             SetState(WaveState.Preparing);
-            OnWaveStarted?.Invoke(currentWave.value);
-            countdownTimer.value = currentWave.value == 1 ? prepDuration : cooldownDuration;
+            OnWaveStarted?.Invoke(currentWave);
+            countdownTimer = currentWave == 1 ? prepDuration : cooldownDuration;
             
-            while (countdownTimer.value > 0f)
+            while (countdownTimer > 0f)
             {
                 if (IsPlayerDead())
                 {
@@ -238,18 +196,18 @@ public class WaveManager : NetworkBehaviour
                     yield break;
                 }
 
-                OnCountdownTick?.Invoke(countdownTimer.value);
+                OnCountdownTick?.Invoke(countdownTimer);
 
                 float elapsed = 0f;
-                while (elapsed < 1.0f && countdownTimer.value > 0f)
+                while (elapsed < 1.0f && countdownTimer > 0f)
                 {
                     yield return new WaitForSeconds(0.05f);
                     elapsed += 0.05f;
                 }
 
-                if (countdownTimer.value > 0f)
+                if (countdownTimer > 0f)
                 {
-                    countdownTimer.value -= 1.0f;
+                    countdownTimer -= 1.0f;
                 }
             }
             OnCountdownTick?.Invoke(0f);
@@ -260,13 +218,13 @@ public class WaveManager : NetworkBehaviour
             int count;
             float spawnInterval;
             CalculateWaveParameters(out count, out spawnInterval);
-            totalEnemiesToSpawn.value = count;
-            spawnedEnemiesCount.value = 0;
-            isSpawningCompleted.value = false;
+            totalEnemiesToSpawn = count;
+            spawnedEnemiesCount = 0;
+            isSpawningCompleted = false;
             OnSpawningStatusChanged?.Invoke(false);
             activeEnemies.Clear();
-            remainingEnemies.value = 0;
-            OnEnemyCountChanged?.Invoke(0, spawnedEnemiesCount.value);
+            remainingEnemies = 0;
+            OnEnemyCountChanged?.Invoke(0, spawnedEnemiesCount);
 
             if (deathMonitorCoroutine != null)
             {
@@ -275,7 +233,7 @@ public class WaveManager : NetworkBehaviour
             deathMonitorCoroutine = StartCoroutine(MonitorEnemyDeaths());
 
             // Batch spawning loop
-            while (spawnedEnemiesCount.value < totalEnemiesToSpawn.value)
+            while (spawnedEnemiesCount < totalEnemiesToSpawn)
             {
                 if (IsPlayerDead())
                 {
@@ -283,18 +241,18 @@ public class WaveManager : NetworkBehaviour
                     yield break;
                 }
 
-                int currentBatchSize = Mathf.Min(enemiesPerBatch, totalEnemiesToSpawn.value - spawnedEnemiesCount.value);
+                int currentBatchSize = Mathf.Min(enemiesPerBatch, totalEnemiesToSpawn - spawnedEnemiesCount);
                 for (int i = 0; i < currentBatchSize; i++)
                 {
                     SpawnSingleEnemy();
-                    spawnedEnemiesCount.value++;
-                    remainingEnemies.value = activeEnemies.Count;
-                    OnEnemyCountChanged?.Invoke(activeEnemies.Count, spawnedEnemiesCount.value);
+                    spawnedEnemiesCount++;
+                    remainingEnemies = activeEnemies.Count;
+                    OnEnemyCountChanged?.Invoke(activeEnemies.Count, spawnedEnemiesCount);
 
                     yield return new WaitForSeconds(spawnInterval);
                 }
 
-                if (spawnedEnemiesCount.value >= totalEnemiesToSpawn.value)
+                if (spawnedEnemiesCount >= totalEnemiesToSpawn)
                 {
                     break;
                 }
@@ -312,7 +270,7 @@ public class WaveManager : NetworkBehaviour
                 }
             }
 
-            isSpawningCompleted.value = true;
+            isSpawningCompleted = true;
             OnSpawningStatusChanged?.Invoke(true);
 
             while (activeEnemies.Count > 0)
@@ -333,11 +291,8 @@ public class WaveManager : NetworkBehaviour
             }
 
             SetState(WaveState.WaveCompleted);
-            if (!isSpawned || isServer)
-            {
-                AddMoneyAndPoints(100 * currentWave.value, 500 * currentWave.value);
-            }
-            OnWaveCompleted?.Invoke(currentWave.value);
+            AddMoneyAndPoints(100 * currentWave, 500 * currentWave);
+            OnWaveCompleted?.Invoke(currentWave);
             
             yield return new WaitForSeconds(1.5f);
         }
@@ -361,7 +316,7 @@ public class WaveManager : NetworkBehaviour
 
         GameObject spawnedObj = null;
 
-        GameObject prefab = ChooseEnemyPrefabForWave(currentWave.value);
+        GameObject prefab = ChooseEnemyPrefabForWave(currentWave);
 
         if (prefab != null)
         {
@@ -370,34 +325,22 @@ public class WaveManager : NetworkBehaviour
         }
         else
         {
-            if (isSpawned)
-            {
-                Debug.LogError("[WaveManager] Cannot spawn procedural capsules in multiplayer. Please assign enemy prefabs in the inspector or setup enemyRules.");
-            }
-            else
-            {
-                spawnedObj = CreateProceduralMockEnemy(spawnPos, spawnRot);
-            }
+            spawnedObj = CreateProceduralMockEnemy(spawnPos, spawnRot);
         }
 
         if (spawnedObj != null)
         {
             activeEnemies.Add(spawnedObj);
             ApplyDifficultyScaling(spawnedObj);
-
-            if (isSpawned)
-            {
-                NetworkManager.main.Spawn(spawnedObj);
-            }
         }
     }
 
     private GameObject CreateProceduralMockEnemy(Vector3 position, Quaternion rotation)
     {
-        EnemyType type = ChooseEnemyTypeForWave(currentWave.value);
+        EnemyType type = ChooseEnemyTypeForWave(currentWave);
 
         GameObject mock = GameObject.CreatePrimitive(PrimitiveType.Capsule);
-        mock.name = $"MockEnemy_{type}_Wave{currentWave.value}_{spawnedEnemiesCount.value}";
+        mock.name = $"MockEnemy_{type}_Wave{currentWave}_{spawnedEnemiesCount}";
         mock.transform.position = position + Vector3.up * 1f;
         mock.transform.rotation = rotation;
         mock.tag = "Enemy";
@@ -428,17 +371,17 @@ public class WaveManager : NetworkBehaviour
         if (mock != null)
         {
             mock.ScaleStats(
-                1f + (currentWave.value - 1) * healthScalePerWave,
-                1f + (currentWave.value - 1) * damageScalePerWave,
-                Mathf.Min(2.0f, 1f + (currentWave.value - 1) * speedScalePerWave)
+                1f + (currentWave - 1) * healthScalePerWave,
+                1f + (currentWave - 1) * damageScalePerWave,
+                Mathf.Min(2.0f, 1f + (currentWave - 1) * speedScalePerWave)
             );
         }
     }
 
     private void CalculateWaveParameters(out int count, out float interval)
     {
-        count = baseEnemyCount + (currentWave.value - 1) * enemiesPerWaveIncrease;
-        interval = Mathf.Max(minSpawnInterval, baseSpawnInterval - (currentWave.value - 1) * spawnIntervalDecreasePerWave);
+        count = baseEnemyCount + (currentWave - 1) * enemiesPerWaveIncrease;
+        interval = Mathf.Max(minSpawnInterval, baseSpawnInterval - (currentWave - 1) * spawnIntervalDecreasePerWave);
     }
 
     public float GetDifficultyMultiplierForWave(int wave)
@@ -468,28 +411,25 @@ public class WaveManager : NetworkBehaviour
     {
         if (activeEnemies.Contains(mockEnemy))
         {
-            if (!isSpawned || isServer)
-            {
-                AwardDeathRewards(mockEnemy);
-            }
+            AwardDeathRewards(mockEnemy);
 
             activeEnemies.Remove(mockEnemy);
-            remainingEnemies.value = activeEnemies.Count;
-            OnEnemyCountChanged?.Invoke(activeEnemies.Count, spawnedEnemiesCount.value);
+            remainingEnemies = activeEnemies.Count;
+            OnEnemyCountChanged?.Invoke(activeEnemies.Count, spawnedEnemiesCount);
         }
     }
 
     private void AwardDeathRewards(GameObject enemy)
     {
-        int money = 10;
-        int points = 50;
+        int moneyReward = 10;
+        int pointsReward = 50;
 
         // Try getting reward from EnemyReward component
         EnemyReward rewardComp = enemy.GetComponent<EnemyReward>();
         if (rewardComp != null)
         {
-            money = rewardComp.moneyAwarded;
-            points = rewardComp.pointsAwarded;
+            moneyReward = rewardComp.moneyAwarded;
+            pointsReward = rewardComp.pointsAwarded;
         }
         else
         {
@@ -497,12 +437,12 @@ public class WaveManager : NetworkBehaviour
             MockEnemy mockComp = enemy.GetComponent<MockEnemy>();
             if (mockComp != null)
             {
-                money = mockComp.moneyAwarded;
-                points = mockComp.pointsAwarded;
+                moneyReward = mockComp.moneyAwarded;
+                pointsReward = mockComp.pointsAwarded;
             }
         }
 
-        AddMoneyAndPoints(money, points);
+        AddMoneyAndPoints(moneyReward, pointsReward);
     }
 
     private bool IsPlayerDead()
@@ -534,86 +474,68 @@ public class WaveManager : NetworkBehaviour
 
     private void SetState(WaveState newState)
     {
-        if (currentState.value != newState)
+        if (currentState != newState)
         {
-            currentState.value = newState;
-            OnWaveStateChanged?.Invoke(currentState.value);
-            Debug.Log($"[WaveManager] State transitioned to: {currentState.value}");
+            currentState = newState;
+            OnWaveStateChanged?.Invoke(currentState);
+            Debug.Log($"[WaveManager] State transitioned to: {currentState}");
 
-            if (currentState.value == WaveState.GameOver && isServer)
+            if (currentState == WaveState.GameOver)
             {
-                StartCoroutine(NetworkGameOverReloadRoutine());
+                StartCoroutine(GameOverReloadRoutine());
             }
         }
     }
 
-    private IEnumerator NetworkGameOverReloadRoutine()
+    private IEnumerator GameOverReloadRoutine()
     {
-        // Wait to allow players to view game over quotes/banner
         yield return new WaitForSeconds(5f);
 
-        Debug.Log("[WaveManager] Triggering network scene reload...");
-        if (NetworkManager.main != null && NetworkManager.main.sceneModule != null)
-        {
-            NetworkManager.main.sceneModule.LoadSceneAsync(
-                UnityEngine.SceneManagement.SceneManager.GetActiveScene().name,
-                UnityEngine.SceneManagement.LoadSceneMode.Single
-            );
-        }
-        else
-        {
-            UnityEngine.SceneManagement.SceneManager.LoadScene(
-                UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex
-            );
-        }
+        UnityEngine.SceneManagement.SceneManager.LoadScene(
+            UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex
+        );
     }
 
     public WaveStatusReport GetWaveStatus()
     {
         return new WaveStatusReport
         {
-            currentWave = this.currentWave.value,
+            currentWave = this.currentWave,
             totalWaves = this.totalWaves,
-            state = this.currentState.value,
-            remainingEnemies = this.remainingEnemies.value,
-            totalEnemies = this.totalEnemiesToSpawn.value,
-            spawnedEnemies = this.spawnedEnemiesCount.value,
-            isSpawningCompleted = this.isSpawningCompleted.value,
-            countdownTime = this.countdownTimer.value,
+            state = this.currentState,
+            remainingEnemies = this.remainingEnemies,
+            totalEnemies = this.totalEnemiesToSpawn,
+            spawnedEnemies = this.spawnedEnemiesCount,
+            isSpawningCompleted = this.isSpawningCompleted,
+            countdownTime = this.countdownTimer,
             difficultyMultiplier = this.DifficultyMultiplier
         };
     }
 
-    public int CurrentWave => currentWave.value;
+    public int CurrentWave => currentWave;
     public int TotalWaves => totalWaves;
-    public WaveState CurrentState => currentState.value;
-    public int RemainingEnemiesCount => remainingEnemies.value;
-    public int TotalEnemiesInWave => totalEnemiesToSpawn.value;
-    public float NextWaveCountdown => countdownTimer.value;
-    public float DifficultyMultiplier => GetDifficultyMultiplierForWave(currentWave.value);
-    public int Money => money.value;
-    public int Points => points.value;
+    public WaveState CurrentState => currentState;
+    public int RemainingEnemiesCount => remainingEnemies;
+    public int TotalEnemiesInWave => totalEnemiesToSpawn;
+    public float NextWaveCountdown => countdownTimer;
+    public float DifficultyMultiplier => GetDifficultyMultiplierForWave(currentWave);
+    public int Money => money;
+    public int Points => points;
 
     public void AddMoneyAndPoints(int moneyAwarded, int pointsAwarded)
     {
-        money.value += moneyAwarded;
-        points.value += pointsAwarded;
-        if (!isSpawned || isServer)
-        {
-            OnMoneyChanged?.Invoke(money.value);
-            OnPointsChanged?.Invoke(points.value);
-        }
+        money += moneyAwarded;
+        points += pointsAwarded;
+        OnMoneyChanged?.Invoke(money);
+        OnPointsChanged?.Invoke(points);
     }
 
     public bool TrySpendMoney(int amount)
     {
-        if (money.value >= amount)
+        if (money >= amount)
         {
-            money.value -= amount;
-            if (!isSpawned || isServer)
-            {
-                OnMoneyChanged?.Invoke(money.value);
-            }
+            money -= amount;
+            OnMoneyChanged?.Invoke(money);
             return true;
         }
         return false;
@@ -621,27 +543,10 @@ public class WaveManager : NetworkBehaviour
 
     public void SkipCountdownEarly()
     {
-        if (isSpawned)
+        if (currentState == WaveState.Preparing)
         {
-            SkipCountdown();
-        }
-        else
-        {
-            if (currentState.value == WaveState.Preparing)
-            {
-                countdownTimer.value = 0f;
-                Debug.Log("[WaveManager] Offline SkipCountdown: countdown set to 0.");
-            }
-        }
-    }
-
-    [ServerRpc(requireOwnership: false)]
-    private void SkipCountdown()
-    {
-        if (currentState.value == WaveState.Preparing)
-        {
-            countdownTimer.value = 0f;
-            Debug.Log("[WaveManager] SkipCountdown requested: countdown set to 0 on server.");
+            countdownTimer = 0f;
+            Debug.Log("[WaveManager] SkipCountdown: countdown set to 0.");
         }
     }
 

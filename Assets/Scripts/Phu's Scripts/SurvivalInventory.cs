@@ -1,12 +1,11 @@
 using System.Collections.Generic;
 using UnityEngine;
-using PurrNet;
 using TMPro;
 using Unity.Cinemachine;
 
 namespace PhuScene
 {
-    public class SurvivalInventory : NetworkBehaviour
+    public class SurvivalInventory : MonoBehaviour
     {
         public static SurvivalInventory Instance { get; private set; }
 
@@ -14,7 +13,7 @@ namespace PhuScene
         [SerializeField] private List<ShopSO> defaultUnlockeds;
         [SerializeField] private List<ShopSO> equipSlots;
         [SerializeField] private Transform weaponHolder;
-        [SerializeField] private SyncVar<int> currentWeaponIndex = new(-1);
+        private int currentWeaponIndex = -1;
 
         [Header("Workaround References")]
         [SerializeField] private TMP_Text ammoText;
@@ -27,43 +26,18 @@ namespace PhuScene
 
         private void Awake()
         {
+            Instance = this;
             LoadInventory();
             InitializePrefabsDictionary();
         }
 
         private void Start()
         {
-            // Fallback for offline mode or local execution before Spawned
-            if (!isSpawned)
-            {
-                Instance = this;
-                TrySwitchWeapon(0);
-            }
-        }
-
-        protected override void OnSpawned()
-        {
-            if (isOwner)
-            {
-                Instance = this;
-                currentWeaponIndex.value = 0; // Default to first weapon
-            }
-            else
-            {
-                // Clients sync initial weapon
-                if (currentWeaponIndex.value != -1)
-                {
-                    HandleWeaponIndexChanged(currentWeaponIndex.value);
-                }
-            }
-
-            currentWeaponIndex.onChanged += HandleWeaponIndexChanged;
+            TrySwitchWeapon(0);
         }
 
         private void Update()
         {
-            if (isSpawned && !isOwner) return;
-
             // Weapon switching numeric keys based on unlocked order sequence
             if (Input.GetKeyDown(KeyCode.Alpha1)) SwitchToUnlockedWeaponNumber(0);
             else if (Input.GetKeyDown(KeyCode.Alpha2)) SwitchToUnlockedWeaponNumber(1);
@@ -105,7 +79,7 @@ namespace PhuScene
             List<int> unlockedSlotIndices = GetUnlockedSlotIndices();
             if (unlockedSlotIndices.Count <= 1) return;
 
-            int activeIndex = currentSelectedSlotIndex >= 0 ? currentSelectedSlotIndex : currentWeaponIndex.value;
+            int activeIndex = currentSelectedSlotIndex >= 0 ? currentSelectedSlotIndex : currentWeaponIndex;
             int currentUnlockedPos = unlockedSlotIndices.IndexOf(activeIndex);
             if (currentUnlockedPos == -1) currentUnlockedPos = 0;
 
@@ -278,11 +252,7 @@ namespace PhuScene
 
             lastSwitchTime = Time.time;
 
-            if (isSpawned)
-            {
-                currentWeaponIndex.value = index;
-            }
-
+            currentWeaponIndex = index;
             currentSelectedSlotIndex = index;
             HandleWeaponIndexChanged(index);
         }

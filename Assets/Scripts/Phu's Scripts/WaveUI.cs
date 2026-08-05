@@ -733,8 +733,7 @@ public class WaveUI : MonoBehaviour
         // show hint for the first 2 waves
         if (state == WaveState.Preparing && waveNum <= 2 && !hasShownMouseUnlockHint)
         {
-            if (waveNum == 2)
-                hasShownMouseUnlockHint = true;
+            hasShownMouseUnlockHint = true;
 
             if (hintList != null)
             {

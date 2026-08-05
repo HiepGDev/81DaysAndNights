@@ -2,10 +2,9 @@ using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
-using PurrNet;
 using PhuScene;
 
-public class SurvivalPlayerMovement : NetworkBehaviour
+public class SurvivalPlayerMovement : MonoBehaviour
 {
     [SerializeField] private Animator animator;
     public Transform playerCamera; 
@@ -66,19 +65,6 @@ public class SurvivalPlayerMovement : NetworkBehaviour
 
     void Start()
     {
-        if (isSpawned && !isOwner)
-        {
-            if (playerCamera != null) playerCamera.gameObject.SetActive(false);
-            // Disable actions
-            moveAction?.Disable();
-            lookAction?.Disable();
-            jumpAction?.Disable();
-            sprintAction?.Disable();
-            crouchAction?.Disable();
-            enabled = false;
-            return;
-        }
-
         DisableCursor();
 
         if (playerCamera != null) originalCamPos = playerCamera.localPosition;
@@ -87,7 +73,6 @@ public class SurvivalPlayerMovement : NetworkBehaviour
 
     void Update()
     {
-        if (isSpawned && !isOwner) return;
 
         // Toggle cursor lock state when pressing Alt
         if (Input.GetKeyDown(KeyCode.LeftAlt) || Input.GetKeyDown(KeyCode.RightAlt))
