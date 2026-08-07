@@ -1138,7 +1138,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3462982725432306100, guid: 8a4319ac8fcdaf64e820bc078d5f16d2, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7732851628829948290, guid: 8a4319ac8fcdaf64e820bc078d5f16d2, type: 3}
       propertyPath: defendPoint
@@ -2395,7 +2395,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3462982725432306100, guid: 8a4319ac8fcdaf64e820bc078d5f16d2, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7732851628829948290, guid: 8a4319ac8fcdaf64e820bc078d5f16d2, type: 3}
       propertyPath: defendPoint
@@ -2826,7 +2826,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3462982725432306100, guid: 8a4319ac8fcdaf64e820bc078d5f16d2, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7732851628829948290, guid: 8a4319ac8fcdaf64e820bc078d5f16d2, type: 3}
       propertyPath: defendPoint
@@ -4735,7 +4735,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3462982725432306100, guid: 8a4319ac8fcdaf64e820bc078d5f16d2, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7732851628829948290, guid: 8a4319ac8fcdaf64e820bc078d5f16d2, type: 3}
       propertyPath: defendPoint
@@ -5555,7 +5555,7 @@ Transform:
   m_GameObject: {fileID: 330585543}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 1, z: 0, w: 0}
-  m_LocalPosition: {x: 419.5, y: 104.149994, z: 392.296}
+  m_LocalPosition: {x: 419.5, y: 104.149994, z: 442.19598}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -11860,7 +11860,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3462982725432306100, guid: 8a4319ac8fcdaf64e820bc078d5f16d2, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7732851628829948290, guid: 8a4319ac8fcdaf64e820bc078d5f16d2, type: 3}
       propertyPath: defendPoint
@@ -17931,7 +17931,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2197622166840120587, guid: 0e81c88ce8403414f80ab2c4c3aeb716, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7797298470558721498, guid: 0e81c88ce8403414f80ab2c4c3aeb716, type: 3}
       propertyPath: m_LocalPosition.x
@@ -19184,7 +19184,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3462982725432306100, guid: 8a4319ac8fcdaf64e820bc078d5f16d2, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7732851628829948290, guid: 8a4319ac8fcdaf64e820bc078d5f16d2, type: 3}
       propertyPath: defendPoint
@@ -22857,7 +22857,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2197622166840120587, guid: 0e81c88ce8403414f80ab2c4c3aeb716, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7797298470558721498, guid: 0e81c88ce8403414f80ab2c4c3aeb716, type: 3}
       propertyPath: m_LocalPosition.x
@@ -22953,7 +22953,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3462982725432306100, guid: 8a4319ac8fcdaf64e820bc078d5f16d2, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7732851628829948290, guid: 8a4319ac8fcdaf64e820bc078d5f16d2, type: 3}
       propertyPath: defendPoint
@@ -23548,7 +23548,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3462982725432306100, guid: 8a4319ac8fcdaf64e820bc078d5f16d2, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7732851628829948290, guid: 8a4319ac8fcdaf64e820bc078d5f16d2, type: 3}
       propertyPath: defendPoint
@@ -27723,7 +27723,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3462982725432306100, guid: 8a4319ac8fcdaf64e820bc078d5f16d2, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7732851628829948290, guid: 8a4319ac8fcdaf64e820bc078d5f16d2, type: 3}
       propertyPath: defendPoint
@@ -29195,6 +29195,10 @@ PrefabInstance:
     - target: {fileID: 1783242764371527490, guid: 59db3d6034abc65448a18867cc0ef5a5, type: 3}
       propertyPath: m_Name
       value: Enemy Sniper test 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 1783242764371527490, guid: 59db3d6034abc65448a18867cc0ef5a5, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7787024202914059363, guid: 59db3d6034abc65448a18867cc0ef5a5, type: 3}
       propertyPath: m_LocalPosition.x
@@ -34626,7 +34630,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2197622166840120587, guid: 0e81c88ce8403414f80ab2c4c3aeb716, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7797298470558721498, guid: 0e81c88ce8403414f80ab2c4c3aeb716, type: 3}
       propertyPath: m_LocalPosition.x
@@ -34755,7 +34759,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3462982725432306100, guid: 8a4319ac8fcdaf64e820bc078d5f16d2, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7732851628829948290, guid: 8a4319ac8fcdaf64e820bc078d5f16d2, type: 3}
       propertyPath: defendPoint
@@ -51984,7 +51988,7 @@ MonoBehaviour:
   walkSize: 35
   sprintSize: 62
   lerpSpeed: 15
-  movement: {fileID: 4886734217944789826}
+  sprintSpeedThreshold: 6
   gun: {fileID: 0}
   controller: {fileID: 3519686539868715685}
 --- !u!4 &2836885935716823994
@@ -64035,7 +64039,7 @@ Transform:
   m_GameObject: {fileID: 7399459464716641589}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 1, z: 0, w: 0}
-  m_LocalPosition: {x: 419.5, y: 102.7, z: 392.4}
+  m_LocalPosition: {x: 419.5, y: 102.7, z: 442.3}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -73457,7 +73461,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WeaponSwitchManager
   gunObject: {fileID: 2703838841956694177}
-  riceObject: {fileID: 4058443410153286818}
+  SecondObject: {fileID: 0}
   normalArm: {fileID: 582468411308439705}
   startingState: 0
 --- !u!1 &7292539675248521346
