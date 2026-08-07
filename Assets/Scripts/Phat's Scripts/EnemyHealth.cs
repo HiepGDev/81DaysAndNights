@@ -22,6 +22,19 @@ public class EnemyHealth : MonoBehaviour
         ragdollRigidbodies = GetComponentsInChildren<Rigidbody>();
         ragdollColliders = GetComponentsInChildren<Collider>();
         
+        // Disable collisions between the main root collider and all the child ragdoll colliders
+        Collider rootCol = GetComponent<Collider>();
+        if (rootCol != null)
+        {
+            foreach (var col in ragdollColliders)
+            {
+                if (col != null && col != rootCol)
+                {
+                    Physics.IgnoreCollision(rootCol, col, true);
+                }
+            }
+        }
+
         SetRagdollState(false);
 
         if (enemyData != null)
@@ -162,11 +175,11 @@ public class EnemyHealth : MonoBehaviour
         cube.transform.localRotation = Quaternion.identity;
         cube.transform.localScale = localScale;
 
-        // Apply custom color #989259
+        // Apply custom color #A18783
         Renderer r = cube.GetComponent<Renderer>();
         if (r != null)
         {
-            r.material.color = new Color(0.596f, 0.573f, 0.349f);
+            r.material.color = new Color(0.631f, 0.529f, 0.514f);
         }
     }
 

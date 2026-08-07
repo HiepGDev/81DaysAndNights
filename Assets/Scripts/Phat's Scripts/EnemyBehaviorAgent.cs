@@ -59,6 +59,14 @@ public class EnemyBehaviorAgent : MonoBehaviour
     public EnemySO EnemyData => enemyData;
 
     private Transform designatedSniperPoint;
+    private float pathUpdateTimer = 0f;
+    private const float pathUpdateInterval = 0.5f; // Max 2 path recalculations per second
+    private Vector3 lastSetDestination = Vector3.positiveInfinity;
+    private float losBlockedTimer = 0f;
+    private float flankDecisionTimer = 0f;
+    private float currentFlankAngle = 0f;
+    private float minRunTimer = 0f;
+
     public void SetDesignatedSniperPoint(Transform point) 
     { 
         designatedSniperPoint = point; 
@@ -78,7 +86,7 @@ public class EnemyBehaviorAgent : MonoBehaviour
             if (agent != null && agent.isOnNavMesh)
             {
                 agent.isStopped = false;
-                agent.SetDestination(navPos);
+                SetAgentDestination(navPos, true);
             }
         }
     }
@@ -117,8 +125,11 @@ public class EnemyBehaviorAgent : MonoBehaviour
             animator.cullingMode = AnimatorCullingMode.AlwaysAnimate;
         }
 
-        agent.updatePosition = false; 
-        agent.updateRotation = true;
+        agent.updatePosition = true; 
+        agent.updateRotation = false;
+        agent.obstacleAvoidanceType = UnityEngine.AI.ObstacleAvoidanceType.MedQualityObstacleAvoidance;
+        agent.avoidancePriority = UnityEngine.Random.Range(30, 70); // Prevent deadlocks by giving agents different avoidance weights
+        agent.radius = 0.55f; // Rebalanced radius to block them from narrow steps while letting them cross the bridge
         agent.speed = 4.0f;
         agent.acceleration = 30f; 
         agent.angularSpeed = 600f; 
@@ -127,9 +138,10 @@ public class EnemyBehaviorAgent : MonoBehaviour
         Rigidbody rb = GetComponent<Rigidbody>();
         if (rb != null) rb.isKinematic = true;
 
-        // Initialize personal spacing
-        personalRangeOffset = Random.Range(-rangeSpread, rangeSpread);
-        personalFlankingAngle = Random.Range(-destinationSpread * 10f, destinationSpread * 10f);
+        // Initialize personal spacing (ensure at least +/- 3.5m variation to stagger squad vertically along narrow pathways)
+        personalRangeOffset = Random.Range(-Mathf.Max(3.5f, rangeSpread), Mathf.Max(3.5f, rangeSpread));
+        // Ensure at least +/- 30 degrees lateral spread to fan them out wide in combat
+        personalFlankingAngle = Random.Range(-Mathf.Max(30f, destinationSpread * 10f), Mathf.Max(30f, destinationSpread * 10f));
     }
 
     private void Start()
@@ -141,14 +153,16 @@ public class EnemyBehaviorAgent : MonoBehaviour
 
     private void Update()
     {
+        if (pathUpdateTimer > 0f) pathUpdateTimer -= Time.deltaTime;
+        if (minRunTimer > 0f) minRunTimer -= Time.deltaTime;
+
         if (!agent.isOnNavMesh) return;
-        transform.position = agent.nextPosition;
 
         // Pathing Safety Check: Ensure the agent has a path if they have a designated waypoint and are in cover mode
         if (isInCover && activeCover.found && !agent.hasPath && !agent.pathPending)
         {
             agent.isStopped = false;
-            agent.SetDestination(activeCover.position);
+            SetAgentDestination(activeCover.position, true);
         }
 
         IsReadyToShoot = false;
@@ -165,11 +179,18 @@ public class EnemyBehaviorAgent : MonoBehaviour
         bool isCombatUnit = (currentMode == EnemyMode.Ambush || currentMode == EnemyMode.Sniper);
         if (isCombatUnit)
         {
-            targetSearchTimer -= Time.deltaTime;
-            if (targetSearchTimer <= 0 || CurrentAmbushTarget == null || !IsAlive(CurrentAmbushTarget.gameObject))
+            // Sticky targeting check: only find a new target if the current one is null, dead, or out of range
+            bool needsNewTarget = CurrentAmbushTarget == null || !IsAlive(CurrentAmbushTarget.gameObject);
+            if (!needsNewTarget && detection != null)
+            {
+                float distToCurrent = Vector3.Distance(transform.position, CurrentAmbushTarget.position);
+                float maxDetectDist = (currentMode == EnemyMode.Sniper) ? detection.DetectionRadius : 25f; // Ambush hunting range
+                if (distToCurrent > maxDetectDist) needsNewTarget = true;
+            }
+
+            if (needsNewTarget)
             {
                 CurrentAmbushTarget = GetClosestTarget();
-                targetSearchTimer = 0.5f; 
             }
         }
 
@@ -201,7 +222,7 @@ public class EnemyBehaviorAgent : MonoBehaviour
         
         // Hysteresis buffer: extend shooting range slightly if already shooting to prevent boundary flickering
         bool currentlyShooting = (shooting != null && shooting.IsShootingInProgress);
-        float rangeThreshold = currentlyShooting ? (CurrentEngagementDist + 2.0f) : CurrentEngagementDist;
+        float rangeThreshold = currentlyShooting ? (CurrentEngagementDist + 5.0f) : CurrentEngagementDist;
         bool inShootingRange = isDetected && distToTarget <= rangeThreshold;
 
         // 3. ANIMATION CONTROL
@@ -221,6 +242,12 @@ public class EnemyBehaviorAgent : MonoBehaviour
                 bool shouldBeRunning = intentSpeed > 2.0f;
                 if (HasParameter("isRunning", animator))
                     animator.SetBool("isRunning", shouldBeRunning);
+
+                if (shouldBeRunning)
+                {
+                    if (HasParameter("isCrouching", animator))
+                        animator.SetBool("isCrouching", false);
+                }
 
                 if (HasParameter("Speed", animator))
                 {
@@ -245,7 +272,7 @@ public class EnemyBehaviorAgent : MonoBehaviour
                 if (distToWaypoint > agent.stoppingDistance + 0.2f)
                 {
                     if (agent.isStopped) agent.isStopped = false;
-                    agent.SetDestination(designatedSniperPoint.position);
+                    SetAgentDestination(designatedSniperPoint.position);
                     return;
                 }
 
@@ -286,7 +313,7 @@ public class EnemyBehaviorAgent : MonoBehaviour
             {
                 // Push/rush the player!
                 if (agent.isStopped) agent.isStopped = false;
-                agent.SetDestination(target.position);
+                SetAgentDestination(target.position);
                 FaceTarget();
                 if (distToTarget <= maxGunRange)
                 {
@@ -316,7 +343,7 @@ public class EnemyBehaviorAgent : MonoBehaviour
                     if (distToWaypoint > agent.stoppingDistance + 0.2f)
                     {
                         if (agent.isStopped) agent.isStopped = false;
-                        agent.SetDestination(designatedSniperPoint.position);
+                        SetAgentDestination(designatedSniperPoint.position);
                         IsReadyToShoot = false;
                         return;
                     }
@@ -341,35 +368,97 @@ public class EnemyBehaviorAgent : MonoBehaviour
             {
                 if (agent.isStopped) agent.isStopped = false;
                 
-                // Determine flanking angle dynamically based on evolved weights
-                float targetFlankAngle = 0f;
-                if (currentMode != EnemyMode.Sniper && enemyData != null)
+                // If they are far away from combat range, just run straight to the target to prevent unnecessary path recalculation halts
+                bool isFarAway = distToTarget > (CurrentEngagementDist + 5.0f);
+                if (isFarAway)
                 {
-                    bool shouldFlank = (UnityEngine.Random.value <= enemyData.flankProbability);
-                    if (shouldFlank)
-                    {
-                        // Flank wide: either left 65 degrees or right 65 degrees
-                        targetFlankAngle = (UnityEngine.Random.value < 0.5f) ? -65f : 65f;
-                    }
+                    SetAgentDestination(target.position);
                 }
-
-                Vector3 dirFromTarget = (transform.position - target.position).normalized;
-                if (dirFromTarget == Vector3.zero) dirFromTarget = Vector3.forward;
-                Vector3 flankingDir = Quaternion.Euler(0, targetFlankAngle, 0) * dirFromTarget;
-                Vector3 tacticalPos = target.position + flankingDir * (CurrentEngagementDist - 1.0f); 
-
-                NavMeshHit hit;
-                if (NavMesh.SamplePosition(tacticalPos, out hit, 4.0f, NavMesh.AllAreas))
-                    agent.SetDestination(hit.position);
                 else
-                    agent.SetDestination(target.position);
+                {
+                    // Determine flanking angle periodically based on evolved weights to prevent path flickering
+                    flankDecisionTimer -= Time.deltaTime;
+                    if (flankDecisionTimer <= 0f)
+                    {
+                        flankDecisionTimer = 2.0f; // Re-evaluate flanking angle every 2 seconds
+                        currentFlankAngle = 0f;
+                        if (currentMode != EnemyMode.Sniper && enemyData != null)
+                        {
+                            bool shouldFlank = (UnityEngine.Random.value <= enemyData.flankProbability);
+                            if (shouldFlank)
+                            {
+                                // Pick a continuous random angle across the entire width (from -65 to 65) to distribute them across the center too
+                                currentFlankAngle = UnityEngine.Random.Range(-65f, 65f);
+                            }
+                        }
+                    }
+
+                    Vector3 dirFromTarget = (transform.position - target.position).normalized;
+                    if (dirFromTarget == Vector3.zero) dirFromTarget = Vector3.forward;
+                    
+                    // Apply the personal flanking angle offset to spread the squad laterally in a combat arc
+                    float finalFlankAngle = currentFlankAngle + personalFlankingAngle;
+                    Vector3 flankingDir = Quaternion.Euler(0, finalFlankAngle, 0) * dirFromTarget;
+                    Vector3 tacticalPos = target.position + flankingDir * (CurrentEngagementDist - 1.0f); 
+
+                    NavMeshHit hit;
+                    bool validTactical = false;
+                    if (NavMesh.SamplePosition(tacticalPos, out hit, 4.0f, NavMesh.AllAreas))
+                    {
+                        tacticalPos = hit.position;
+                        
+                        // Virtual Line of Sight check: ensure that if we go to this flanking position, 
+                        // we will actually have line of sight to the target (so we don't go down steps/under bridges)
+                        Vector3 eyeOrigin = tacticalPos + Vector3.up * 1.5f;
+                        Vector3 targetCenter = target.position + Vector3.up * 1.0f;
+                        Vector3 toTarget = targetCenter - eyeOrigin;
+                        float dist = toTarget.magnitude;
+                        
+                        if (!Physics.Raycast(eyeOrigin, toTarget.normalized, out RaycastHit rayHit, dist, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
+                        {
+                            validTactical = true;
+                        }
+                        else
+                        {
+                            if (rayHit.transform.root == target.root || rayHit.transform.root == transform.root)
+                            {
+                                validTactical = true;
+                            }
+                        }
+                    }
+
+                    if (validTactical)
+                        SetAgentDestination(hit.position);
+                    else
+                        SetAgentDestination(target.position); // Fallback to direct path along the bridge/road
+                }
                 
                 FaceTarget();
+                if (agent.isStopped)
+                {
+                    agent.isStopped = false;
+                    minRunTimer = 1.0f; // Force them to run for at least 1.0s
+                }
+                IsReadyToShoot = false;
             }
             else
             {
                 // In range, but check if we have a clear line of sight to shoot
-                if (HasLineOfSight(target))
+                bool directSight = HasLineOfSight(target);
+                if (directSight)
+                {
+                    losBlockedTimer = 0f; // Reset when sight is clear
+                }
+                else
+                {
+                    losBlockedTimer += Time.deltaTime;
+                }
+
+                // Only chase if sight has been blocked continuously for at least 0.5 seconds
+                bool treatAsBlocked = (losBlockedTimer >= 0.5f);
+
+                // Only stop and shoot if we have sight AND the minimum run duration has finished
+                if (!treatAsBlocked && minRunTimer <= 0f)
                 {
                     if (!agent.isStopped) StopAgent();
                     FaceTarget();
@@ -377,9 +466,13 @@ public class EnemyBehaviorAgent : MonoBehaviour
                 }
                 else
                 {
-                    // Blocked by a wall: continue chasing directly to the target's position to see them
-                    if (agent.isStopped) agent.isStopped = false;
-                    agent.SetDestination(target.position);
+                    // Blocked or still in minimum run phase: keep running to destination
+                    if (agent.isStopped) 
+                    {
+                        agent.isStopped = false;
+                        minRunTimer = 1.0f; // Force run timer if starting to move
+                    }
+                    SetAgentDestination(target.position);
                     FaceTarget();
                     IsReadyToShoot = false;
                 }
@@ -395,7 +488,7 @@ public class EnemyBehaviorAgent : MonoBehaviour
                 if (distToWaypoint > agent.stoppingDistance + 0.2f)
                 {
                     if (agent.isStopped) agent.isStopped = false;
-                    agent.SetDestination(designatedSniperPoint.position);
+                    SetAgentDestination(designatedSniperPoint.position);
                     return;
                 }
             }
@@ -410,7 +503,7 @@ public class EnemyBehaviorAgent : MonoBehaviour
             if (distToSpawn > agent.stoppingDistance + 0.2f)
             {
                 if (agent.isStopped) agent.isStopped = false;
-                agent.SetDestination(spawnPoint);
+                SetAgentDestination(spawnPoint);
             }
             else
             {
@@ -421,6 +514,32 @@ public class EnemyBehaviorAgent : MonoBehaviour
 
         if (isIdle) HandleIdle();
         else HandleWandering();
+    }
+
+    private void LateUpdate()
+    {
+        if (!agent.isOnNavMesh) return;
+
+        bool isCombatUnit = (currentMode == EnemyMode.Ambush || currentMode == EnemyMode.Sniper);
+        bool isDetected = (isCombatUnit && CurrentAmbushTarget != null) || (detection != null && detection.IsTargetDetected);
+        Transform target = isCombatUnit ? CurrentAmbushTarget : (detection != null ? detection.CurrentTarget : null);
+
+        // If the agent is physically moving, face the direction of movement to prevent sideways-running/strafing conflicts
+        if (agent.velocity.sqrMagnitude > 0.1f)
+        {
+            Vector3 moveDir = agent.velocity;
+            moveDir.y = 0;
+            if (moveDir != Vector3.zero)
+            {
+                Quaternion targetRot = Quaternion.LookRotation(moveDir.normalized);
+                transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, Time.deltaTime * 10f);
+            }
+        }
+        // Only face the target when standing still to shoot
+        else if (isDetected && target != null)
+        {
+            FaceTarget();
+        }
     }
 
     public bool IsMovingToCover => isInCover && agent.hasPath && agent.remainingDistance > agent.stoppingDistance;
@@ -444,7 +563,7 @@ public class EnemyBehaviorAgent : MonoBehaviour
             isInCover = true;
             isIdle = false;
             agent.isStopped = false;
-            agent.SetDestination(activeCover.position);
+            SetAgentDestination(activeCover.position, true);
         }
         else
         {
@@ -462,7 +581,7 @@ public class EnemyBehaviorAgent : MonoBehaviour
             isInCover = true;
             isIdle = false;
             agent.isStopped = false;
-            agent.SetDestination(activeCover.position);
+            SetAgentDestination(activeCover.position, true);
             return true;
         }
         return false;
@@ -579,7 +698,7 @@ public class EnemyBehaviorAgent : MonoBehaviour
                 currentTarget = hit.position;
                 isIdle = false;
                 agent.isStopped = false;
-                agent.SetDestination(currentTarget);
+                SetAgentDestination(currentTarget, true);
                 return;
             }
         }
@@ -597,7 +716,6 @@ public class EnemyBehaviorAgent : MonoBehaviour
         if (agent.isOnNavMesh)
         {
             agent.isStopped = true;
-            agent.ResetPath();
             agent.velocity = Vector3.zero;
         }
     }
@@ -684,6 +802,21 @@ public class EnemyBehaviorAgent : MonoBehaviour
     { 
         if (cover != null) cover.ReleaseCover(); 
         UpdateAttackerCount(null); 
+    }
+
+    private void SetAgentDestination(Vector3 targetPos, bool force = false)
+    {
+        if (!agent.isOnNavMesh) return;
+
+        // If not forced and within rate limit, and destination hasn't shifted significantly, skip to prevent stuttering
+        if (!force && pathUpdateTimer > 0f && Vector3.SqrMagnitude(targetPos - lastSetDestination) < 4.0f)
+        {
+            return;
+        }
+
+        pathUpdateTimer = pathUpdateInterval;
+        lastSetDestination = targetPos;
+        agent.SetDestination(targetPos);
     }
 
     private bool IsAlive(GameObject obj)

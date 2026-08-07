@@ -145,6 +145,17 @@ public class EnemyShooting : MonoBehaviour
 
         if (behaviorAgent != null && behaviorAgent.IsMovingToCover)
         {
+            float distToDest = 0f;
+            var navAgent = GetComponent<UnityEngine.AI.NavMeshAgent>();
+            if (navAgent != null && navAgent.isOnNavMesh) 
+                distToDest = navAgent.remainingDistance;
+
+            if (distToDest >= 3.0f)
+            {
+                isCrouched = false; // Stand up to run long distance to cover
+                SetShootingLayerWeight(0f); // Disable shooting layer weight immediately when running
+            }
+
             if (isShootingInProgress) EndShooting();
             return;
         }
@@ -169,13 +180,24 @@ public class EnemyShooting : MonoBehaviour
         // 3. MOVEMENT SYNC: Only shoot if the behavior agent is physically ready
         if (behaviorAgent == null || !behaviorAgent.IsReadyToShoot)
         {
+            // Only stand up to run if we are moving a significant distance (>= 3.0 meters)
+            float distToDest = 0f;
+            if (behaviorAgent != null)
+            {
+                var navAgent = behaviorAgent.GetComponent<UnityEngine.AI.NavMeshAgent>();
+                if (navAgent != null && navAgent.isOnNavMesh) 
+                    distToDest = navAgent.remainingDistance;
+            }
+
+            if (distToDest >= 3.0f)
+            {
+                isCrouched = false; // Stand up to run long distance
+                SetShootingLayerWeight(0f); // Disable shooting layer weight immediately when running
+            }
+
             if (isShootingInProgress)
             {
-                stopShootingTimer += Time.deltaTime;
-                if (stopShootingTimer >= 0.2f) // 0.2s debounce buffer
-                {
-                    EndShooting();
-                }
+                EndShooting();
             }
             return;
         }
@@ -326,6 +348,7 @@ public class EnemyShooting : MonoBehaviour
     public void TriggerReload()
     {
         if (isReloading) return;
+        SetShootingLayerWeight(1f); // Make sure shooting/upper-body layer is enabled for reloading
         EndShooting();
         StartCoroutine(ReloadRoutine());
     }
@@ -379,6 +402,11 @@ public class EnemyShooting : MonoBehaviour
         
         if (animator != null && HasParameter("isReloading", animator)) 
             animator.SetBool("isReloading", false);
+
+        if (!isShootingInProgress)
+        {
+            SetShootingLayerWeight(0f); // Disable layer if we are not actively shooting
+        }
     }
 
     private void AimAtTarget()
@@ -391,7 +419,24 @@ public class EnemyShooting : MonoBehaviour
     private void StartShooting()
     {
         isShootingInProgress = true;
-        isCrouched = Random.value > 0.5f;
+        SetShootingLayerWeight(1f); // Enable shooting/upper-body layer
+
+        bool canCrouchShoot = false;
+        EnemyBehaviorAgent behaviorAgent = GetComponent<EnemyBehaviorAgent>();
+        if (behaviorAgent != null)
+        {
+            // Allow crouching in the open if they are a Sniper, an Ambush unit, or currently behind cover
+            canCrouchShoot = (behaviorAgent.currentMode == EnemyBehaviorAgent.EnemyMode.Sniper || 
+                              behaviorAgent.currentMode == EnemyBehaviorAgent.EnemyMode.Ambush || 
+                              behaviorAgent.IsInCover);
+        }
+
+        // If we are already crouched, preserve the stance. Otherwise, roll a new one.
+        if (!isCrouched)
+        {
+            isCrouched = canCrouchShoot && (Random.value > 0.5f);
+        }
+
         if (animator != null)
         {
             if (isCrouched)
@@ -413,13 +458,14 @@ public class EnemyShooting : MonoBehaviour
     {
         isShootingInProgress = false;
         currentBloom = 0; // RESET RECOIL
+        SetShootingLayerWeight(0f); // Disable shooting layer weight
         if (animator != null)
         {
             if (HasParameter("isShooting", animator)) animator.SetBool("isShooting", false);
             
-            // If the enemy is in cover, they should return to crouching cover stance instead of standing up
+            // If the enemy is in cover or was already crouched, they should stay crouched instead of standing up
             EnemyBehaviorAgent behaviorAgent = GetComponent<EnemyBehaviorAgent>();
-            bool shouldCrouch = (behaviorAgent != null && behaviorAgent.IsInCover);
+            bool shouldCrouch = (behaviorAgent != null && (behaviorAgent.IsInCover || isCrouched));
             if (HasParameter("isCrouching", animator)) animator.SetBool("isCrouching", shouldCrouch);
 
             animator.CrossFade(shouldCrouch ? "Cover_Crouching" : "Enemy_Idle", 0.2f);
@@ -431,5 +477,13 @@ public class EnemyShooting : MonoBehaviour
         foreach (AnimatorControllerParameter param in anim.parameters)
             if (param.name == paramName) return true;
         return false;
+    }
+
+    private void SetShootingLayerWeight(float weight)
+    {
+        if (animator != null && animator.layerCount > 1)
+        {
+            animator.SetLayerWeight(1, weight);
+        }
     }
 }
