@@ -52,17 +52,15 @@ public class CutsceneManager : MonoBehaviour
     [Tooltip("What should the player hold when cutscene end")]
     [SerializeField] private WeaponSwitchManager.HandState handStateAfterCutscene = WeaponSwitchManager.HandState.NormalArm;
 
-    private Vector2 topBarOriginalPos;
-    private Vector2 bottomBarOriginalPos;
+    private static Vector2 topBarOriginalPos;
+    private static Vector2 bottomBarOriginalPos;
     private bool hasPlayed = false; // Prevents the cutscene from playing twice
     private bool isPlaying = false;
     private bool isSkipping = false;
+    private static bool positionsRecorded = false;
     private Coroutine skipCoroutine;
-    void Start()
+    void Awake()
     {
-        // Record bar positions
-        if (topBar != null) topBarOriginalPos = topBar.anchoredPosition;
-        if (bottomBar != null) bottomBarOriginalPos = bottomBar.anchoredPosition;
         weaponManager = FindFirstObjectByType<WeaponSwitchManager>(FindObjectsInactive.Include);
         // If this is the Intro Cutscene, set it up immediately
         if (playOnStart)
@@ -99,8 +97,8 @@ public class CutsceneManager : MonoBehaviour
         
         if (playerCanvas != null) playerCanvas.SetActive(false);
         if (cutsceneCanvas != null) cutsceneCanvas.SetActive(true);
+        RecordCinematicBarPositions();
 
-        // Reset the cinematic bars to their default positions just in case a previous cutscene moved them
         if (topBar != null) topBar.anchoredPosition = topBarOriginalPos;
         if (bottomBar != null) bottomBar.anchoredPosition = bottomBarOriginalPos;
 
@@ -118,6 +116,11 @@ public class CutsceneManager : MonoBehaviour
             if (blackScreenImage != null) blackScreenImage.color = new Color(0, 0, 0, 1f);
             StartCoroutine(FadeFromBlack());
         }
+        else if (seamlessMidLevel)
+        {
+            // Safety, Force the screen to be clear if seamless
+            if (blackScreenImage != null) blackScreenImage.color = new Color(0, 0, 0, 0f);
+        }
 
         if (cutsceneTimeline != null)
         {
@@ -125,12 +128,27 @@ public class CutsceneManager : MonoBehaviour
             cutsceneTimeline.Play(); 
         }
     }
-
+    private void RecordCinematicBarPositions()
+    {
+        if (!positionsRecorded)
+        {
+            // Force Unity to calculate the Canvas layout so we get accurate UI coordinates
+            Canvas.ForceUpdateCanvases(); 
+            
+            if (topBar != null) topBarOriginalPos = topBar.anchoredPosition;
+            if (bottomBar != null) bottomBarOriginalPos = bottomBar.anchoredPosition;
+            positionsRecorded = true;
+        }
+    }
     //  Handles fading out gameplay BEFORE starting a mid-level cutscene
     private IEnumerator TransitionIntoMidLevelCutscene()
     {
+        if (cutsceneCanvas != null) cutsceneCanvas.SetActive(true);
+        RecordCinematicBarPositions();
+        
         if (!seamlessMidLevel)
         {
+            if (blackScreenImage != null) blackScreenImage.color = new Color(0, 0, 0, 0f);
             yield return StartCoroutine(FadeToBlack());
         }
         

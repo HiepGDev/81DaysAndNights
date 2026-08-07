@@ -103,18 +103,18 @@ AnimationClip:
         outWeight: {x: 0.33333334, y: 0.33333334, z: 0.33333334}
       - serializedVersion: 3
         time: 6.8333335
-        value: {x: 6.145, y: -33.129, z: 4.09}
-        inSlope: {x: 0, y: 0, z: 0}
-        outSlope: {x: 0, y: 0, z: 0}
+        value: {x: 5.04, y: -39.761, z: 3.531}
+        inSlope: {x: 0, y: -5.7245684, z: 0}
+        outSlope: {x: 0, y: -5.7245684, z: 0}
         tangentMode: 0
         weightedMode: 0
         inWeight: {x: 0.33333334, y: 0.33333334, z: 0.33333334}
         outWeight: {x: 0.33333334, y: 0.33333334, z: 0.33333334}
       - serializedVersion: 3
         time: 8.75
-        value: {x: 6.145, y: -33.129, z: 4.09}
-        inSlope: {x: 0, y: 0, z: 0}
-        outSlope: {x: 0, y: 0, z: 0}
+        value: {x: 6.841, y: -44.77, z: 2.769}
+        inSlope: {x: 1.6310945, y: 0, z: 0}
+        outSlope: {x: 1.6310945, y: 0, z: 0}
         tangentMode: 0
         weightedMode: 0
         inWeight: {x: 0.33333334, y: 0.33333334, z: 0.33333334}
@@ -10273,7 +10273,7 @@ AnimationClip:
         outWeight: 0.33333334
       - serializedVersion: 3
         time: 6.8333335
-        value: 6.145
+        value: 5.04
         inSlope: 0
         outSlope: 0
         tangentMode: 136
@@ -10282,9 +10282,9 @@ AnimationClip:
         outWeight: 0.33333334
       - serializedVersion: 3
         time: 8.75
-        value: 6.145
-        inSlope: 0
-        outSlope: 0
+        value: 6.841
+        inSlope: 1.6310945
+        outSlope: 1.6310945
         tangentMode: 136
         weightedMode: 0
         inWeight: 0.33333334
@@ -10366,16 +10366,16 @@ AnimationClip:
         outWeight: 0.33333334
       - serializedVersion: 3
         time: 6.8333335
-        value: -33.129
-        inSlope: 0
-        outSlope: 0
+        value: -39.761
+        inSlope: -5.7245684
+        outSlope: -5.7245684
         tangentMode: 136
         weightedMode: 0
         inWeight: 0.33333334
         outWeight: 0.33333334
       - serializedVersion: 3
         time: 8.75
-        value: -33.129
+        value: -44.77
         inSlope: 0
         outSlope: 0
         tangentMode: 136
@@ -10459,7 +10459,7 @@ AnimationClip:
         outWeight: 0.33333334
       - serializedVersion: 3
         time: 6.8333335
-        value: 4.09
+        value: 3.531
         inSlope: 0
         outSlope: 0
         tangentMode: 136
@@ -10468,7 +10468,7 @@ AnimationClip:
         outWeight: 0.33333334
       - serializedVersion: 3
         time: 8.75
-        value: 4.09
+        value: 2.769
         inSlope: 0
         outSlope: 0
         tangentMode: 136
@@ -19168,7 +19168,7 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: m_LocalEulerAngles.z
-    path: Rig.001/Spine
+    path: Rig.001/Spine/Spine1/Spine2/Neck/Head
     classID: 4
     script: {fileID: 0}
     flags: 0
@@ -19180,7 +19180,7 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: m_LocalEulerAngles.y
-    path: Rig.001/Spine
+    path: Rig.001/Spine/Spine1/Spine2/Neck/Head
     classID: 4
     script: {fileID: 0}
     flags: 0
@@ -19192,7 +19192,7 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: m_LocalEulerAngles.x
-    path: Rig.001/Spine
+    path: Rig.001/Spine/Spine1/Spine2/Neck/Head
     classID: 4
     script: {fileID: 0}
     flags: 0
@@ -19456,7 +19456,7 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: m_LocalEulerAngles.x
-    path: Rig.001/Spine/Spine1/Spine2/Neck/Head
+    path: Rig.001/Spine
     classID: 4
     script: {fileID: 0}
     flags: 0
@@ -19468,7 +19468,7 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: m_LocalEulerAngles.y
-    path: Rig.001/Spine/Spine1/Spine2/Neck/Head
+    path: Rig.001/Spine
     classID: 4
     script: {fileID: 0}
     flags: 0
@@ -19480,7 +19480,7 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: m_LocalEulerAngles.z
-    path: Rig.001/Spine/Spine1/Spine2/Neck/Head
+    path: Rig.001/Spine
     classID: 4
     script: {fileID: 0}
     flags: 0

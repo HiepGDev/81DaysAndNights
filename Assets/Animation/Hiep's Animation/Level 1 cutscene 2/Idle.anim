@@ -253,7 +253,7 @@ AnimationClip:
         outWeight: {x: 0.33333334, y: 0.33333334, z: 0.33333334}
       - serializedVersion: 3
         time: 1
-        value: {x: 3.137, y: 0, z: 0}
+        value: {x: 3.136, y: -1.401, z: -0.077}
         inSlope: {x: 0, y: 0, z: 0}
         outSlope: {x: 0, y: 0, z: 0}
         tangentMode: 0
@@ -12582,7 +12582,7 @@ AnimationClip:
         outWeight: 0.33333334
       - serializedVersion: 3
         time: 1
-        value: 3.137
+        value: 3.136
         inSlope: 0
         outSlope: 0
         tangentMode: 136
@@ -12621,7 +12621,7 @@ AnimationClip:
         outWeight: 0.33333334
       - serializedVersion: 3
         time: 1
-        value: 0
+        value: -1.401
         inSlope: 0
         outSlope: 0
         tangentMode: 136
@@ -12660,7 +12660,7 @@ AnimationClip:
         outWeight: 0.33333334
       - serializedVersion: 3
         time: 1
-        value: 0
+        value: -0.077
         inSlope: 0
         outSlope: 0
         tangentMode: 136
@@ -20604,7 +20604,7 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: m_LocalEulerAngles.z
-    path: Rig/Spine/Spine1
+    path: Rig/UpLeg.R/Leg.R/Foot.R
     classID: 4
     script: {fileID: 0}
     flags: 0
@@ -20616,7 +20616,7 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: m_LocalEulerAngles.y
-    path: Rig/Spine/Spine1
+    path: Rig/UpLeg.R/Leg.R/Foot.R
     classID: 4
     script: {fileID: 0}
     flags: 0
@@ -20628,7 +20628,7 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: m_LocalEulerAngles.x
-    path: Rig/Spine/Spine1
+    path: Rig/UpLeg.R/Leg.R/Foot.R
     classID: 4
     script: {fileID: 0}
     flags: 0
@@ -21108,7 +21108,7 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: m_LocalEulerAngles.x
-    path: Rig/UpLeg.R/Leg.R/Foot.R
+    path: Rig/Spine/Spine1
     classID: 4
     script: {fileID: 0}
     flags: 0
@@ -21120,7 +21120,7 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: m_LocalEulerAngles.y
-    path: Rig/UpLeg.R/Leg.R/Foot.R
+    path: Rig/Spine/Spine1
     classID: 4
     script: {fileID: 0}
     flags: 0
@@ -21132,7 +21132,7 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: m_LocalEulerAngles.z
-    path: Rig/UpLeg.R/Leg.R/Foot.R
+    path: Rig/Spine/Spine1
     classID: 4
     script: {fileID: 0}
     flags: 0

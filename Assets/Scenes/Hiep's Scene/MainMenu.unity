@@ -8553,7 +8553,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CreditsMenu
   selectSound: {fileID: 8300000, guid: e4b64d508abcc784aa6e7c643049e81a, type: 3}
   creditsCanvasGroup: {fileID: 1233932730}
-  mainMenuCanvasGroup: {fileID: 96224477}
+  mainTitleCanvasGroup: {fileID: 0}
   creditsButton: {fileID: 1937600261}
   transitionDuration: 0.3
   popInScale: 0.95
@@ -13592,7 +13592,7 @@ GameObject:
   - component: {fileID: 1227670754}
   - component: {fileID: 1227670755}
   m_Layer: 0
-  m_Name: Ambient
+  m_Name: Menu Music
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
