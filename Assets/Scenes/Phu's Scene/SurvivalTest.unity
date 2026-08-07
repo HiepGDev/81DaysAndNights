@@ -1841,6 +1841,38 @@ PrefabInstance:
       propertyPath: m_Name
       value: Survival_Game
       objectReference: {fileID: 0}
+    - target: {fileID: 4427855268747381515, guid: 38f12c28eef824149901662790ab910c, type: 3}
+      propertyPath: mainCam
+      value: 
+      objectReference: {fileID: 322396397}
+    - target: {fileID: 4427855268747381515, guid: 38f12c28eef824149901662790ab910c, type: 3}
+      propertyPath: indicatorPrefab
+      value: 
+      objectReference: {fileID: 7814287701260182928, guid: e6b56dfe4a5699b478cf510f33b38919, type: 3}
+    - target: {fileID: 4427855268747381515, guid: 38f12c28eef824149901662790ab910c, type: 3}
+      propertyPath: enemyIndicatorConfigs.Array.data[0].indicatorColor.b
+      value: 0.1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4427855268747381515, guid: 38f12c28eef824149901662790ab910c, type: 3}
+      propertyPath: enemyIndicatorConfigs.Array.data[0].indicatorColor.g
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 4427855268747381515, guid: 38f12c28eef824149901662790ab910c, type: 3}
+      propertyPath: enemyIndicatorConfigs.Array.data[0].indicatorColor.r
+      value: 0.95
+      objectReference: {fileID: 0}
+    - target: {fileID: 4427855268747381515, guid: 38f12c28eef824149901662790ab910c, type: 3}
+      propertyPath: enemyIndicatorConfigs.Array.data[1].indicatorColor.b
+      value: 0.15
+      objectReference: {fileID: 0}
+    - target: {fileID: 4427855268747381515, guid: 38f12c28eef824149901662790ab910c, type: 3}
+      propertyPath: enemyIndicatorConfigs.Array.data[1].indicatorColor.g
+      value: 0.15
+      objectReference: {fileID: 0}
+    - target: {fileID: 4427855268747381515, guid: 38f12c28eef824149901662790ab910c, type: 3}
+      propertyPath: enemyIndicatorConfigs.Array.data[1].indicatorColor.r
+      value: 0.9
+      objectReference: {fileID: 0}
     - target: {fileID: 8494389089741944592, guid: 38f12c28eef824149901662790ab910c, type: 3}
       propertyPath: m_LocalPosition.x
       value: 8.96581

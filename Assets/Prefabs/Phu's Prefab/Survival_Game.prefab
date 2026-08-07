@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8494389089741944592}
   - component: {fileID: 9205480752589030539}
+  - component: {fileID: 4427855268747381515}
   m_Layer: 0
   m_Name: Survival_Game
   m_TagString: Untagged
@@ -44,51 +45,59 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 70a2a11b0e352b84baee2251a24d2601, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _networkRules: {fileID: 0}
-  _visitiblityRules: {fileID: 0}
-  _isSetup: 0
-  _prefabId: -2147483648
-  _componentIndex: -2147483648
-  _shouldBePooled: 0
-  _parent: {fileID: 0}
-  _invertedPathToNearestParent: 
-  _directChildren: []
-  currentWave:
-    _value: 0
-    _ownerAuth: 0
-    _sendIntervalInSeconds: 0
-  currentState:
-    _value: 0
-    _ownerAuth: 0
-    _sendIntervalInSeconds: 0
   totalWaves: 0
-  money:
-    _value: 0
-    _ownerAuth: 0
-    _sendIntervalInSeconds: 0
-  points:
-    _value: 0
-    _ownerAuth: 0
-    _sendIntervalInSeconds: 0
+  economyBonusMultiplier: 2
+  economyDecayThreshold: 5000
+  accuracyEfficiencyWeight: 0.25
+  waveMultiplierDivisor: 100
+  killScoreWaveScaleFactor: 0.05
+  defaultBaseKillPoints: 100
+  basicEnemyMultiplier: 1
+  eliteEnemyMultiplier: 1.5
+  bossEnemyMultiplier: 2
+  money: 0
+  points: 0
+  cumulativeGameScore: 0
+  waveKillScore: 0
+  waveKills: 0
+  totalMoneyGained: 0
+  totalMoneySpent: 0
+  moneyGainedInWave: 0
+  moneySpentInIntermission: 0
+  totalKills: 0
+  totalKillScore: 0
+  shotsFired: 0
+  shotsHit: 0
   prepDuration: 15
   cooldownDuration: 30
   enemyRules:
-  - enemyPrefab: {fileID: 2780110808111577641, guid: 517694ba7339492489780b985d4db6c6, type: 3}
+  - enemyPrefab: {fileID: 4332525836642206128, guid: 482b25f8137bb3a4a87909c289d99f23, type: 3}
     startWave: 1
     spawnChanceWeight: 100
-  spawnPoints:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
+    spawnPoints:
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+  - enemyPrefab: {fileID: 4332525836642206128, guid: 482b25f8137bb3a4a87909c289d99f23, type: 3}
+    startWave: 3
+    spawnChanceWeight: 100
+    spawnPoints:
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+  minSpawnDistanceFromPlayer: 10
   allySpawnPoints:
   - {fileID: 0}
   - {fileID: 0}
   - {fileID: 0}
+  - {fileID: 0}
   playerTransform: {fileID: 0}
-  enemiesPerBatch: 3
+  enemiesPerBatch: 10
   timeBetweenBatches: 4
-  baseEnemyCount: 4
-  enemiesPerWaveIncrease: 2
+  baseEnemyCount: 8
+  enemiesPerWaveIncrease: 4
   baseSpawnInterval: 2
   spawnIntervalDecreasePerWave: 0.15
   minSpawnInterval: 0.5
@@ -96,3 +105,27 @@ MonoBehaviour:
   damageScalePerWave: 0.1
   speedScalePerWave: 0.05
   deathCheckInterval: 0.2
+--- !u!114 &4427855268747381515
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3863950467392119959}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b23d4e5f67890123456789abcdef0123, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::IndicatorUI
+  indicatorPrefab: {fileID: 7814287701260182928, guid: e6b56dfe4a5699b478cf510f33b38919, type: 3}
+  minDistanceBetweenIndicators: 100
+  heightOffset: 40
+  useDistanceScaling: 1
+  distanceScaleFactor: 0.04
+  minScale: 0.3
+  maxScale: 2.5
+  uiScreenVerticalOffset: 50
+  fadeInDuration: 0.3
+  displayDuration: 2.5
+  fadeOutDuration: 0.5
+  mainCam: {fileID: 0}

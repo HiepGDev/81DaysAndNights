@@ -574,6 +574,27 @@ public class WaveManager : MonoBehaviour
         {
             activeEnemies.Add(spawnedObj);
             ApplyDifficultyScaling(spawnedObj);
+
+            if (IndicatorUI.Instance != null)
+            {
+                PhuScene.EnemyType enemyType = PhuScene.EnemyType.Basic;
+
+                EnemyReward rewardComp = spawnedObj.GetComponent<EnemyReward>();
+                if (rewardComp != null)
+                {
+                    enemyType = rewardComp.enemyType;
+                }
+                else
+                {
+                    MockEnemy mockComp = spawnedObj.GetComponent<MockEnemy>();
+                    if (mockComp != null)
+                    {
+                        enemyType = (PhuScene.EnemyType)(int)mockComp.Type;
+                    }
+                }
+
+                IndicatorUI.Instance.TryShowSpawnIndicator(spawnPos, enemyType);
+            }
         }
     }
 
@@ -767,11 +788,15 @@ public class WaveManager : MonoBehaviour
                 waveKills = 0;
             }
 
-            // Reset accuracy shot counters per wave when combat starts
+            // Reset accuracy shot counters & wave indicators per wave when combat starts
             if (currentState == WaveState.WaveActive)
             {
                 shotsFired = 0;
                 shotsHit = 0;
+                if (IndicatorUI.Instance != null)
+                {
+                    IndicatorUI.Instance.ResetWaveIndicators();
+                }
                 OnScoreReportUpdated?.Invoke(GetScoreReport());
             }
 
