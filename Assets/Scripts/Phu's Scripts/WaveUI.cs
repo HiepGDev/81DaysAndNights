@@ -35,6 +35,17 @@ public class WaveUI : MonoBehaviour
     [Header("Hint List References")]
     [SerializeField] private HintUI hintList;
 
+    [Header("Objective Banner Components & Animation")]
+    [Tooltip("GameObject containing the objective banner. Plays figure-8 sine wave motion on game start then fades out.")]
+    [SerializeField] private GameObject objectiveBannerObj;
+    [SerializeField] private float objectiveDisplayDuration = 5.0f;
+    [SerializeField] private float objectiveFadeOutDuration = 1.0f;
+    [SerializeField] private float figureEightWidth = 30.0f;
+    [SerializeField] private float figureEightHeight = 15.0f;
+    [SerializeField] private float figureEightSpeed = 2.0f;
+
+    private Coroutine objectiveBannerCoroutine;
+
 
     private Coroutine transitionCoroutine;
     private Vector2 countdown_SlideOutPosition;
@@ -82,6 +93,9 @@ public class WaveUI : MonoBehaviour
 
         // Initial render
         UpdateUI();
+
+        // Show objective banner animation upon start of game
+        ShowObjectiveBanner();
     }
 
     private void OnEnable()
@@ -552,12 +566,91 @@ public class WaveUI : MonoBehaviour
         if (waveClearedPanel == null) waveClearedPanel = FindComponentByNameInHierarchy<RectTransform>("WaveCleared");
         if (hintList == null) hintList = FindComponentByNameInHierarchy<HintUI>("HintList");
         if (hintList == null) hintList = FindAnyObjectByType<HintUI>();
+        if (objectiveBannerObj == null) objectiveBannerObj = FindGameObjectByNameInHierarchy("Objective");
 
         if (!hadStartButton && waveStartButton != null)
         {
             waveStartButton.onClick.RemoveListener(onSkipClicked);
             waveStartButton.onClick.AddListener(onSkipClicked);
         }
+    }
+
+    public void ShowObjectiveBanner()
+    {
+        if (objectiveBannerObj == null)
+        {
+            objectiveBannerObj = FindGameObjectByNameInHierarchy("Objective");
+        }
+
+        if (objectiveBannerObj == null) return;
+
+        if (objectiveBannerCoroutine != null)
+        {
+            StopCoroutine(objectiveBannerCoroutine);
+        }
+
+        objectiveBannerCoroutine = StartCoroutine(AnimateObjectiveBannerRoutine());
+    }
+
+    private IEnumerator AnimateObjectiveBannerRoutine()
+    {
+        objectiveBannerObj.SetActive(true);
+
+        RectTransform rect = objectiveBannerObj.GetComponent<RectTransform>();
+        CanvasGroup cg = objectiveBannerObj.GetComponent<CanvasGroup>();
+        if (cg == null) cg = objectiveBannerObj.AddComponent<CanvasGroup>();
+
+        cg.alpha = 1f;
+
+        Vector2 basePos = rect != null ? rect.anchoredPosition : Vector2.zero;
+
+        float timer = 0f;
+
+        // Phase 1: Figure-8 sine wave motion during display duration
+        while (timer < objectiveDisplayDuration)
+        {
+            timer += Time.deltaTime;
+            float t = timer * figureEightSpeed;
+
+            if (rect != null)
+            {
+                float offsetX = Mathf.Sin(t) * figureEightWidth;
+                float offsetY = Mathf.Sin(t * 2f) * figureEightHeight;
+                rect.anchoredPosition = basePos + new Vector2(offsetX, offsetY);
+            }
+
+            yield return null;
+        }
+
+        // Phase 2: Continue figure-8 sine wave motion while fading out
+        float fadeTimer = 0f;
+        while (fadeTimer < objectiveFadeOutDuration)
+        {
+            fadeTimer += Time.deltaTime;
+            timer += Time.deltaTime;
+            float t = timer * figureEightSpeed;
+
+            cg.alpha = 1f - Mathf.Clamp01(fadeTimer / objectiveFadeOutDuration);
+
+            if (rect != null)
+            {
+                float offsetX = Mathf.Sin(t) * figureEightWidth;
+                float offsetY = Mathf.Sin(t * 2f) * figureEightHeight;
+                rect.anchoredPosition = basePos + new Vector2(offsetX, offsetY);
+            }
+
+            yield return null;
+        }
+
+        cg.alpha = 0f;
+        if (rect != null) rect.anchoredPosition = basePos;
+        objectiveBannerObj.SetActive(false);
+    }
+
+    private GameObject FindGameObjectByNameInHierarchy(string name)
+    {
+        Transform t = FindInChildRecursive<Transform>(transform.root, name);
+        return t != null ? t.gameObject : null;
     }
 
     private T FindComponentByNameInHierarchy<T>(string name) where T : Component
