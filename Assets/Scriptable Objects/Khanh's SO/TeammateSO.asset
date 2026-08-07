@@ -26,7 +26,7 @@ MonoBehaviour:
   semiFireRateMin: 0.6
   semiFireRateMax: 1.2
   fireDistance: 30
-  damagePerShot: 1
+  damagePerShot: 2
   magazineSize: 30
   reloadTime: 2.5
   minSpread: 0.03
