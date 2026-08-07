@@ -4,10 +4,11 @@ using UnityEngine.AI;
 [RequireComponent(typeof(NavMeshAgent))]
 public class TeammateAI : MonoBehaviour
 {
-    public enum TeammateState { Idle, Following, Combat, Patrolling, SeekingCover }
+    public enum TeammateState { Idle, Following, Combat, Patrolling }
     public TeammateState CurrentState => currentState;
 
     [SerializeField] private TeammateSO teammateData;
+    [SerializeField] private Transform idleLookTarget;
 
     public enum AIMode { Follower, Patroller, Defender }
 
@@ -54,14 +55,12 @@ public class TeammateAI : MonoBehaviour
     private float lastLoggedSpeed = -1f;
 
     private TeammateShooting shooting;
-    private TeammateCover cover;
-    private TeammateCover.CoverPoint activeCover;
 
     private void Awake()
     {
         agent = GetComponent<NavMeshAgent>();
         shooting = GetComponent<TeammateShooting>();
-        cover = GetComponent<TeammateCover>();
+
 
         animator = GetComponent<Animator>();
         if (animator == null) animator = GetComponentInChildren<Animator>();
@@ -97,6 +96,19 @@ public class TeammateAI : MonoBehaviour
         {
             var playerObj = GameObject.FindWithTag("Player");
             if (playerObj != null) playerTarget = playerObj.transform;
+        }
+
+        if (idleLookTarget == null)
+        {
+            GameObject spawner = GameObject.Find("EnemySpawner");
+            if (spawner != null)
+            {
+                idleLookTarget = spawner.transform;
+            }
+            else
+            {
+                Debug.LogWarning($"[{gameObject.name}] Không tìm thấy object nào tên 'EnemySpawner' trong Scene!");
+            }
         }
 
         originalDefendPosition = transform.position;
@@ -150,6 +162,7 @@ public class TeammateAI : MonoBehaviour
         {
             claimedDefendPoint = bestPoint;
             claimedDefendPoint.isOccupied = true;
+            claimedDefendPoint.occupiedBy = this.gameObject;
             defendPoint = claimedDefendPoint.transform;
         }
     }
@@ -164,30 +177,27 @@ public class TeammateAI : MonoBehaviour
         if (claimedDefendPoint != null)
         {
             claimedDefendPoint.isOccupied = false;
-            claimedDefendPoint = null; // Xóa luôn tham chiếu
+            claimedDefendPoint.occupiedBy = null;
+            claimedDefendPoint = null;
             Debug.Log($"[{gameObject.name}] Đã nhả Defend Point ra vì tử trận!");
         }
     }
 
     private void Update()
     {
-        if (!agent.isOnNavMesh) return;
-        if ((aiMode == AIMode.Follower || aiMode == AIMode.Patroller) && playerTarget == null) return;
-
         if (shooting != null && shooting.IsOutOfAmmo)
         {
-            if (currentState != TeammateState.SeekingCover && !shooting.IsReloading)
+            if (!shooting.IsReloading)
             {
-                FindAndGoToCover();
+                StopAgent(); 
+                shooting.TriggerReload();
             }
-            else if (currentState == TeammateState.SeekingCover)
-            {
-                HandleCoverLogic();
-            }
-
             UpdateAnimation();
             return;
         }
+
+        if (!agent.isOnNavMesh) return;
+        if ((aiMode == AIMode.Follower || aiMode == AIMode.Patroller) && playerTarget == null) return;
 
         UpdateState();
         HandleMovement();
@@ -195,43 +205,8 @@ public class TeammateAI : MonoBehaviour
         UpdateAnimation();
     }
 
-    private void FindAndGoToCover()
-    {
-        if (cover != null && enemyTarget != null)
-        {
-            activeCover = cover.FindNearestCover(enemyTarget.position);
-            if (activeCover.found)
-            {
-                currentState = TeammateState.SeekingCover;
-                agent.isStopped = false;
-                agent.SetDestination(activeCover.position);
-                return;
-            }
-        }
-
-        shooting.TriggerReload();
-    }
-
-    private void HandleCoverLogic()
-    {
-        float distToCover = Vector3.Distance(transform.position, activeCover.position);
-
-        if (distToCover <= 0.3f || (!agent.pathPending && agent.remainingDistance <= agent.stoppingDistance))
-        {
-            StopAgent();
-            transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(activeCover.lookDirection), Time.deltaTime * 10f);
-
-            if (!shooting.IsReloading)
-            {
-                shooting.TriggerReload();
-            }
-        }
-    }
-
     private void UpdateState()
     {
-        if (currentState == TeammateState.SeekingCover) currentState = TeammateState.Idle;
-
         switch (aiMode)
         {
             case AIMode.Follower: UpdateFollowerState(); break;
@@ -276,7 +251,6 @@ public class TeammateAI : MonoBehaviour
     private void UpdatePatrollerState()
     {
         float distToPlayer = Vector3.Distance(transform.position, playerTarget.position);
-
         bool hasFinishedPatrol = (!loopPatrol && currentPatrolIndex >= patrolPoints.Length - 1);
 
         switch (currentState)
@@ -457,6 +431,10 @@ public class TeammateAI : MonoBehaviour
                 if (agent.velocity.sqrMagnitude > 0.1f)
                 {
                     SmoothRotateToward(transform.position + agent.velocity);
+                }
+                else if (idleLookTarget != null)
+                {
+                    SmoothRotateToward(idleLookTarget.position);
                 }
                 else if (aiMode == AIMode.Defender && defendPoint != null)
                 {

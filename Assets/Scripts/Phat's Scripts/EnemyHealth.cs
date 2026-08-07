@@ -4,6 +4,9 @@ public class EnemyHealth : MonoBehaviour
 {
     [SerializeField] private int health = 100;
     [SerializeField] private EnemySO enemyData;
+
+    public int CurrentHealth => health;
+    public int MaxHealth => (enemyData != null) ? enemyData.maxHealth : 100;
     
     // Track all dead bodies across the whole game
     private static System.Collections.Generic.List<GameObject> ragdollPool = new System.Collections.Generic.List<GameObject>();
@@ -104,7 +107,13 @@ public class EnemyHealth : MonoBehaviour
             }
         }
 
-        // 9. THE ENEMY POOL MANAGER: Limit to 30 enemy bodies
+        // 9. Close the eyes
+        Transform eyeL = FindChildRecursive(transform, "eye.l");
+        Transform eyeR = FindChildRecursive(transform, "eye.r");
+        CreateClosedEyeCube(eyeL, new Vector3(-0.0045f, 0.001f, 0.0011f), new Vector3(-0.06f, -0.001f, 0.02f));
+        CreateClosedEyeCube(eyeR, new Vector3(0.0045f, 0.001f, 0.0011f), new Vector3(-0.06f, -0.001f, 0.02f));
+
+        // 10. THE ENEMY POOL MANAGER: Limit to 30 enemy bodies
         ragdollPool.Add(this.gameObject);
 
         // Remove any dead bodies that were destroyed by other means (falling off map, etc)
@@ -119,6 +128,45 @@ public class EnemyHealth : MonoBehaviour
                 Debug.Log($"[Pool] Limit reached. Destroying oldest enemy ragdoll: {oldest.name}");
                 Destroy(oldest);
             }
+        }
+    }
+
+    private Transform FindChildRecursive(Transform parent, string name)
+    {
+        if (parent.name.Equals(name, System.StringComparison.OrdinalIgnoreCase)) return parent;
+        foreach (Transform child in parent)
+        {
+            Transform result = FindChildRecursive(child, name);
+            if (result != null) return result;
+        }
+        return null;
+    }
+
+    private void CreateClosedEyeCube(Transform eyeTransform, Vector3 localPos, Vector3 localScale)
+    {
+        if (eyeTransform == null) return;
+
+        // Create a small primitive cube to act as closed eyelid
+        GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        cube.name = "ClosedEyeCover";
+
+        // Remove collider so it doesn't interfere with physics or ragdolls
+        Collider col = cube.GetComponent<Collider>();
+        if (col != null) Destroy(col);
+
+        // Parent to the eye bone
+        cube.transform.SetParent(eyeTransform);
+        
+        // Apply exact local coordinates requested
+        cube.transform.localPosition = localPos;
+        cube.transform.localRotation = Quaternion.identity;
+        cube.transform.localScale = localScale;
+
+        // Apply custom color #989259
+        Renderer r = cube.GetComponent<Renderer>();
+        if (r != null)
+        {
+            r.material.color = new Color(0.596f, 0.573f, 0.349f);
         }
     }
 

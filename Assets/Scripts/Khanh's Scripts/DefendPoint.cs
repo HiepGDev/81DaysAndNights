@@ -3,6 +3,7 @@ using UnityEngine;
 public class DefendPoint : MonoBehaviour
 {
     public bool isOccupied = false;
+    public GameObject occupiedBy;
 
     private void OnDrawGizmos()
     {

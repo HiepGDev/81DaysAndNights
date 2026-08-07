@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 public class EnemyDetection : MonoBehaviour
 {
@@ -36,13 +36,28 @@ public class EnemyDetection : MonoBehaviour
 
                 try
                 {
-                    // Using CompareTag is faster, but we wrap it to catch the "not defined" error
                     if (target.CompareTag(targetTag))
                     {
+                        // Check Line of Sight (LOS)
+                        Vector3 origin = transform.position + Vector3.up * 1.5f; // Eye level of enemy
+                        Vector3 targetCenter = target.transform.position + Vector3.up * 1.0f; // Target center/chest
+                        Vector3 direction = targetCenter - origin;
+                        float distance = direction.magnitude;
+
+                        // Raycast to check for obstacles, ignoring trigger colliders
+                        if (Physics.Raycast(origin, direction.normalized, out RaycastHit hit, distance, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
+                        {
+                            // If the ray hit an obstacle that is not the target and not the enemy itself
+                            if (hit.transform.root != target.transform.root && hit.transform.root != transform.root)
+                            {
+                                continue; // Blocked by wall/house/castle/terrain, skip this target
+                            }
+                        }
+
                         IsTargetDetected = true;
                         CurrentTarget = target.transform;
                         LastKnownPosition = CurrentTarget.position; // Record position while visible
-                        return; // Found at least one target (OR logic), so we can stop looking
+                        return; // Found at least one visible target, stop searching
                     }
                 }
                 catch (System.Exception)

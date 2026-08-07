@@ -13,6 +13,9 @@ public class EnemyBehaviorAgent : MonoBehaviour
     private EnemyTacticalPeek peek;
     private Animator animator;
     [SerializeField] private EnemySO enemyData;
+    private EnemyHealth enemyHealth;
+    private bool hasDecidedLowHealthBehavior = false;
+    private bool shouldPushAtLowHealth = false;
 
     [Header("Ambush Settings")]
     public EnemyMode currentMode = EnemyMode.Wander;
@@ -53,6 +56,7 @@ public class EnemyBehaviorAgent : MonoBehaviour
     public float CurrentEngagementDist { get; private set; } 
     public Transform CurrentAmbushTarget { get; private set; }
     public Transform PlayerTransform => playerTransform;
+    public EnemySO EnemyData => enemyData;
 
     private Transform designatedSniperPoint;
     public void SetDesignatedSniperPoint(Transform point) 
@@ -87,6 +91,7 @@ public class EnemyBehaviorAgent : MonoBehaviour
         cover = GetComponent<EnemyCover>();
         peek = GetComponent<EnemyTacticalPeek>();
         animator = GetComponentInChildren<Animator>();
+        enemyHealth = GetComponent<EnemyHealth>();
 
         if (enemyData != null)
         {
@@ -254,6 +259,43 @@ public class EnemyBehaviorAgent : MonoBehaviour
             return;
         }
 
+        // Reset low health decision when target is lost
+        if (!isDetected)
+        {
+            hasDecidedLowHealthBehavior = false;
+        }
+
+        // Low health decision branch
+        if (enemyHealth != null && isDetected && target != null && enemyHealth.CurrentHealth <= enemyHealth.MaxHealth * 0.3f)
+        {
+            if (!hasDecidedLowHealthBehavior)
+            {
+                hasDecidedLowHealthBehavior = true;
+                float pushWeight = (enemyData != null) ? enemyData.pushProbability : 0.5f;
+                shouldPushAtLowHealth = (UnityEngine.Random.value <= pushWeight);
+            }
+
+            if (!shouldPushAtLowHealth)
+            {
+                // Run away to cover
+                if (!isInCover) FindAndGoToCover();
+                else HandleCoverLogic(inShootingRange);
+                return;
+            }
+            else
+            {
+                // Push/rush the player!
+                if (agent.isStopped) agent.isStopped = false;
+                agent.SetDestination(target.position);
+                FaceTarget();
+                if (distToTarget <= maxGunRange)
+                {
+                    IsReadyToShoot = true;
+                }
+                return;
+            }
+        }
+
         if (currentMode == EnemyMode.Sniper && isDetected && target != null)
         {
             if (!isInCover && !hasSearchedForCover)
@@ -299,9 +341,21 @@ public class EnemyBehaviorAgent : MonoBehaviour
             {
                 if (agent.isStopped) agent.isStopped = false;
                 
+                // Determine flanking angle dynamically based on evolved weights
+                float targetFlankAngle = 0f;
+                if (currentMode != EnemyMode.Sniper && enemyData != null)
+                {
+                    bool shouldFlank = (UnityEngine.Random.value <= enemyData.flankProbability);
+                    if (shouldFlank)
+                    {
+                        // Flank wide: either left 65 degrees or right 65 degrees
+                        targetFlankAngle = (UnityEngine.Random.value < 0.5f) ? -65f : 65f;
+                    }
+                }
+
                 Vector3 dirFromTarget = (transform.position - target.position).normalized;
                 if (dirFromTarget == Vector3.zero) dirFromTarget = Vector3.forward;
-                Vector3 flankingDir = Quaternion.Euler(0, personalFlankingAngle, 0) * dirFromTarget;
+                Vector3 flankingDir = Quaternion.Euler(0, targetFlankAngle, 0) * dirFromTarget;
                 Vector3 tacticalPos = target.position + flankingDir * (CurrentEngagementDist - 1.0f); 
 
                 NavMeshHit hit;
@@ -314,9 +368,21 @@ public class EnemyBehaviorAgent : MonoBehaviour
             }
             else
             {
-                if (!agent.isStopped) StopAgent();
-                FaceTarget();
-                IsReadyToShoot = true;
+                // In range, but check if we have a clear line of sight to shoot
+                if (HasLineOfSight(target))
+                {
+                    if (!agent.isStopped) StopAgent();
+                    FaceTarget();
+                    IsReadyToShoot = true;
+                }
+                else
+                {
+                    // Blocked by a wall: continue chasing directly to the target's position to see them
+                    if (agent.isStopped) agent.isStopped = false;
+                    agent.SetDestination(target.position);
+                    FaceTarget();
+                    IsReadyToShoot = false;
+                }
             }
             return;
         }
@@ -335,6 +401,21 @@ public class EnemyBehaviorAgent : MonoBehaviour
             }
 
             if (!agent.isStopped) StopAgent();
+            return;
+        }
+
+        if (currentMode == EnemyMode.Ambush)
+        {
+            float distToSpawn = Vector3.Distance(transform.position, spawnPoint);
+            if (distToSpawn > agent.stoppingDistance + 0.2f)
+            {
+                if (agent.isStopped) agent.isStopped = false;
+                agent.SetDestination(spawnPoint);
+            }
+            else
+            {
+                if (!agent.isStopped) StopAgent();
+            }
             return;
         }
 
@@ -519,6 +600,25 @@ public class EnemyBehaviorAgent : MonoBehaviour
             agent.ResetPath();
             agent.velocity = Vector3.zero;
         }
+    }
+
+    private bool HasLineOfSight(Transform target)
+    {
+        if (target == null) return false;
+        Vector3 origin = transform.position + Vector3.up * 1.5f; // Eye level of enemy
+        Vector3 targetCenter = target.position + Vector3.up * 1.0f; // Target center
+        Vector3 direction = targetCenter - origin;
+        float distance = direction.magnitude;
+
+        // Raycast to check for obstacles, ignoring trigger colliders
+        if (Physics.Raycast(origin, direction.normalized, out RaycastHit hit, distance, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
+        {
+            if (hit.transform.root != target.root && hit.transform.root != transform.root)
+            {
+                return false; // Blocked by physical obstacle
+            }
+        }
+        return true; // Clear line of sight
     }
 
     private Transform GetClosestTarget()

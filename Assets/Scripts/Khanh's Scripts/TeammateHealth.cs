@@ -9,9 +9,7 @@ public class TeammateHealth : MonoBehaviour
     [SerializeField] private TeammateSO teammateData;
 
     [Header("Face References (Dead State)")]
-    [Tooltip("Kéo object LidBottom.L từ Rig vào đây, hoặc để trống code sẽ tự tìm")]
     [SerializeField] private Transform lidBottomL;
-    [Tooltip("Kéo object LidBottom.R từ Rig vào đây, hoặc để trống code sẽ tự tìm")]
     [SerializeField] private Transform lidBottomR;
 
     private static System.Collections.Generic.List<GameObject> ragdollPool = new System.Collections.Generic.List<GameObject>();
@@ -78,6 +76,7 @@ public class TeammateHealth : MonoBehaviour
         if (aiScript != null)
         {
             aiScript.ReleaseDefendPoint();
+            Debug.Log($"[TeammateHealth] Cảnh báo: {gameObject.name} đã tử trận và vừa nhả trống Defend Point!");
         }
 
         NavMeshAgent agent = GetComponent<NavMeshAgent>();
