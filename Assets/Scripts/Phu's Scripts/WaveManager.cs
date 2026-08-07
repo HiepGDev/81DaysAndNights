@@ -49,6 +49,7 @@ public struct ScoreReport
     public float totalKillScore;
     public int totalKills;
     public int waveKills;
+    public float accuracyBonus;
     public float economyBonus;
     public float economyDecayFactor;
     public float moneyGainedInWave;
@@ -75,7 +76,7 @@ public class WaveManager : MonoBehaviour
 
     [Header("Scoring Formula Parameters & Multipliers")]
     [Tooltip("Multiplier applied to net wave savings (Money Gained - Money Spent) for Economy Bonus.")]
-    [SerializeField] private float economyBonusMultiplier = 2f;
+    [SerializeField] private float economyBonusMultiplier = 1f;
 
     [Tooltip("Total lifetime money earned threshold where Economy Bonus efficiency diminishes by 50%. Higher values allow the bonus to stay active longer.")]
     [SerializeField] private float economyDecayThreshold = 5000;
@@ -132,6 +133,9 @@ public class WaveManager : MonoBehaviour
     public float EconomyDecayFactor => 1f / (1f + ((float)totalMoneyGained / Mathf.Max(1f, economyDecayThreshold)));
     public float EconomyBonus => NetWaveSavings * economyBonusMultiplier * EconomyDecayFactor;
     public float WaveMultiplier => 1f + (Mathf.Pow(Mathf.Max(0, currentWave), 2f) / Mathf.Max(1f, waveMultiplierDivisor));
+    public float AccuracyBonus => (waveKillScore + EconomyBonus) * WaveMultiplier * (EfficiencyMultiplier - 1f);
+    private ScoreReport lastCompletedWaveReport;
+    public ScoreReport LastCompletedWaveReport => lastCompletedWaveReport;
 
     public int CalculateCurrentWaveScore()
     {
@@ -142,7 +146,11 @@ public class WaveManager : MonoBehaviour
 
     public int CalculateTotalGameScore()
     {
-        return cumulativeGameScore + CalculateCurrentWaveScore();
+        if (currentState == WaveState.WaveCompleted)
+        {
+            return cumulativeGameScore;
+        }
+        return cumulativeGameScore + Mathf.RoundToInt(waveKillScore);
     }
 
     public ScoreReport GetScoreReport()
@@ -153,6 +161,7 @@ public class WaveManager : MonoBehaviour
             totalKillScore = totalKillScore,
             totalKills = totalKills,
             waveKills = waveKills,
+            accuracyBonus = AccuracyBonus,
             economyBonus = EconomyBonus,
             economyDecayFactor = EconomyDecayFactor,
             moneyGainedInWave = moneyGainedInWave,
@@ -253,11 +262,11 @@ public class WaveManager : MonoBehaviour
             }
         }
 
-        if (FindFirstObjectByType<MockScoreUI>() == null)
-        {
-            GameObject mockUI = new GameObject("MockScoreUI");
-            mockUI.AddComponent<MockScoreUI>();
-        }
+        // if (FindFirstObjectByType<MockScoreUI>() == null)
+        // {
+        //     GameObject mockUI = new GameObject("MockScoreUI");
+        //     mockUI.AddComponent<MockScoreUI>();
+        // }
 
         gameLoopCoroutine = StartCoroutine(GameLoop());
     }
@@ -769,8 +778,10 @@ public class WaveManager : MonoBehaviour
             // Apply full formula multipliers & bonuses at wave end or game over/victory
             if (currentState == WaveState.WaveCompleted)
             {
+                lastCompletedWaveReport = GetScoreReport();
                 int waveScore = CalculateCurrentWaveScore();
                 cumulativeGameScore += waveScore;
+                waveKillScore = 0f;
                 RecalculatePoints();
             }
             else if (currentState == WaveState.GameOver || currentState == WaveState.Victory)

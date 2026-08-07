@@ -247,6 +247,25 @@ public class WaveUI : MonoBehaviour
     private void HandleWaveCompleted(int waveNum)
     {
         ShowWaveCleared($"WAVE {waveNum} CLEAR!", Color.green);
+
+        if (BonusUI.Instance != null && WaveManager.Instance != null)
+        {
+            ScoreReport report = WaveManager.Instance.LastCompletedWaveReport;
+
+            BonusUI.Instance.AddAccuracyBonus(
+                report.accuracyPercent,
+                report.shotsFired,
+                report.shotsHit,
+                Mathf.RoundToInt(report.accuracyBonus)
+            );
+
+            BonusUI.Instance.AddEconomyBonus(
+                report.economyBonus,
+                report.moneyGainedInWave,
+                report.moneySpentInIntermission,
+                Mathf.RoundToInt(report.economyBonus)
+            );
+        }
     }
 
     private void HandleEnemyCountChanged(int remaining, int total)

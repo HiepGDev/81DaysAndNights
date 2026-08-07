@@ -1692,6 +1692,10 @@ PrefabInstance:
       propertyPath: m_SizeDelta.x
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 4224311901853628328, guid: 0eddabc3834f134428e92d90506b98bd, type: 3}
+      propertyPath: m_Name
+      value: BonusList
+      objectReference: {fileID: 0}
     - target: {fileID: 4260461960382736734, guid: 0eddabc3834f134428e92d90506b98bd, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
@@ -1891,7 +1895,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 9205480752589030539, guid: 38f12c28eef824149901662790ab910c, type: 3}
       propertyPath: economyBonusMultiplier
-      value: 5
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 9205480752589030539, guid: 38f12c28eef824149901662790ab910c, type: 3}
+      propertyPath: accuracyEfficiencyWeight
+      value: 0.25
       objectReference: {fileID: 0}
     - target: {fileID: 9205480752589030539, guid: 38f12c28eef824149901662790ab910c, type: 3}
       propertyPath: 'spawnPoints.Array.data[0]'

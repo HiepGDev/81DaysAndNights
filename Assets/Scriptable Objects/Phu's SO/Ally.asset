@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   itemName: Summon Ally
   itemDescription: Spawn an ally to help you fight the enemies.
-  price: 150
+  price: 300
   icon: {fileID: 21300000, guid: 9772bede05123304ba3a5008bfad8a7f, type: 3}
   specs:
   - 

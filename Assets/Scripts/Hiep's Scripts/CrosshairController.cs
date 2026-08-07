@@ -77,6 +77,13 @@ public class CrosshairController : MonoBehaviour
         //  Smoothly move toward the target size
         currentSize = Mathf.Lerp(currentSize, targetSize, Time.deltaTime * lerpSpeed);
         ApplyPositions();
+
+
+
+        top.gameObject.SetActive(Cursor.lockState == CursorLockMode.Locked);
+        bottom.gameObject.SetActive(Cursor.lockState == CursorLockMode.Locked);
+        left.gameObject.SetActive(Cursor.lockState == CursorLockMode.Locked);
+        right.gameObject.SetActive(Cursor.lockState == CursorLockMode.Locked);
     }
 
     // Call this from PlayerGun.cs inside HandleShoot()

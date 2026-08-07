@@ -353,7 +353,7 @@ Transform:
   m_GameObject: {fileID: 322396395}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 1, z: 0, w: 0}
-  m_LocalPosition: {x: 369.66296, y: 100.42248, z: 531.0976}
+  m_LocalPosition: {x: 369.66302, y: 100.42248, z: 531.0976}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1463,6 +1463,10 @@ PrefabInstance:
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
       objectReference: {fileID: 1347247940}
+    - target: {fileID: 6403965973044831588, guid: 5a82e795728202449ad1cfcf7ec5187f, type: 3}
+      propertyPath: m_SortingOrder
+      value: 2
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -1643,6 +1647,10 @@ PrefabInstance:
     - target: {fileID: 2775860223099955578, guid: ff3789e306cc4f14094541622fcb2de3, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2972188488025693442, guid: ff3789e306cc4f14094541622fcb2de3, type: 3}
+      propertyPath: m_SortingOrder
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5009043691107173865, guid: ff3789e306cc4f14094541622fcb2de3, type: 3}
       propertyPath: m_IsActive
@@ -1848,13 +1856,9 @@ PrefabInstance:
       propertyPath: m_Name
       value: Survival_Canvas
       objectReference: {fileID: 0}
-    - target: {fileID: 1789532576537908149, guid: 0eddabc3834f134428e92d90506b98bd, type: 3}
-      propertyPath: m_text
-      value: (Tab)
-      objectReference: {fileID: 0}
-    - target: {fileID: 1789532576537908149, guid: 0eddabc3834f134428e92d90506b98bd, type: 3}
-      propertyPath: m_fontSize
-      value: 23.95
+    - target: {fileID: 943972252122967351, guid: 0eddabc3834f134428e92d90506b98bd, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 2185579880484845565, guid: 0eddabc3834f134428e92d90506b98bd, type: 3}
       propertyPath: m_Pivot.x
@@ -1935,10 +1939,6 @@ PrefabInstance:
     - target: {fileID: 2185579880484845565, guid: 0eddabc3834f134428e92d90506b98bd, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2341053549372099151, guid: 0eddabc3834f134428e92d90506b98bd, type: 3}
-      propertyPath: m_SortingOrder
-      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 3399588912704786094, guid: 0eddabc3834f134428e92d90506b98bd, type: 3}
       propertyPath: m_AnchorMax.y
@@ -2179,7 +2179,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 9205480752589030539, guid: 38f12c28eef824149901662790ab910c, type: 3}
       propertyPath: money
-      value: 10000
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 9205480752589030539, guid: 38f12c28eef824149901662790ab910c, type: 3}
       propertyPath: money._value

@@ -15,7 +15,7 @@ MonoBehaviour:
   itemName: Mosin Nagant
   itemDescription: Bolt-action sniper rifle with high zoom and power. Reliable for
     tanky enemies.
-  price: 1200
+  price: 1400
   icon: {fileID: 21300000, guid: e45b58f36472f2842b131be7ee8bf89c, type: 3}
   specs:
   - 'Damage: 100'
