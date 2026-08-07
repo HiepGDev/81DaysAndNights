@@ -3,7 +3,6 @@ using UnityEngine;
 public class Headbob : MonoBehaviour
 {
     [SerializeField] private PlayerMovement campaignMovement;
-    [SerializeField] private SurvivalPlayerMovement survivalMovement;
     [SerializeField] private CharacterController characterController;
 
     [Header("Headbob Settings")]
@@ -22,7 +21,6 @@ public class Headbob : MonoBehaviour
     {
         characterController = GetComponentInParent<CharacterController>();
         campaignMovement = GetComponentInParent<PlayerMovement>();
-        survivalMovement = GetComponentInParent<SurvivalPlayerMovement>();
         characterController = GetComponentInParent<CharacterController>();
         // Store original local position of this camera (for resetting bob)
         originalPosition = transform.localPosition;
@@ -32,7 +30,7 @@ public class Headbob : MonoBehaviour
     private bool IsSprinting()
     {
         if (campaignMovement != null) return campaignMovement.isSprinting;
-        if (survivalMovement != null) return survivalMovement.isSprinting;
+        // if (survivalMovement != null) return survivalMovement.isSprinting;
         return false; 
     }
 
