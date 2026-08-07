@@ -19,29 +19,27 @@ public class PlayerFootstep : MonoBehaviour
     // private float lastStepTime = 0f;
     private CharacterController controller;
     private PlayerMovement campaignMovement;
-    private SurvivalPlayerMovement survivalMovement;
     private InputAction moveAction;
     private void Awake()
     {
         controller = GetComponent<CharacterController>();
         campaignMovement = GetComponent<PlayerMovement>();
-        survivalMovement = GetComponent<SurvivalPlayerMovement>();
         moveAction = InputSystem.actions.FindAction("Move");
         moveAction.Enable();
         if (controller == null) Debug.LogError("PlayerFootstep: CharacterController not found on this GameObject!");
-        if (campaignMovement == null && survivalMovement == null) Debug.LogError("PlayerFootstep: PlayerMovement not found on this GameObject!");
+        if (campaignMovement == null) Debug.LogError("PlayerFootstep: PlayerMovement not found on this GameObject!");
     }
     // Smart Helpers
     private bool IsSprinting()
     {
         if (campaignMovement != null) return campaignMovement.isSprinting;
-        if (survivalMovement != null) return survivalMovement.isSprinting;
+        // if (survivalMovement != null) return survivalMovement.isSprinting;
         return false;
     }
     private bool IsCrouching()
     {
         if (campaignMovement != null) return campaignMovement.isCrouching;
-        if (survivalMovement != null) return survivalMovement.isCrouching;
+        // if (survivalMovement != null) return survivalMovement.isCrouching;
         return false;
     }
     void Update()
