@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEngine.AI;
 
 public class TeammateHealth : MonoBehaviour
@@ -16,6 +16,7 @@ public class TeammateHealth : MonoBehaviour
     private const int MAX_RAGDOLLS = 10;
 
     private bool isDead = false;
+    public bool IsDead => isDead;
 
     private Rigidbody[] ragdollRigidbodies;
     private Collider[] ragdollColliders;

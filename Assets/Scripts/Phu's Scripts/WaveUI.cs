@@ -46,6 +46,14 @@ public class WaveUI : MonoBehaviour
 
     private Coroutine objectiveBannerCoroutine;
 
+    [Header("Wave 2 Auto Shop Open Settings")]
+    [Tooltip("If true, automatically opens the Shop after a delay during wave 2 intermission.")]
+    [SerializeField] private bool autoOpenShopWave2 = true;
+    [SerializeField] private float autoOpenShopDelay = 2.0f;
+
+    private bool hasAutoOpenedShopForWave2 = false;
+    private Coroutine autoOpenShopCoroutine;
+
 
     private Coroutine transitionCoroutine;
     private Vector2 countdown_SlideOutPosition;
@@ -171,6 +179,7 @@ public class WaveUI : MonoBehaviour
         }
 
         CheckMouseUnlockHint(report.state, report.currentWave);
+        CheckAutoOpenShopWave2(report.state, report.currentWave);
 
         if (report.state == WaveState.Preparing)
         {
@@ -244,6 +253,7 @@ public class WaveUI : MonoBehaviour
         }
 
         CheckMouseUnlockHint(state, WaveManager.Instance != null ? WaveManager.Instance.CurrentWave : -1);
+        CheckAutoOpenShopWave2(state, WaveManager.Instance != null ? WaveManager.Instance.CurrentWave : -1);
 
         UpdateCountdownUIState(state);
     }
@@ -851,6 +861,31 @@ public class WaveUI : MonoBehaviour
             {
                 hintList.AddHint("Press Alt to unlock mouse");
             }
+        }
+    }
+
+    private void CheckAutoOpenShopWave2(WaveState state, int waveNum)
+    {
+        if (!autoOpenShopWave2 || hasAutoOpenedShopForWave2) return;
+
+        if (state == WaveState.Preparing && waveNum == 2)
+        {
+            hasAutoOpenedShopForWave2 = true;
+            if (autoOpenShopCoroutine != null)
+            {
+                StopCoroutine(autoOpenShopCoroutine);
+            }
+            autoOpenShopCoroutine = StartCoroutine(AutoOpenShopRoutine());
+        }
+    }
+
+    private IEnumerator AutoOpenShopRoutine()
+    {
+        yield return new WaitForSeconds(autoOpenShopDelay);
+
+        if (ShopUI.Instance != null)
+        {
+            ShopUI.Instance.OpenShop();
         }
     }
 

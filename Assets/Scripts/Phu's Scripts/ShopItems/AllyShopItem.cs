@@ -18,8 +18,36 @@ namespace PhuScene
 
         private int GetActiveAllyCount()
         {
+            TeammateHealth[] allies = FindObjectsByType<TeammateHealth>(FindObjectsSortMode.None);
+            if (allies != null && allies.Length > 0)
+            {
+                int activeCount = 0;
+                foreach (var ally in allies)
+                {
+                    if (ally != null && ally.gameObject.activeInHierarchy && !ally.IsDead)
+                    {
+                        activeCount++;
+                    }
+                }
+                return activeCount;
+            }
+
+            // Fallback for objects that only have TeammateShooting component enabled
             TeammateShooting[] teammates = FindObjectsByType<TeammateShooting>(FindObjectsSortMode.None);
-            return teammates != null ? teammates.Length : 0;
+            if (teammates != null)
+            {
+                int activeCount = 0;
+                foreach (var teammate in teammates)
+                {
+                    if (teammate != null && teammate.enabled && teammate.gameObject.activeInHierarchy)
+                    {
+                        activeCount++;
+                    }
+                }
+                return activeCount;
+            }
+
+            return 0;
         }
 
         protected override bool IsPurchaseable()
