@@ -4,15 +4,21 @@ using UnityEngine;
 public class Mission1Manager : MonoBehaviour
 {
     [Header("Mission Dependencies")]
-    [SerializeField] private EnemySpawner enemySpawner;
+    [SerializeField] private EnemySpawner[] enemySpawners;
     
     [Header("End Game Actions")]
     [Tooltip("Place the GameObject holding Final CutsceneManager here. Make sure it starts Disabled in the scene!")]
     [SerializeField] private GameObject finalCutsceneObject;
 
+    [SerializeField] private float fadeToBlackDuration = 1.5f; // Adjust this to match CutsceneManager's fade duration
+    [Header("Audio Controls")]
+    [Tooltip("Drag the GameObject with combat music AudioSource here.")]
+    [SerializeField] private AudioSource combatMusic;
+    [Tooltip("How long it takes for the music to fade to zero.")]
+    [SerializeField] private float musicFadeDuration = 3f;
     private void Start()
     {
-        if (enemySpawner != null)
+        if (enemySpawners != null && enemySpawners.Length > 0)
         {
             // Start checking the mission status in the background
             StartCoroutine(MonitorMissionStatus());
@@ -26,9 +32,25 @@ public class Mission1Manager : MonoBehaviour
    private IEnumerator MonitorMissionStatus()
     {
         // Wait until the EnemySpawner has pushed out every single wave
-        while (!enemySpawner.IsDoneSpawning)
+        bool allSpawnersDone = false;
+        while (!allSpawnersDone)
         {
-            yield return new WaitForSeconds(1f);
+            allSpawnersDone = true; // Assume they are done, then prove it wrong
+            foreach (EnemySpawner spawner in enemySpawners)
+            {
+                // If find even one spawner that isn't done yet, break and keep waiting
+                if (spawner != null && !spawner.IsDoneSpawning)
+                {
+                    allSpawnersDone = false;
+                    break; 
+                }
+            }
+            
+            // If they aren't all done, wait a second and check again
+            if (!allSpawnersDone)
+            {
+                yield return new WaitForSeconds(1f);
+            }
         }
 
         // The waves are done. Now wait for the player to eliminate the remaining enemies.
@@ -52,7 +74,7 @@ public class Mission1Manager : MonoBehaviour
             if (aliveCount == 0)
             {
                 // All active AI are dead! Trigger the end of the mission.
-                EndMission();
+                StartCoroutine(EndMissionRoutine());
                 break; 
             }
 
@@ -61,20 +83,15 @@ public class Mission1Manager : MonoBehaviour
         }
     }
 
-    private void EndMission()
+    private IEnumerator EndMissionRoutine()
     {
         Debug.Log("[MissionManager] All enemies eliminated. Fading to final cutscene!");
-        
-        // Disable all Teammate AI on the battlefield
-        GameObject[] teammates = GameObject.FindGameObjectsWithTag("Teammate");
-        foreach (GameObject teammate in teammates)
-        {
-            // This completely hides them and stops all their scripts, 
-            // ensuring they don't wander into the cutscene cameras.
-            teammate.SetActive(false); 
-        }
 
-        //  Safely trigger the smooth fade transition
+        if (combatMusic != null && combatMusic.isPlaying)
+        {
+            StartCoroutine(FadeOutMusic(combatMusic, musicFadeDuration));
+        }
+        
         if (finalCutsceneObject != null)
         {
             // Turn the GameObject on (but the cutscene won't play yet)
@@ -87,5 +104,30 @@ public class Mission1Manager : MonoBehaviour
                 cm.PlayCutsceneExternally();
             }
         }
+
+        //  WAIT for the screen to actually turn black
+        yield return new WaitForSeconds(fadeToBlackDuration);
+
+        // NOW disable all Teammate AI on the battlefield while the player can't see them
+        GameObject[] teammates = GameObject.FindGameObjectsWithTag("Teammate");
+        foreach (GameObject teammate in teammates)
+        {
+            // This completely hides them and stops all their scripts, 
+            // ensuring they don't wander into the cutscene cameras.
+            teammate.SetActive(false); 
+        }
+    }
+    // Coroutine to smoothly lower the volume to 0
+    private IEnumerator FadeOutMusic(AudioSource audioSource, float fadeTime)
+    {
+        float startVolume = audioSource.volume;
+
+        while (audioSource.volume > 0)
+        {
+            audioSource.volume -= startVolume * Time.deltaTime / fadeTime;
+            yield return null; // Wait for the next frame
+        }
+        audioSource.Stop();
+        audioSource.volume = startVolume; // Reset the volume so it's ready for the next time it plays
     }
 }

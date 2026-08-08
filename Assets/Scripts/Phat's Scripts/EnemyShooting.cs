@@ -95,20 +95,15 @@ public class EnemyShooting : MonoBehaviour
 
         // 1. Try local first
         audioSource = GetComponent<AudioSource>();
-        if (audioSource == null) audioSource = GetComponentInChildren<AudioSource>();
-        if (audioSource != null) return;
+        if (audioSource == null) audioSource = GetComponent<AudioSource>();
 
-        // 2. THE BLOODHOUND SEARCH: Scan ALL "Player" tagged objects
-        GameObject[] players = GameObject.FindGameObjectsWithTag("Player");
-        foreach (GameObject p in players)
-        {
-            // Search this player and ALL its children (Camera, Gun, Feet, etc)
-            audioSource = p.GetComponentInChildren<AudioSource>();
-            if (audioSource != null)
-            {
-                return;
-            }
-        }
+        if (audioSource == null)
+    {
+        audioSource = gameObject.AddComponent<AudioSource>();
+        audioSource.spatialBlend = 1f; // Ensure the gunshot sounds 3D
+        audioSource.maxDistance = fireDistance * 2; // Hear it from afar
+        audioSource.rolloffMode = AudioRolloffMode.Linear;
+    }
 
         // 3. FALLBACK: Search by name if tags are broken
         GameObject namePlayer = GameObject.Find("Player");

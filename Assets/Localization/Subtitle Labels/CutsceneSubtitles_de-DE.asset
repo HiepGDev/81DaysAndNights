@@ -123,6 +123,31 @@ MonoBehaviour:
     m_Localized: Wenn du noch laufen kannst, ab auf deine Position. Los
     m_Metadata:
       m_Items: []
+  - m_Id: 13648195916660736
+    m_Localized: Lauft, ihr Bastarde ! Verschwindet von hier !
+    m_Metadata:
+      m_Items: []
+  - m_Id: 13648269530890240
+    m_Localized: "Solange Tam \u0110\u1EA3o steht, steht die Zitadelle !"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 13648284198371328
+    m_Localized: "Solange Tam \u0110\u1EA3o steht, steht die Zitadelle !"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 13648298085711872
+    m_Localized: "Solange Tam \u0110\u1EA3o steht, steht die Zitadelle !"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 13648308047183872
+    m_Localized: Zentrale, Ziel erfasst. Bereit zum Abwurf... Drei, zwei, eins. Bomben
+      fallen
+    m_Metadata:
+      m_Items: []
+  - m_Id: 13649197034110976
+    m_Localized: ALLE IN DEN BUNKER, SOFORT !
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

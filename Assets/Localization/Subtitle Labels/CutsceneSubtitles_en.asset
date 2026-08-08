@@ -122,6 +122,31 @@ MonoBehaviour:
     m_Localized: If you can walk, get back on the line. Now
     m_Metadata:
       m_Items: []
+  - m_Id: 13648195916660736
+    m_Localized: Run, you bastards! Get the hell out of here !
+    m_Metadata:
+      m_Items: []
+  - m_Id: 13648269530890240
+    m_Localized: "As long as Tam \u0110\u1EA3o stands, the Citadel stands !"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 13648284198371328
+    m_Localized: "As long as Tam \u0110\u1EA3o stands, the Citadel stands !"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 13648298085711872
+    m_Localized: "As long as Tam \u0110\u1EA3o stands, the Citadel stands !"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 13648308047183872
+    m_Localized: Control, target acquired. Standby for release... Three, two, one.
+      Bombs away
+    m_Metadata:
+      m_Items: []
+  - m_Id: 13649197034110976
+    m_Localized: EVERYONE TO THE BUNKERS, NOW !
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

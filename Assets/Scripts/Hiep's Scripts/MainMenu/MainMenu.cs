@@ -44,6 +44,12 @@ public class MainMenu : MonoBehaviour
         audioSource.PlayOneShot(selectSound);
         TransitionMenu(menuCanvas, settingCanvas);
     }
+    public void SurvivalModeButton()
+    {
+        audioSource.PlayOneShot(selectSound);
+        //SceneManager.LoadScene("Loading Screen 1");
+        menuFader.FadeToScene("SurvivalMode");
+    }
     public void QuitButton()
     {
         Application.Quit();

@@ -13,15 +13,16 @@ MonoBehaviour:
   m_Name: EnemyTest2_1
   m_EditorClassIdentifier: Assembly-CSharp::EnemySO
   maxHealth: 100
-  detectionRadius: 15
+  configId: 0
+  detectionRadius: 20
   defaultMode: 1
   wanderRadius: 15
   idleTime: 2
-  ambushShootRange: 15
+  ambushShootRange: 20
   minEngagementDist: 15
   rangeSpread: 15
   destinationSpread: 15
-  fireRate: 0.1
+  fireRate: 0.12
   fireDistance: 50
   damagePerShot: 5
   magazineSize: 30
@@ -31,9 +32,14 @@ MonoBehaviour:
   bloomIncrease: 0.01
   coverSearchRadius: 10
   peekDistance: 1.2
+  peekCooldown: 1
+  peekDuration: 3
+  pushProbability: 0.5
+  coverProbability: 0.5
+  flankProbability: 0.5
   enemyPrefab: {fileID: 100100000, guid: fa5bd4966e1d52f4984a4d751608e009, type: 3}
   impactVfxPrefab: {fileID: 0}
   muzzleFlashPrefab: {fileID: 4123609111075997096, guid: 4852900e4ffebde4db129e3f5f9acbbf, type: 3}
   tracerPrefab: {fileID: 7048567237833717488, guid: b951bfa1a90276e4b94fe9511357e939, type: 3}
-  shootSound: {fileID: 8300000, guid: e8776a34720384a43aab1f3bcf8dcba8, type: 3}
-  shootVolume: 0.1
+  shootSound: {fileID: 8300000, guid: 0c1a61a81e8dacf4c97b781b2d50efc0, type: 3}
+  shootVolume: 1

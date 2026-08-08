@@ -2844,7 +2844,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 209181084}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1662704005}
+        m_TargetAssemblyTypeName: MainMenu, Assembly-CSharp
+        m_MethodName: SurvivalModeButton
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &209181084
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8553,7 +8565,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CreditsMenu
   selectSound: {fileID: 8300000, guid: e4b64d508abcc784aa6e7c643049e81a, type: 3}
   creditsCanvasGroup: {fileID: 1233932730}
-  mainTitleCanvasGroup: {fileID: 0}
+  mainTitleCanvasGroup: {fileID: 96224477}
   creditsButton: {fileID: 1937600261}
   transitionDuration: 0.3
   popInScale: 0.95
@@ -9816,7 +9828,8 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "Phan Minh T\xE2m\n\nMagnific (magnific.com) \r\nTextures designed by Magnific\n"
+  m_text: "Phan Minh T\xE2m\nDefaultCube for Mosin Nagant Model\nSIpriv for B52 Model\nMagnific
+    (magnific.com) \r\nTextures designed by Magnific\n"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 0161d805a3764c089bef00bfe00793f5, type: 2}
   m_sharedMaterial: {fileID: 2147374, guid: 0161d805a3764c089bef00bfe00793f5, type: 2}
