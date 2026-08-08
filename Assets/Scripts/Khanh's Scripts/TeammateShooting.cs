@@ -5,32 +5,39 @@ using static TeammateAI;
 [RequireComponent(typeof(TeammateDetection))]
 public class TeammateShooting : MonoBehaviour
 {
-    public enum FireMode { Auto, SemiAuto }
+    public enum FireMode { Auto, Single }
 
     private TeammateDetection detection;
     private Animator animator;
     [SerializeField] private TeammateSO teammateData;
 
     [Header("Weapon Stats")]
-    [SerializeField] private FireMode currentFireMode = FireMode.SemiAuto;
+    [SerializeField] private FireMode currentFireMode = FireMode.Single;
 
     [SerializeField] private GameObject impactVfxPrefab;
     [SerializeField] private GameObject tracerPrefab;
     [SerializeField] private Transform firePoint;
     [SerializeField] private GameObject muzzleFlashPrefab;
+
     [SerializeField] private float autoFireRate = 0.12f;
-    [SerializeField] private float semiFireRateMin = 0.3f;
-    [SerializeField] private float semiFireRateMax = 0.6f;
+    [SerializeField] private float singleFireRateMin = 0.3f;
+    [SerializeField] private float singleFireRateMax = 0.6f;
     [SerializeField] private float fireDistance = 25.0f;
     [SerializeField] private int damagePerShot = 15;
 
     [Header("Hitscan Settings")]
     [SerializeField] private LayerMask hitLayers;
 
-    [Header("Bloom (Recoil) Settings")]
-    [SerializeField] private float minSpread = 0.01f;
-    [SerializeField] private float maxSpread = 0.08f;
-    [SerializeField] private float bloomIncrease = 0.01f;
+    [Header("Bloom (Recoil) - Single Mode")]
+    [SerializeField] private float singleMinSpread = 0.03f;
+    [SerializeField] private float singleMaxSpread = 0.15f;
+    [SerializeField] private float singleBloomIncrease = 0.02f;
+
+    [Header("Bloom (Recoil) - Auto Mode")]
+    [SerializeField] private float autoMinSpread = 0.05f;
+    [SerializeField] private float autoMaxSpread = 0.25f;
+    [SerializeField] private float autoBloomIncrease = 0.035f;
+
     private float currentBloom = 0f;
 
     [Header("Ammo Settings")]
@@ -62,15 +69,21 @@ public class TeammateShooting : MonoBehaviour
         {
             currentFireMode = teammateData.fireMode;
             autoFireRate = teammateData.autoFireRate;
-            semiFireRateMin = teammateData.semiFireRateMin;
-            semiFireRateMax = teammateData.semiFireRateMax;
+            singleFireRateMin = teammateData.singleFireRateMin;
+            singleFireRateMax = teammateData.singleFireRateMax;
             fireDistance = teammateData.fireDistance;
             damagePerShot = teammateData.damagePerShot;
             magazineSize = teammateData.magazineSize;
             reloadTime = teammateData.reloadTime;
-            minSpread = teammateData.minSpread;
-            maxSpread = teammateData.maxSpread;
-            bloomIncrease = teammateData.bloomIncrease;
+
+            // Load dữ liệu Bloom
+            singleMinSpread = teammateData.singleMinSpread;
+            singleMaxSpread = teammateData.singleMaxSpread;
+            singleBloomIncrease = teammateData.singleBloomIncrease;
+
+            autoMinSpread = teammateData.autoMinSpread;
+            autoMaxSpread = teammateData.autoMaxSpread;
+            autoBloomIncrease = teammateData.autoBloomIncrease;
 
             if (teammateData.impactVfxPrefab != null) impactVfxPrefab = teammateData.impactVfxPrefab;
             if (teammateData.muzzleFlashPrefab != null) muzzleFlashPrefab = teammateData.muzzleFlashPrefab;
@@ -102,13 +115,6 @@ public class TeammateShooting : MonoBehaviour
             return;
         }
 
-        //float distanceToTarget = Vector3.Distance(transform.position, detection.CurrentTarget.position);
-        //if (distanceToTarget > fireDistance)
-        //{
-        //    if (isShootingInProgress) EndShooting();
-        //    return;
-        //}
-
         if (!isShootingInProgress) StartShooting();
 
         if (Time.time >= nextFireTime)
@@ -120,8 +126,8 @@ public class TeammateShooting : MonoBehaviour
                 nextFireTime = Time.time + autoFireRate;
             else
             {
-                nextFireTime = Time.time + Random.Range(semiFireRateMin, semiFireRateMax);
-                currentBloom = 0f;
+                nextFireTime = Time.time + Random.Range(singleFireRateMin, singleFireRateMax);
+                currentBloom = 0f; 
             }
         }
     }
@@ -165,7 +171,11 @@ public class TeammateShooting : MonoBehaviour
             Destroy(flash, 1.0f);
         }
 
-        float totalSpread = minSpread + currentBloom;
+        float activeMinSpread = currentFireMode == FireMode.Single ? singleMinSpread : autoMinSpread;
+        float activeMaxSpread = currentFireMode == FireMode.Single ? singleMaxSpread : autoMaxSpread;
+        float activeBloomIncrease = currentFireMode == FireMode.Single ? singleBloomIncrease : autoBloomIncrease;
+
+        float totalSpread = activeMinSpread + currentBloom;
         float spreadX = Random.Range(-totalSpread, totalSpread);
         float spreadY = Random.Range(-totalSpread, totalSpread);
 
@@ -188,6 +198,8 @@ public class TeammateShooting : MonoBehaviour
                 finalDamage = Mathf.RoundToInt(damagePerShot * bodyPart.damageMultiplier);
             }
 
+            if (enemy != null) enemy.TakeDamage(finalDamage);
+
             if (impactVfxPrefab != null)
             {
                 Instantiate(impactVfxPrefab, hit.point, Quaternion.LookRotation(hit.normal));
@@ -199,7 +211,8 @@ public class TeammateShooting : MonoBehaviour
             StartCoroutine(SpawnMovingTracer(firePoint.position, endPoint));
         }
 
-        currentBloom = Mathf.Min(currentBloom + bloomIncrease, maxSpread);
+        // Tăng độ giật cho viên tiếp theo
+        currentBloom = Mathf.Min(currentBloom + activeBloomIncrease, activeMaxSpread);
 
         if (currentAmmo <= 0) EndShooting();
     }
@@ -250,7 +263,7 @@ public class TeammateShooting : MonoBehaviour
         {
             if (HasParameter("isCrouching", animator)) animator.SetBool("isCrouching", false);
             if (HasParameter("isShooting", animator)) animator.SetBool("isShooting", true);
-            animator.CrossFade("Enemy_Shooting", 0.1f, 0,0f);
+            animator.CrossFade("Enemy_Shooting", 0.1f, 0, 0f);
         }
     }
 
@@ -302,7 +315,7 @@ public class TeammateShooting : MonoBehaviour
         }
 
         currentAmmo = magazineSize;
-        
+
         if (animator != null)
         {
             if (HasParameter("isReloading", animator)) animator.SetBool("isReloading", false);
