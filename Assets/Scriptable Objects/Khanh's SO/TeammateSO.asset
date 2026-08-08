@@ -21,17 +21,20 @@ MonoBehaviour:
   waypointStopDistance: 0.5
   waypointWaitTime: 1.5
   loopPatrol: 0
-  fireMode: 1
-  autoFireRate: 0.3
-  semiFireRateMin: 0.6
-  semiFireRateMax: 1.2
+  fireMode: 0
+  autoFireRate: 0.15
+  singleFireRateMin: 0.5
+  singleFireRateMax: 1
   fireDistance: 30
   damagePerShot: 2
   magazineSize: 30
   reloadTime: 2.5
-  minSpread: 0.03
-  maxSpread: 0.15
-  bloomIncrease: 0.02
+  singleMinSpread: 0.03
+  singleMaxSpread: 0.15
+  singleBloomIncrease: 0.02
+  autoMinSpread: 0.005
+  autoMaxSpread: 0.025
+  autoBloomIncrease: 0.035
   teammatePrefab: {fileID: 2069129159604702209, guid: 0ae54a5f061143540a2393c93f78d894, type: 3}
   impactVfxPrefab: {fileID: 0}
   muzzleFlashPrefab: {fileID: 4123609111075997096, guid: 4852900e4ffebde4db129e3f5f9acbbf, type: 3}

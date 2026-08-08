@@ -24,10 +24,10 @@ public class TeammateSO : ScriptableObject
     public bool loopPatrol = false;
 
     [Header("Weapon Stats")]
-    public TeammateShooting.FireMode fireMode = TeammateShooting.FireMode.SemiAuto;
+    public TeammateShooting.FireMode fireMode = TeammateShooting.FireMode.Single;
     public float autoFireRate = 0.3f;
-    public float semiFireRateMin = 0.5f;
-    public float semiFireRateMax = 1f;
+    public float singleFireRateMin = 0.5f;
+    public float singleFireRateMax = 1f;
     public float fireDistance = 25.0f;
     public int damagePerShot = 4;
 
@@ -35,10 +35,15 @@ public class TeammateSO : ScriptableObject
     public int magazineSize = 30;
     public float reloadTime = 2.5f;
 
-    [Header("Bloom (Recoil) Settings")]
-    public float minSpread = 0.03f;
-    public float maxSpread = 0.15f;
-    public float bloomIncrease = 0.025f;
+    [Header("Bloom (Recoil) - Single Mode")]
+    public float singleMinSpread = 0.03f;
+    public float singleMaxSpread = 0.15f;
+    public float singleBloomIncrease = 0.02f;
+
+    [Header("Bloom (Recoil) - Auto Mode")]
+    public float autoMinSpread = 0.05f;
+    public float autoMaxSpread = 0.25f;
+    public float autoBloomIncrease = 0.035f;
 
     //[Header("Cover Settings")]
     //public float coverSearchRadius = 25f;

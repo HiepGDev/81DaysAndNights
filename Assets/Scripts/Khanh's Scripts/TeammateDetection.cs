@@ -75,12 +75,11 @@ public class TeammateDetection : MonoBehaviour
                 {
                     if (target.CompareTag(targetTag))
                     {
-                        // ✅ FIX 1: Eye position dùng fixed height thay vì bone
-                        // Đảm bảo tia xuất phát từ trên bao cát
+                        EnemyHealth enemyHealth = target.GetComponentInParent<EnemyHealth>();
+                        if (enemyHealth != null && enemyHealth.CurrentHealth <= 0) continue;
                         Vector3 eyePosition;
                         if (eyesTransform != null)
                         {
-                            // Lấy điểm cao nhất giữa bone và fixed height
                             float fixedEyeHeight = transform.position.y + 1.6f;
                             eyePosition = eyesTransform.position;
                             if (eyePosition.y < fixedEyeHeight)
@@ -91,7 +90,6 @@ public class TeammateDetection : MonoBehaviour
                             eyePosition = transform.position + Vector3.up * 1.6f;
                         }
 
-                        // ✅ FIX 2: Multi-point LOS - check nhiều điểm trên cơ thể địch
                         Vector3 rootPos = target.transform.root.position;
                         Vector3[] checkPoints = new Vector3[]
                         {
