@@ -41,11 +41,19 @@ public class BonusUI : MonoBehaviour
     [SerializeField] private Transform popupParent;
 
     [Header("Animation Settings")]
+    [Tooltip("Initial delay in seconds before popping the first bonus popup in the queue.")]
+    [SerializeField] private float initialDelayBeforeFirstPopup = 1.5f;
     [SerializeField] private float slideDistance = 400f;     // Horizontal distance offset for slide-in from left
     [SerializeField] private float fadeInDuration = 0.4f;    // Duration of fade-in and slide
     [SerializeField] private float displayDuration = 2.2f;   // Hold duration on screen
     [SerializeField] private float fadeOutDuration = 0.5f;   // Duration of fade-out
     [SerializeField] private float delayBetweenPopups = 0.6f; // Delay before starting next popup in queue
+
+    [Header("UI Sound Effects")]
+    [Tooltip("Sound played when a bonus popup frame opens.")]
+    [SerializeField] private AudioClip popupOpenSound;
+    [Tooltip("Sound played when a bonus popup frame closes.")]
+    [SerializeField] private AudioClip popupCloseSound;
 
     private Canvas autoCanvas;
     private Queue<BonusData> popupQueue = new Queue<BonusData>();
@@ -123,6 +131,11 @@ public class BonusUI : MonoBehaviour
         isProcessingQueue = true;
         EnsureContainerExists();
 
+        if (initialDelayBeforeFirstPopup > 0f)
+        {
+            yield return new WaitForSeconds(initialDelayBeforeFirstPopup);
+        }
+
         while (popupQueue.Count > 0)
         {
             BonusData data = popupQueue.Dequeue();
@@ -172,6 +185,20 @@ public class BonusUI : MonoBehaviour
             rect.anchoredPosition = startPos;
         }
 
+        UIFrameSound frameSoundComp = popup.GetComponent<UIFrameSound>();
+        if (frameSoundComp != null)
+        {
+            frameSoundComp.PlayOpen();
+        }
+        else if (popupOpenSound != null && UISoundManager.Instance != null)
+        {
+            UISoundManager.Instance.PlaySound(popupOpenSound);
+        }
+        else if (UISoundManager.Instance != null)
+        {
+            UISoundManager.Instance.PlayFrameOpen();
+        }
+
         // Phase 1: Slide Left to Right & Fade In
         float elapsed = 0f;
         while (elapsed < fadeInDuration)
@@ -194,6 +221,19 @@ public class BonusUI : MonoBehaviour
 
         // Phase 2: Display Hold
         yield return new WaitForSeconds(displayDuration);
+
+        if (frameSoundComp != null)
+        {
+            frameSoundComp.PlayClose();
+        }
+        else if (popupCloseSound != null && UISoundManager.Instance != null)
+        {
+            UISoundManager.Instance.PlaySound(popupCloseSound);
+        }
+        else if (UISoundManager.Instance != null)
+        {
+            UISoundManager.Instance.PlayFrameClose();
+        }
 
         // Phase 3: Slide Right & Fade Out
         elapsed = 0f;

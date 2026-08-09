@@ -97,6 +97,10 @@ namespace PhuScene
             {
                 cellButton.onClick.RemoveListener(BuyItem);
                 cellButton.onClick.AddListener(BuyItem);
+                if (UISoundManager.Instance != null)
+                {
+                    UISoundManager.Instance.AttachButtonSounds(cellButton);
+                }
             }
             UpdateUI();
             UpdateUIState();
@@ -193,6 +197,7 @@ namespace PhuScene
                     if (WaveManager.Instance.TrySpendMoney(price))
                     {
                         Debug.Log($"[Shop] Purchase success for: {itemName}");
+                        PlayPurchaseSuccessSound();
                         OnPurchaseSuccess();
                         UpdateUIState();
                         return;
@@ -209,6 +214,30 @@ namespace PhuScene
             }
 
             OnPurchaseFailed();
+        }
+
+        private void PlayPurchaseSuccessSound()
+        {
+            if (ShopUI.Instance != null)
+            {
+                ShopUI.Instance.PlayPurchaseSuccessSound();
+            }
+            else if (UISoundManager.Instance != null)
+            {
+                UISoundManager.Instance.PlayPurchaseSuccess();
+            }
+        }
+
+        private void PlayPurchaseFailSound()
+        {
+            if (ShopUI.Instance != null)
+            {
+                ShopUI.Instance.PlayPurchaseFailSound();
+            }
+            else if (UISoundManager.Instance != null)
+            {
+                UISoundManager.Instance.PlayPurchaseFail();
+            }
         }
 
         protected void TriggerFailureShake()

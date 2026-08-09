@@ -54,6 +54,16 @@ public class WaveUI : MonoBehaviour
     private bool hasAutoOpenedShopForWave2 = false;
     private Coroutine autoOpenShopCoroutine;
 
+    [Header("UI Sound Effects")]
+    [Tooltip("Sound played when UI frames, banners, or panels open.")]
+    [SerializeField] private AudioClip frameOpenSound;
+    [Tooltip("Sound played when UI frames or banners close/fade out.")]
+    [SerializeField] private AudioClip frameCloseSound;
+    [Tooltip("Sound played when hovering over buttons in the HUD.")]
+    [SerializeField] private AudioClip buttonHoverSound;
+    [Tooltip("Sound played when clicking buttons in the HUD.")]
+    [SerializeField] private AudioClip buttonClickSound;
+
 
     private Coroutine transitionCoroutine;
     private Vector2 countdown_SlideOutPosition;
@@ -68,7 +78,6 @@ public class WaveUI : MonoBehaviour
     private bool isPositionsInitialized = false;
     private bool isCountdownUIVisible = false;
     private bool hasInitializedVisibility = false;
-    private bool hasShownMouseUnlockHint = false;
 
     // Event-driven state caching & subscription state
     private bool isSubscribed = false;
@@ -94,6 +103,10 @@ public class WaveUI : MonoBehaviour
         {
             waveStartButton.onClick.RemoveListener(onSkipClicked);
             waveStartButton.onClick.AddListener(onSkipClicked);
+            if (UISoundManager.Instance != null)
+            {
+                UISoundManager.Instance.AttachButtonSounds(waveStartButton, buttonHoverSound, buttonClickSound);
+            }
         }
 
         // Subscribe here if Instance wasn't ready during Awake/OnEnable
@@ -178,7 +191,6 @@ public class WaveUI : MonoBehaviour
             pointsText.text = WaveManager.Instance.Points.ToString("N0");
         }
 
-        CheckMouseUnlockHint(report.state, report.currentWave);
         CheckAutoOpenShopWave2(report.state, report.currentWave);
 
         if (report.state == WaveState.Preparing)
@@ -252,7 +264,6 @@ public class WaveUI : MonoBehaviour
             ShowWaveCleared("VICTORY!", Color.yellow);
         }
 
-        CheckMouseUnlockHint(state, WaveManager.Instance != null ? WaveManager.Instance.CurrentWave : -1);
         CheckAutoOpenShopWave2(state, WaveManager.Instance != null ? WaveManager.Instance.CurrentWave : -1);
 
         UpdateCountdownUIState(state);
@@ -444,6 +455,20 @@ public class WaveUI : MonoBehaviour
     {
         waveClearedPanel.gameObject.SetActive(true);
 
+        UIFrameSound frameSoundComp = waveClearedPanel.GetComponent<UIFrameSound>();
+        if (frameSoundComp != null)
+        {
+            frameSoundComp.PlayOpen();
+        }
+        else if (frameOpenSound != null && UISoundManager.Instance != null)
+        {
+            UISoundManager.Instance.PlaySound(frameOpenSound);
+        }
+        else if (UISoundManager.Instance != null)
+        {
+            UISoundManager.Instance.PlayFrameOpen();
+        }
+
         RectTransform rect = waveClearedPanel;
         float posY = rect.anchoredPosition.y;
 
@@ -488,6 +513,19 @@ public class WaveUI : MonoBehaviour
         rect.anchoredPosition = new Vector2(endX, posY);
 
         waveClearedPanel.gameObject.SetActive(false);
+
+        if (frameSoundComp != null)
+        {
+            frameSoundComp.PlayClose();
+        }
+        else if (frameCloseSound != null && UISoundManager.Instance != null)
+        {
+            UISoundManager.Instance.PlaySound(frameCloseSound);
+        }
+        else if (UISoundManager.Instance != null)
+        {
+            UISoundManager.Instance.PlayFrameClose();
+        }
     }
 
     private void CreateFallbackUI()
@@ -850,19 +888,7 @@ public class WaveUI : MonoBehaviour
         }
     }
 
-    private void CheckMouseUnlockHint(WaveState state, int waveNum)
-    {
-        // show hint for the first 2 waves
-        if (state == WaveState.Preparing && waveNum <= 2 && !hasShownMouseUnlockHint)
-        {
-            hasShownMouseUnlockHint = true;
 
-            if (hintList != null)
-            {
-                hintList.AddHint("Press Alt to unlock mouse");
-            }
-        }
-    }
 
     private void CheckAutoOpenShopWave2(WaveState state, int waveNum)
     {

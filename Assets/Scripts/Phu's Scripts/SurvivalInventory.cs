@@ -278,8 +278,12 @@ namespace PhuScene
             }
         }
 
-        [Header("Weapon Switching Cooldown")]
+        [Header("Weapon Switching Cooldown & Sound")]
         [SerializeField] private float switchCooldown = 0.1f;
+        [Tooltip("Custom weapon switch sound for this inventory. If unassigned, falls back to UISoundManager.")]
+        [SerializeField] private AudioClip switchWeaponSound;
+        [SerializeField] private float switchStartOffset = 0f;
+        [SerializeField] private float switchEndOffset = 0f;
         private float lastSwitchTime = -100f;
 
         public void TrySwitchWeapon(int index, bool ignoreCooldown = false)
@@ -302,6 +306,17 @@ namespace PhuScene
             }
 
             lastSwitchTime = Time.time;
+
+            // Trigger weapon switch sound
+            if (switchWeaponSound != null)
+            {
+                if (UISoundManager.Instance != null) UISoundManager.Instance.PlaySound(switchWeaponSound, switchStartOffset, switchEndOffset);
+                else AudioSource.PlayClipAtPoint(switchWeaponSound, Camera.main != null ? Camera.main.transform.position : Vector3.zero);
+            }
+            else if (UISoundManager.Instance != null)
+            {
+                UISoundManager.Instance.PlayWeaponSwitch();
+            }
 
             currentWeaponIndex = index;
             currentSelectedSlotIndex = index;
