@@ -2,6 +2,8 @@ using UnityEngine.UI;
 using UnityEngine;
 using Unity.Cinemachine;
 using System.Collections;
+using DG.Tweening; 
+using TMPro;
 
 public class PlayerHealth : MonoBehaviour
 {
@@ -46,6 +48,16 @@ public class PlayerHealth : MonoBehaviour
     [Header("Weapon Disabling")]
     [Tooltip("Drag WeaponCamera here to disable all guns/arms on death")]
     [SerializeField] private GameObject weaponCameraObject;
+
+    [Header("Low Health Warning UI")]
+    [SerializeField] private TextMeshProUGUI lowHealthWarningText;
+    [Tooltip("Triggers ON when health drops below this percentage (0.2 = 20%)")]
+    [SerializeField] private float warningTriggerThreshold = 0.2f; 
+    [Tooltip("Triggers OFF when health regens above this percentage (0.3 = 30%)")]
+    [SerializeField] private float warningSafeThreshold = 0.3f; 
+    private bool isWarningActive = false;
+    private Tween warningPulseTween;
+    private Tween warningFadeTween;
     private void Awake()
     {
         playerMovement = GetComponent<PlayerMovement>();
@@ -75,6 +87,13 @@ public class PlayerHealth : MonoBehaviour
         {
             Color c = injuredOverlay.color;
             injuredOverlay.color = new Color(c.r, c.g, c.b, 0f);
+        }
+
+        if (lowHealthWarningText != null)
+        {
+            Color c = lowHealthWarningText.color;
+            lowHealthWarningText.color = new Color(c.r, c.g, c.b, 0f);
+            lowHealthWarningText.gameObject.SetActive(false);
         }
         // Find all cameras in the player's hierarchy (the 'true' includes inactive objects)
         Camera[] playerCameras = GetComponentsInChildren<Camera>(true);
@@ -148,8 +167,50 @@ public class PlayerHealth : MonoBehaviour
     {
         if (healthBar != null)
         healthBar.fillAmount = currentHealth / maxHealth;
+
+        HandleLowHealthWarning();
     }
 
+    void HandleLowHealthWarning()
+    {
+        if (lowHealthWarningText == null || isDead) return;
+
+        float healthPercent = currentHealth / maxHealth;
+
+        // Turn ON if health <= 20%
+        if (healthPercent <= warningTriggerThreshold && !isWarningActive)
+        {
+            isWarningActive = true;
+            lowHealthWarningText.gameObject.SetActive(true);
+            
+            // Clean up any old tweens
+            warningPulseTween?.Kill();
+            warningFadeTween?.Kill();
+
+            // Fade the text in quickly
+            warningFadeTween = lowHealthWarningText.DOFade(1f, 0.3f);
+            
+            // Start a continuous pulsing scale animation
+            lowHealthWarningText.transform.localScale = Vector3.one;
+            warningPulseTween = lowHealthWarningText.transform.DOScale(1.15f, 0.5f)
+                .SetLoops(-1, LoopType.Yoyo)
+                .SetEase(Ease.InOutSine);
+        }
+        // Turn OFF if health regens >= 30%
+        else if (healthPercent >= warningSafeThreshold && isWarningActive)
+        {
+            isWarningActive = false;
+
+            // Stop the pulsing
+            warningPulseTween?.Kill();
+            warningFadeTween?.Kill();
+
+            // Smoothly scale back to normal and fade out, then disable the GameObject
+            lowHealthWarningText.transform.DOScale(1f, 0.3f);
+            warningFadeTween = lowHealthWarningText.DOFade(0f, 0.3f)
+                .OnComplete(() => lowHealthWarningText.gameObject.SetActive(false));
+        }
+    }
     public void TakeDamage(float damage)
     {
         //ignore invalid damage
@@ -205,6 +266,11 @@ public class PlayerHealth : MonoBehaviour
     private void Die()
     {
         isDead = true;
+        // Stop the low health warning animation so it doesn't play over the Game Over screen
+        warningPulseTween?.Kill();
+        warningFadeTween?.Kill();
+        if (lowHealthWarningText != null) 
+            lowHealthWarningText.gameObject.SetActive(false);
         // Disable the entire WeaponCamera (This hides all arms, guns, and stops their scripts)
         if (weaponCameraObject != null)
         {
