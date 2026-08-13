@@ -116,6 +116,14 @@ public class Mission1Manager : MonoBehaviour
             // ensuring they don't wander into the cutscene cameras.
             teammate.SetActive(false); 
         }
+        EnemyBehaviorAgent[] allEnemies = FindObjectsByType<EnemyBehaviorAgent>(FindObjectsSortMode.None);
+        foreach (EnemyBehaviorAgent enemy in allEnemies)
+        {
+            if (enemy != null)
+            {
+                enemy.gameObject.SetActive(false);
+            }
+        }
     }
     // Coroutine to smoothly lower the volume to 0
     private IEnumerator FadeOutMusic(AudioSource audioSource, float fadeTime)

@@ -226,6 +226,7 @@ public class EnemyShooting : MonoBehaviour
         // THE SOUND FIX: Play gunshot sound with volume control
         if (audioSource != null && shootSound != null)
         {
+            audioSource.pitch = Random.Range(0.95f, 1.0f);
             audioSource.PlayOneShot(shootSound, shootVolume);
         }
 
@@ -420,8 +421,11 @@ public class EnemyShooting : MonoBehaviour
         EnemyBehaviorAgent behaviorAgent = GetComponent<EnemyBehaviorAgent>();
         if (behaviorAgent != null)
         {
+            // Check if the agent is actively moving
+            bool isMoving = behaviorAgent.GetComponent<UnityEngine.AI.NavMeshAgent>().velocity.sqrMagnitude > 0.1f;
             // Allow crouching in the open if they are a Sniper, an Ambush unit, or currently behind cover
-            canCrouchShoot = (behaviorAgent.currentMode == EnemyBehaviorAgent.EnemyMode.Sniper || 
+            // Do not allow crouching if they are running!
+            canCrouchShoot = !isMoving && (behaviorAgent.currentMode == EnemyBehaviorAgent.EnemyMode.Sniper || 
                               behaviorAgent.currentMode == EnemyBehaviorAgent.EnemyMode.Ambush || 
                               behaviorAgent.IsInCover);
         }
@@ -460,7 +464,9 @@ public class EnemyShooting : MonoBehaviour
             
             // If the enemy is in cover or was already crouched, they should stay crouched instead of standing up
             EnemyBehaviorAgent behaviorAgent = GetComponent<EnemyBehaviorAgent>();
-            bool shouldCrouch = (behaviorAgent != null && (behaviorAgent.IsInCover || isCrouched));
+            // Don't crouch if they are still physically running to the cover
+            bool isMovingToCover = (behaviorAgent != null && behaviorAgent.IsMovingToCover);
+            bool shouldCrouch = (behaviorAgent != null && (behaviorAgent.IsInCover || isCrouched)) && !isMovingToCover;
             if (HasParameter("isCrouching", animator)) animator.SetBool("isCrouching", shouldCrouch);
 
             animator.CrossFade(shouldCrouch ? "Cover_Crouching" : "Enemy_Idle", 0.2f);

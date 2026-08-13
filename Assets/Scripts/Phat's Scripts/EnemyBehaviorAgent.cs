@@ -606,8 +606,11 @@ public class EnemyBehaviorAgent : MonoBehaviour
                     ExitCover();
                     return;
                 }
-
-                IsReadyToShoot = true;
+                // THE PEEK FIX: Only flag ready to shoot if they have stopped moving at the peek edge!
+                if (agent.velocity.sqrMagnitude < 0.1f)
+                {
+                    IsReadyToShoot = true;
+                }
                 FaceTarget();
             }
             else if (shouldCrouch || isReloading)

@@ -180,6 +180,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemyHealth
   health: 100
   enemyData: {fileID: 11400000, guid: 81d99a9b9c9d9e9f9a9b9c9d9e9f81d9, type: 2}
+  closedEyeMaterial: {fileID: 2100000, guid: 9041a7bb73b74b64692a9fbb2f4d0766, type: 2}
 --- !u!136 &3338212692167208474
 CapsuleCollider:
   m_ObjectHideFlags: 0

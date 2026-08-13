@@ -105,7 +105,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 90c63f3c785392046a1bd61c8ef1ffec, type: 3}
   m_Name: Subtitle Marker
   m_EditorClassIdentifier: Assembly-CSharp::SubtitleMarker
-  m_Time: 2.7333333333333334
+  m_Time: 2.0166666666666666
   subtitleKey: Level1Cutscene2.D1
   duration: 2
 --- !u!114 &-7824473341402787015
@@ -907,9 +907,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 90c63f3c785392046a1bd61c8ef1ffec, type: 3}
   m_Name: Subtitle Marker
   m_EditorClassIdentifier: Assembly-CSharp::SubtitleMarker
-  m_Time: 12.033333333333333
+  m_Time: 11.883333333333333
   subtitleKey: Level1Cutscene2.D4
-  duration: 2
+  duration: 3
 --- !u!114 &-1812851657727530204
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1088,6 +1088,7 @@ MonoBehaviour:
   - {fileID: -1475402511929109109}
   - {fileID: 8731200116739772606}
   - {fileID: 540790661661239649}
+  - {fileID: 434491828144708811}
   m_FixedDuration: 0
   m_EditorSettings:
     m_Framerate: 60
@@ -1110,7 +1111,34 @@ MonoBehaviour:
   m_Loop: 0
   m_bufferingTime: 0.1
   m_ClipProperties:
+    volume: 0.915
+--- !u!114 &434491828144708811
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8b22792c3b570444eb18cb78c2af3a74, type: 3}
+  m_Name: Audio Track (4)
+  m_EditorClassIdentifier: Unity.Timeline::UnityEngine.Timeline.AudioTrack
+  m_Version: 3
+  m_AnimClip: {fileID: 0}
+  m_Locked: 0
+  m_Muted: 0
+  m_CustomPlayableFullTypename: 
+  m_Curves: {fileID: 0}
+  m_Parent: {fileID: 11400000}
+  m_Children: []
+  m_Clips: []
+  m_Markers:
+    m_Objects: []
+  m_TrackProperties:
     volume: 1
+    stereoPan: 0
+    spatialBlend: 0
 --- !u!114 &540790661661239649
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1444,7 +1472,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SubtitleMarker
   m_Time: 8.766666666666667
   subtitleKey: Level1Cutscene2.D3
-  duration: 2
+  duration: 3
 --- !u!114 &3335141554230647540
 MonoBehaviour:
   m_ObjectHideFlags: 1

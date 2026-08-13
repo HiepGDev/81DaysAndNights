@@ -154,7 +154,10 @@ public class TeammateShooting : MonoBehaviour
         currentAmmo--;
 
         if (audioSource != null && shootSound != null)
+        {
+            audioSource.pitch = Random.Range(0.95f, 1.0f);
             audioSource.PlayOneShot(shootSound, shootVolume);
+        }
 
         if (muzzleFlashPrefab != null && firePoint != null)
         {
@@ -256,7 +259,7 @@ public class TeammateShooting : MonoBehaviour
     {
         isShootingInProgress = true;
         currentBloom = 0f;
-        nextFireTime = Time.time + 0.25f;
+        nextFireTime = Time.time + 0.4f;
         isCrouched = false;
 
         if (animator != null)
@@ -293,8 +296,11 @@ public class TeammateShooting : MonoBehaviour
         currentBloom = 0f;
 
         if (audioSource != null && reloadSound != null)
+        {
+            audioSource.pitch = 1f; 
             audioSource.PlayOneShot(reloadSound, shootVolume);
-
+        }
+        
         if (animator != null)
         {
             if (HasParameter("isShooting", animator)) animator.SetBool("isShooting", false);

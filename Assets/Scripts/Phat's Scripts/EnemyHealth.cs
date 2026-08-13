@@ -4,7 +4,9 @@ public class EnemyHealth : MonoBehaviour
 {
     [SerializeField] private int health = 100;
     [SerializeField] private EnemySO enemyData;
-
+    [Header("Visuals")]
+    [Tooltip("Drag a material here with the color to prevent the build from stripping it.")]
+    [SerializeField] private Material closedEyeMaterial;
     public int CurrentHealth => health;
     public int MaxHealth => (enemyData != null) ? enemyData.maxHealth : 100;
     
@@ -177,8 +179,13 @@ public class EnemyHealth : MonoBehaviour
 
         // Apply custom color #A18783
         Renderer r = cube.GetComponent<Renderer>();
-        if (r != null)
+        if (r != null && closedEyeMaterial != null)
         {
+            r.material = closedEyeMaterial; 
+        }
+        else if (r != null)
+        {
+            // Fallback just in case you forget to assign it in the inspector
             r.material.color = new Color(0.631f, 0.529f, 0.514f);
         }
     }

@@ -10,6 +10,9 @@ public class PlayerInteraction : MonoBehaviour
     // [SerializeField] private GameObject riceInHand;
     [SerializeField] private Animator riceAnimator;
     [SerializeField] private LocalizedString localizedPressTemplate;
+    [Header("Player Voice")]
+    [SerializeField] private AudioSource playerVoiceSource; 
+    [SerializeField] private AudioClip[] giveFoodClips;
     private InputAction interactAction;
     private string currentKeyName = "E";
     void Awake()
@@ -43,6 +46,7 @@ public class PlayerInteraction : MonoBehaviour
                         if (riceAnimator != null && !hit.collider.TryGetComponent(out AmmoBox _))
                         {
                             riceAnimator.SetTrigger("GiveFood");
+                            PlayRandomGiveFoodVoice();
                         }
                     }
                 }
@@ -54,5 +58,16 @@ public class PlayerInteraction : MonoBehaviour
             }
         }
         interactUI.gameObject.SetActive(false);
+    }
+    private void PlayRandomGiveFoodVoice()
+    {
+        // Ensure AudioSource exist and at least one clip assigned
+        if (playerVoiceSource != null && giveFoodClips != null && giveFoodClips.Length > 0)
+        {
+            // Pick a random number between 0 and the total number of clips
+            int randomIndex = Random.Range(0, giveFoodClips.Length);
+            // Play the randomly selected clip
+            playerVoiceSource.PlayOneShot(giveFoodClips[randomIndex]);
+        }
     }
 }

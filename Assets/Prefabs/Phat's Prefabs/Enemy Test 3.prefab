@@ -111,7 +111,7 @@ NavMeshAgent:
   m_AutoBraking: 1
   m_AutoRepath: 1
   m_Height: 2
-  m_BaseOffset: 1
+  m_BaseOffset: 0.85
   m_WalkableMask: 4294967295
   m_ObstacleAvoidanceType: 4
 --- !u!114 &4791516559576132509
@@ -213,6 +213,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemyHealth
   health: 100
   enemyData: {fileID: 11400000, guid: 3a4b9c1f2e3d4c5b6a7b8c9d0e1f2a3b, type: 2}
+  closedEyeMaterial: {fileID: 2100000, guid: 9041a7bb73b74b64692a9fbb2f4d0766, type: 2}
 --- !u!136 &2882074333471263971
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -1865,7 +1866,7 @@ Animator:
   m_Controller: {fileID: 9100000, guid: 84cffcc3ce5690e43ab9a4924d8885a4, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
-  m_ApplyRootMotion: 0
+  m_ApplyRootMotion: 1
   m_LinearVelocityBlending: 0
   m_StabilizeFeet: 0
   m_AnimatePhysics: 0
