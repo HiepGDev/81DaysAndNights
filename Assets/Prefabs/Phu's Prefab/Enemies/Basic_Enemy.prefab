@@ -4009,7 +4009,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyBehaviorAgent
   enemyData: {fileID: 0}
-  currentMode: 0
+  currentMode: 1
   ambushShootRange: 15
   wanderRadius: 50
   idleTime: 2
@@ -4049,6 +4049,7 @@ MonoBehaviour:
   magazineSize: 30
   reloadTime: 5
   allowFiring: 1
+  totalDamageDealt: 0
 --- !u!114 &9132182698547394134
 MonoBehaviour:
   m_ObjectHideFlags: 0
