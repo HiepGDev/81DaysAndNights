@@ -31,6 +31,14 @@ public class WeaponSwitchManager : MonoBehaviour
 
     public void SetHandState(HandState newState)
     {
+        if (hasInitialized && CurrentState != newState)
+        {
+            if (UISoundManager.Instance != null)
+            {
+                UISoundManager.Instance.PlayWeaponSwitch();
+            }
+        }
+
         hasInitialized = true;
         CurrentState = newState;
 

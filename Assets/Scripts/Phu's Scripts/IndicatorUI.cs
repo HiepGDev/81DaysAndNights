@@ -10,8 +10,32 @@ public struct EnemyIndicatorConfig
 {
     public EnemyType enemyType;
     public Color indicatorColor;
+    [Tooltip("Primary spawn sound effect.")]
     public AudioClip spawnSound;
+    [Tooltip("Optional array of spawn sound variants. If populated, a random clip from this list will be played.")]
+    public AudioClip[] spawnSoundVariants;
+    [Tooltip("Start offset in seconds. If 0 or less, starts from beginning.")]
+    public float spawnStartOffset;
+    [Tooltip("End offset in seconds. If 0 or less, plays to the end.")]
+    public float spawnEndOffset;
     public Sprite customSprite;
+
+    public AudioClip GetRandomSpawnSound()
+    {
+        if (spawnSoundVariants != null && spawnSoundVariants.Length > 0)
+        {
+            List<AudioClip> validClips = new List<AudioClip>();
+            foreach (var clip in spawnSoundVariants)
+            {
+                if (clip != null) validClips.Add(clip);
+            }
+            if (validClips.Count > 0)
+            {
+                return validClips[Random.Range(0, validClips.Count)];
+            }
+        }
+        return spawnSound;
+    }
 }
 
 public class IndicatorUI : MonoBehaviour
@@ -53,6 +77,20 @@ public class IndicatorUI : MonoBehaviour
     [Header("Camera Reference")]
     [Tooltip("Reference to the main camera. If unassigned, automatically finds Camera.main.")]
     [SerializeField] private Camera mainCam;
+
+    [Header("3D Spatial Audio Settings")]
+    [Tooltip("Volume for indicator spawn audio.")]
+    [Range(0f, 1f)]
+    [SerializeField] private float spatialAudioVolume = 1.0f;
+
+    [Tooltip("Min distance for 3D sound attenuation.")]
+    [SerializeField] private float spatialMinDistance = 5.0f;
+
+    [Tooltip("Max distance for 3D sound attenuation.")]
+    [SerializeField] private float spatialMaxDistance = 150.0f;
+
+    [Tooltip("Audio Rolloff Mode for 3D spatial audio.")]
+    [SerializeField] private AudioRolloffMode spatialRolloffMode = AudioRolloffMode.Logarithmic;
 
     private List<Vector3> activeIndicatedPositions = new List<Vector3>();
     private Dictionary<EnemyType, EnemyIndicatorConfig> configDict = new Dictionary<EnemyType, EnemyIndicatorConfig>();
@@ -144,10 +182,11 @@ public class IndicatorUI : MonoBehaviour
             };
         }
 
-        // 1. Play Sound
-        if (config.spawnSound != null)
+        // 1. Play 3D Spatial Audio (with random variant and trimming support)
+        AudioClip soundToPlay = config.GetRandomSpawnSound();
+        if (soundToPlay != null)
         {
-            AudioSource.PlayClipAtPoint(config.spawnSound, worldPosition);
+            PlaySpatialSpawnSound(soundToPlay, config.spawnStartOffset, config.spawnEndOffset, worldPosition);
         }
 
         // 2. Instantiate Indicator UI
@@ -323,5 +362,36 @@ public class IndicatorUI : MonoBehaviour
         textRect.sizeDelta = new Vector2(1.6f, 1.6f);
 
         return canvasObj;
+    }
+
+    /// <summary>
+    /// Plays 3D spatial audio at the spawn world position with start/end offset trimming.
+    /// </summary>
+    public void PlaySpatialSpawnSound(AudioClip clip, float startOffset, float endOffset, Vector3 position)
+    {
+        if (clip == null) return;
+
+        float startTime = Mathf.Clamp(startOffset, 0f, clip.length);
+        float endTime = (endOffset <= 0f || endOffset > clip.length) ? clip.length : Mathf.Clamp(endOffset, startTime, clip.length);
+        float duration = Mathf.Max(0.01f, endTime - startTime);
+
+        GameObject tempAudioObj = new GameObject($"SpatialAudio_{clip.name}");
+        tempAudioObj.transform.position = position;
+
+        AudioSource source = tempAudioObj.AddComponent<AudioSource>();
+        source.clip = clip;
+        source.volume = spatialAudioVolume;
+        source.spatialBlend = 1.0f; // 100% 3D spatial audio positioning
+        source.minDistance = spatialMinDistance;
+        source.maxDistance = spatialMaxDistance;
+        source.rolloffMode = spatialRolloffMode;
+        source.dopplerLevel = 0f;
+        source.time = startTime;
+        source.playOnAwake = false;
+
+        source.Play();
+        source.SetScheduledEndTime(AudioSettings.dspTime + duration);
+
+        Destroy(tempAudioObj, duration + 0.1f);
     }
 }

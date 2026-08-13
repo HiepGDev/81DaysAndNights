@@ -17,6 +17,55 @@ public class ShopUI : MonoBehaviour
     [SerializeField] private UnityEngine.UI.Button openButton;
     [SerializeField] private UnityEngine.UI.Button closeButton;
 
+    [Header("UI Sound Effects")]
+    [Tooltip("Sound played when opening the shop frame.")]
+    [SerializeField] private AudioClip openShopSound;
+    [Tooltip("Sound played when closing the shop frame.")]
+    [SerializeField] private AudioClip closeShopSound;
+    [Tooltip("Sound played when hovering over buttons in the shop.")]
+    [SerializeField] private AudioClip buttonHoverSound;
+    [Tooltip("Sound played when clicking buttons in the shop.")]
+    [SerializeField] private AudioClip buttonClickSound;
+    [Tooltip("Sound played when a purchase succeeds in the shop.")]
+    [SerializeField] private AudioClip purchaseSuccessSound;
+    [Tooltip("Sound played when a purchase fails in the shop.")]
+    [SerializeField] private AudioClip purchaseFailSound;
+    [Tooltip("Minimum time (in seconds) between purchase failure sound plays in the shop.")]
+    [SerializeField] private float purchaseFailDebounceTime = 0.35f;
+
+    private float lastShopPurchaseFailTime = -999f;
+
+    public void PlayPurchaseSuccessSound()
+    {
+        if (purchaseSuccessSound != null)
+        {
+            if (UISoundManager.Instance != null) UISoundManager.Instance.PlaySound(purchaseSuccessSound);
+        }
+        else if (UISoundManager.Instance != null)
+        {
+            UISoundManager.Instance.PlayPurchaseSuccess();
+        }
+    }
+
+    public void PlayPurchaseFailSound()
+    {
+        if (Time.unscaledTime - lastShopPurchaseFailTime < purchaseFailDebounceTime)
+        {
+            return; // Debounce rapid spammed failure sound
+        }
+
+        lastShopPurchaseFailTime = Time.unscaledTime;
+
+        if (purchaseFailSound != null)
+        {
+            if (UISoundManager.Instance != null) UISoundManager.Instance.PlaySound(purchaseFailSound);
+        }
+        else if (UISoundManager.Instance != null)
+        {
+            UISoundManager.Instance.PlayPurchaseFail();
+        }
+    }
+
     [Header("Animation Settings")]
     [SerializeField] private float panelDuration = 0.35f;
     [SerializeField] private float buttonDuration = 0.2f;
@@ -27,6 +76,8 @@ public class ShopUI : MonoBehaviour
     private Coroutine buttonScaleCoroutine;
     private bool isSubscribed = false;
     private bool isShopUnlocked = false;
+    private bool isShopOpen = false;
+    private bool hasShownAltUnlockHint = false;
 
     [Header("Dynamic Cell Generation")]
     [SerializeField] private GameObject shopCellPrefab;
@@ -54,12 +105,20 @@ public class ShopUI : MonoBehaviour
         {
             openButton.onClick.RemoveListener(OpenShop);
             openButton.onClick.AddListener(OpenShop);
+            if (UISoundManager.Instance != null)
+            {
+                UISoundManager.Instance.AttachButtonSounds(openButton, buttonHoverSound, buttonClickSound);
+            }
         }
 
         if (closeButton != null)
         {
             closeButton.onClick.RemoveListener(CloseShop);
             closeButton.onClick.AddListener(CloseShop);
+            if (UISoundManager.Instance != null)
+            {
+                UISoundManager.Instance.AttachButtonSounds(closeButton, buttonHoverSound, buttonClickSound);
+            }
         }
 
         // Initially closed and squashed
@@ -192,9 +251,26 @@ public class ShopUI : MonoBehaviour
             return;
         }
 
+        if (isShopOpen) return; // Prevent duplicate open actions or sounds when already open
+        isShopOpen = true;
+
         // Activate the script's own GameObject and the panel to prevent coroutine start issues
         gameObject.SetActive(true);
         shopPanel.gameObject.SetActive(true);
+
+        UIFrameSound frameSoundComp = shopPanel.GetComponent<UIFrameSound>();
+        if (frameSoundComp != null)
+        {
+            frameSoundComp.PlayOpen();
+        }
+        else if (openShopSound != null && UISoundManager.Instance != null)
+        {
+            UISoundManager.Instance.PlaySound(openShopSound);
+        }
+        else if (UISoundManager.Instance != null)
+        {
+            UISoundManager.Instance.PlayFrameOpen();
+        }
 
         // Squash the open button when opening the shop
         TriggerButtonScale(false, 0f);
@@ -213,7 +289,42 @@ public class ShopUI : MonoBehaviour
     {
         if (shopPanel == null) return;
 
+        if (!isShopOpen) return; // Prevent duplicate close actions or sounds when already closed
+        isShopOpen = false;
+
+        CanvasGroup canvasGroup = shopPanel.GetComponent<CanvasGroup>();
+        if (canvasGroup == null)
+        {
+            canvasGroup = shopPanel.gameObject.AddComponent<CanvasGroup>();
+        }
+        canvasGroup.blocksRaycasts = false;
+        canvasGroup.interactable = false;
+
         HideTooltip();
+
+        if (!hasShownAltUnlockHint)
+        {
+            hasShownAltUnlockHint = true;
+            HintUI foundHintList = FindFirstObjectByType<HintUI>();
+            if (foundHintList != null)
+            {
+                foundHintList.AddHint("Press Alt to unlock mouse");
+            }
+        }
+
+        UIFrameSound frameSoundComp = shopPanel.GetComponent<UIFrameSound>();
+        if (frameSoundComp != null)
+        {
+            frameSoundComp.PlayClose();
+        }
+        else if (closeShopSound != null && UISoundManager.Instance != null)
+        {
+            UISoundManager.Instance.PlaySound(closeShopSound);
+        }
+        else if (UISoundManager.Instance != null)
+        {
+            UISoundManager.Instance.PlayFrameClose();
+        }
 
         // Expand open button back when closing the shop, waiting 0.5 seconds
         if (WaveManager.Instance != null && WaveManager.Instance.CurrentState != WaveState.WaveActive)
@@ -284,6 +395,14 @@ public class ShopUI : MonoBehaviour
         {
             shopPanel.gameObject.SetActive(true);
             
+            CanvasGroup canvasGroup = shopPanel.GetComponent<CanvasGroup>();
+            if (canvasGroup == null)
+            {
+                canvasGroup = shopPanel.gameObject.AddComponent<CanvasGroup>();
+            }
+            canvasGroup.blocksRaycasts = true;
+            canvasGroup.interactable = true;
+
             // Unlock cursor for interacting with the shop
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;
@@ -337,6 +456,10 @@ public class ShopUI : MonoBehaviour
     public void TriggerShakeEffect()
     {
         if (shopPanel == null) return;
+
+        // Play purchase fail sound whenever shop panel shakes
+        PlayPurchaseFailSound();
+
         if (shakeCoroutine != null)
         {
             StopCoroutine(shakeCoroutine);
