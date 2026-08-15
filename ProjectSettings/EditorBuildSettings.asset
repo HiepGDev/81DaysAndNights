@@ -20,6 +20,12 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/Phu's Scene/SurvivalMode.unity
     guid: 8d5a043cb76305849824f5039a22a4b5
+  - enabled: 1
+    path: Assets/Scenes/Hiep's Scene/Mission 2.unity
+    guid: 57e583d462018ca4ca2aae50d2b332fb
+  - enabled: 1
+    path: Assets/Scenes/Duc's Scene/TestTank/TestTankScene.unity
+    guid: f3904b3c1bad49342a906429c816d380
   m_configObjects:
     com.unity.addressableassets: {fileID: 11400000, guid: ae5453d043bf5c94fa80c4539a6b4bb9, type: 2}
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}

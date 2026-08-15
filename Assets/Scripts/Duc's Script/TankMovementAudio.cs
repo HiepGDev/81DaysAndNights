@@ -22,6 +22,8 @@ public class TankMovementAudio : MonoBehaviour
     [Tooltip("Tick nếu bánh quay ngược chiều.")]
     [SerializeField] private bool invertWheelRotation;
 
+    [Header("Tank Movement")]
+    [SerializeField] private TankWaypointMovement waypointMovement;
     // Góc quay tích lũy của bánh
     private float wheelAngle;
 
@@ -39,7 +41,8 @@ public class TankMovementAudio : MonoBehaviour
             movementAudioSource.playOnAwake = false;
             movementAudioSource.loop = true;
         }
-
+        if (waypointMovement == null)
+        waypointMovement = GetComponent<TankWaypointMovement>();
         // Lưu rotation GỐC của model
         leftInitialEuler = SaveInitialRotations(leftWheels);
         rightInitialEuler = SaveInitialRotations(rightWheels);
