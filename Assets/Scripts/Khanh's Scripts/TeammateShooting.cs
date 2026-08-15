@@ -97,6 +97,23 @@ public class TeammateShooting : MonoBehaviour
         {
             hitLayers &= ~(1 << invisibleWallLayer);
         }
+        if (firePoint == null)
+        {
+            Transform[] allChildren = GetComponentsInChildren<Transform>();
+            foreach (Transform child in allChildren)
+            {
+                if (child.name.Contains("FirePoint"))
+                {
+                    firePoint = child;
+                    break; 
+                }
+            }
+
+            if (firePoint == null)
+            {
+                Debug.LogWarning($"[{gameObject.name}] Không tìm thấy object nào có tên 'FirePoint' trong hệ thống xương!");
+            }
+        }
     }
 
     private void Start()
