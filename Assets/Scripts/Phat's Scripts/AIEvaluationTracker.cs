@@ -122,7 +122,7 @@ public class AIEvaluationTracker : MonoBehaviour
     }
 
     // STATIC INTERFACE FOR GAME MANAGERS TO TRIGGER POST
-    public static void SubmitSessionLogs(bool playerDied, int stageNumber, string submitUrl = "http://127.0.0.1:5093/api/aistats/session-results")
+    public static void SubmitSessionLogs(bool playerDied, int stageNumber, string submitUrl = "https://81dnn-rl.azurewebsites.net/api/aistats/session-results")
     {
         if (sessionEnded) return;
         sessionEnded = true;
