@@ -2661,6 +2661,7 @@ MonoBehaviour:
   minEngagementDist: 15
   rangeSpread: 15
   destinationSpread: 15
+  aimingOffsetAngle: 0
 --- !u!114 &622332415734339571
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2686,13 +2687,14 @@ MonoBehaviour:
   damagePerShot: 5
   hitLayers:
     serializedVersion: 2
-    m_Bits: 1
+    m_Bits: 1025
   minSpread: 0.3
   maxSpread: 0.8
   bloomIncrease: 0.01
   magazineSize: 30
   reloadTime: 5
   allowFiring: 1
+  totalDamageDealt: 0
 --- !u!114 &297410935676978228
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2738,6 +2740,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemyHealth
   health: 100
   enemyData: {fileID: 11400000, guid: 3a4b9c1f2e3d4c5b6a7b8c9d0e1f2a3b, type: 2}
+  closedEyeMaterial: {fileID: 0}
 --- !u!136 &7071849098243369949
 CapsuleCollider:
   m_ObjectHideFlags: 0

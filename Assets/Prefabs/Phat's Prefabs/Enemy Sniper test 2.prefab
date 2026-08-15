@@ -127,7 +127,7 @@ MonoBehaviour:
   damagePerShot: 5
   hitLayers:
     serializedVersion: 2
-    m_Bits: 513
+    m_Bits: 1545
   minSpread: 0.3
   maxSpread: 0.8
   bloomIncrease: 0.01
