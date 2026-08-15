@@ -101,8 +101,70 @@ public class EnemyBehaviorAgent : MonoBehaviour
         animator = GetComponentInChildren<Animator>();
         enemyHealth = GetComponent<EnemyHealth>();
 
+        if (enemyData == null && AISyncService.Instance != null && AISyncService.Instance.EnemyConfigs != null)
+        {
+            EnemyMode defaultSearchMode = EnemyMode.Ambush;
+            if (gameObject.name.Contains("Sniper") || (shooting != null && shooting.gameObject.name.Contains("Sniper")))
+            {
+                defaultSearchMode = EnemyMode.Sniper;
+            }
+
+            foreach (var so in AISyncService.Instance.EnemyConfigs)
+            {
+                if (so != null && so.defaultMode == defaultSearchMode)
+                {
+                    enemyData = so;
+                    break;
+                }
+            }
+        }
+
         if (enemyData != null)
         {
+            // Clone the ScriptableObject so each individual enemy has its own unique runtime stats
+            enemyData = Instantiate(enemyData);
+
+            if (AISyncService.Instance != null)
+            {
+                var configs = AISyncService.Instance.GetConfigsForRole(enemyData.defaultMode.ToString());
+                if (configs != null && configs.Length > 0)
+                {
+                    int randIdx = UnityEngine.Random.Range(0, configs.Length);
+                    var chosenConfig = configs[randIdx];
+
+                    enemyData.maxHealth = chosenConfig.base_health;
+                    enemyData.minSpread = chosenConfig.min_spread;
+                    enemyData.maxSpread = chosenConfig.max_spread;
+                    enemyData.pushProbability = chosenConfig.push_probability;
+                    enemyData.coverProbability = chosenConfig.cover_probability;
+                    enemyData.peekCooldown = chosenConfig.peek_cooldown;
+                    enemyData.peekDuration = chosenConfig.peek_duration;
+                    enemyData.flankProbability = chosenConfig.flank_probability;
+                    enemyData.configId = chosenConfig.id;
+
+                    Debug.Log($"[EnemyBehaviorAgent] Assigned Candidate {chosenConfig.id} to cloned SO of {gameObject.name}. HP={enemyData.maxHealth}, MinSpread={enemyData.minSpread}, PushProb={enemyData.pushProbability}");
+                }
+            }
+
+            // Sync the cloned SO and properties to other components via reflection to ensure they use individual values
+            if (enemyHealth != null)
+            {
+                typeof(EnemyHealth).GetField("enemyData", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.SetValue(enemyHealth, enemyData);
+                typeof(EnemyHealth).GetField("health", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.SetValue(enemyHealth, enemyData.maxHealth);
+            }
+            if (shooting != null)
+            {
+                typeof(EnemyShooting).GetField("enemyData", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.SetValue(shooting, enemyData);
+                typeof(EnemyShooting).GetField("minSpread", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.SetValue(shooting, enemyData.minSpread);
+                typeof(EnemyShooting).GetField("maxSpread", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.SetValue(shooting, enemyData.maxSpread);
+                typeof(EnemyShooting).GetField("currentAmmo", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.SetValue(shooting, enemyData.magazineSize);
+            }
+            if (peek != null)
+            {
+                typeof(EnemyTacticalPeek).GetField("enemyData", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.SetValue(peek, enemyData);
+                typeof(EnemyTacticalPeek).GetField("peekDistance", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.SetValue(peek, enemyData.peekDistance);
+            }
+
             currentMode = enemyData.defaultMode;
             ambushShootRange = enemyData.ambushShootRange;
             wanderRadius = enemyData.wanderRadius;
