@@ -486,28 +486,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   totalWaves: 0
-  economyBonusMultiplier: 1
-  economyDecayThreshold: 5000
-  accuracyEfficiencyWeight: 0.25
-  waveMultiplierDivisor: 100
-  killScoreWaveScaleFactor: 0.05
-  defaultBaseKillPoints: 100
-  basicEnemyMultiplier: 1
-  eliteEnemyMultiplier: 1.5
-  bossEnemyMultiplier: 2
-  money: 10000
-  points: 0
-  cumulativeGameScore: 0
-  waveKillScore: 0
-  waveKills: 0
-  totalMoneyGained: 0
-  totalMoneySpent: 0
-  moneyGainedInWave: 0
-  moneySpentInIntermission: 0
-  totalKills: 0
-  totalKillScore: 0
-  shotsFired: 0
-  shotsHit: 0
   prepDuration: 15
   cooldownDuration: 30
   enemyRules:
@@ -702,6 +680,72 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshProUGUI
+--- !u!1 &909522062
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 909522063}
+  - component: {fileID: 909522064}
+  m_Layer: 0
+  m_Name: Economy Manager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &909522063
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 909522062}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1612803257}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &909522064
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 909522062}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 43bbf08cb2a412c498b44610798629c9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EconomyManager
+  economyBonusMultiplier: 0.5
+  economyDecayThreshold: 5000
+  accuracyEfficiencyWeight: 0.25
+  waveMultiplierDivisor: 100
+  killScoreWaveScaleFactor: 0.05
+  defaultBaseKillPoints: 100
+  basicEnemyMultiplier: 1
+  eliteEnemyMultiplier: 1.5
+  bossEnemyMultiplier: 2
+  money: 0
+  points: 0
+  cumulativeGameScore: 0
+  waveKillScore: 0
+  waveKills: 0
+  totalMoneyGained: 0
+  totalMoneySpent: 0
+  moneyGainedInWave: 0
+  moneySpentInIntermission: 0
+  totalKills: 0
+  totalKillScore: 0
+  shotsFired: 0
+  shotsHit: 0
 --- !u!1 &1079942607 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 812662241848609336, guid: ff3789e306cc4f14094541622fcb2de3, type: 3}
@@ -821,6 +865,75 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 7820579933318383363, guid: 6a7c0da316f1c9c4ba51678e3d10911d, type: 3}
   m_PrefabInstance: {fileID: 1116511384}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1308996545
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1308996546}
+  - component: {fileID: 1308996547}
+  m_Layer: 0
+  m_Name: UI Sound Manager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1308996546
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1308996545}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1612803257}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1308996547
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1308996545}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c45e6f78901234567890abcdef012345, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UISoundManager
+  frameOpenSound: {fileID: 8300000, guid: b54c3ab230fc2e944a934512b042c85f, type: 3}
+  frameOpenStartOffset: 0
+  frameOpenEndOffset: 0
+  frameCloseSound: {fileID: 0}
+  frameCloseStartOffset: 0
+  frameCloseEndOffset: 0
+  buttonHoverSound: {fileID: 8300000, guid: 3a62d598c193d7e4ebdacd81837fabbb, type: 3}
+  buttonHoverStartOffset: 0.2
+  buttonHoverEndOffset: 0
+  buttonClickSound: {fileID: 8300000, guid: d089fcb66a33a224fa838b3b7b95b3ab, type: 3}
+  buttonClickStartOffset: 0
+  buttonClickEndOffset: 0
+  purchaseSuccessSound: {fileID: 8300000, guid: 9d1278f4a1decef43bfe8753cf486f9e, type: 3}
+  purchaseSuccessStartOffset: 0
+  purchaseSuccessEndOffset: 0
+  purchaseFailSound: {fileID: 8300000, guid: acb9090b50beda646831c9d393278803, type: 3}
+  purchaseFailStartOffset: 0
+  purchaseFailEndOffset: 0
+  weaponSwitchSound: {fileID: 0}
+  weaponSwitchStartOffset: 0
+  weaponSwitchEndOffset: 0
+  purchaseFailDebounceTime: 0.6
+  uiVolume: 0.8
+  customAudioSource: {fileID: 0}
+  frameSoundDebounceTime: 0.25
 --- !u!1 &1347247938
 GameObject:
   m_ObjectHideFlags: 0
@@ -1190,6 +1303,8 @@ Transform:
   m_Children:
   - {fileID: 441647302}
   - {fileID: 1347247941}
+  - {fileID: 909522063}
+  - {fileID: 1308996546}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1656033750

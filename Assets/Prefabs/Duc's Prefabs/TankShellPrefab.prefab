@@ -192,7 +192,7 @@ MonoBehaviour:
   damageableTags:
   - Player
   - Teammate
-  explosionEffectPrefab: {fileID: 5254670365419051377, guid: e76e5331f24d1d74780b04f7381755f1, type: 3}
+  explosionEffectPrefab: {fileID: 5254670365419051377, guid: ea194190eb0ce3a4a9b7ded5c088b489, type: 3}
 --- !u!114 &6233913731899557760
 MonoBehaviour:
   m_ObjectHideFlags: 0

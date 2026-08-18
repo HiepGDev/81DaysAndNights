@@ -6,6 +6,7 @@ public class MainMenu : MonoBehaviour
 {
     [SerializeField] private CanvasGroup menuCanvas;
     [SerializeField] private CanvasGroup settingCanvas;
+    [SerializeField] private CanvasGroup missionSelectCanvas;
     [SerializeField] private MenuFader menuFader;
     [Header("Sound setting")]
     [SerializeField] private AudioClip hoverSound;
@@ -25,7 +26,14 @@ public class MainMenu : MonoBehaviour
         settingCanvas.gameObject.SetActive(false);
         settingCanvas.alpha = 0f;
         settingCanvas.blocksRaycasts = false;
-        
+
+        // Setup Mission Select Menu
+        if (missionSelectCanvas != null)
+        {
+            missionSelectCanvas.gameObject.SetActive(false);
+            missionSelectCanvas.alpha = 0f;
+            missionSelectCanvas.blocksRaycasts = false;
+        }
         if (menuFader != null) menuFader.gameObject.SetActive(true);
     }
 
@@ -43,6 +51,25 @@ public class MainMenu : MonoBehaviour
     {
         audioSource.PlayOneShot(selectSound);
         TransitionMenu(menuCanvas, settingCanvas);
+    }
+    public void OpenMissionSelectButton()
+    {
+        audioSource.PlayOneShot(selectSound);
+        TransitionMenu(menuCanvas, missionSelectCanvas);
+    }
+
+    // Returns from the Mission Select Menu to the Main Menu
+    public void MissionSelectReturnButton()
+    {
+        audioSource.PlayOneShot(selectSound);
+        TransitionMenu(missionSelectCanvas, menuCanvas);
+    }
+
+    // Generic method to load any mission by passing its exact scene name
+    public void LoadSpecificMission(string sceneName)
+    {
+        audioSource.PlayOneShot(selectSound);
+        menuFader.FadeToScene(sceneName);
     }
     public void SurvivalModeButton()
     {
