@@ -371,15 +371,30 @@ public class EnemyBehaviorAgent : MonoBehaviour
                 else HandleCoverLogic(inShootingRange);
                 return;
             }
-            else
+           else
             {
                 // Push/rush the player!
-                if (agent.isStopped) agent.isStopped = false;
-                SetAgentDestination(target.position);
-                FaceTarget();
-                if (distToTarget <= maxGunRange)
+                bool directSight = HasLineOfSight(target);
+
+                // FIXED: To prevent the Animator glitch, they must stop moving to shoot.
+                // We use minRunTimer so they aggressively "stutter step" towards the player.
+                if (directSight && minRunTimer <= 0f && distToTarget <= maxGunRange)
                 {
+                    if (!agent.isStopped) StopAgent();
+                    FaceTarget();
                     IsReadyToShoot = true;
+                }
+                else
+                {
+                    // Line of sight blocked, or still in minimum run phase: keep charging!
+                    if (agent.isStopped) 
+                    {
+                        agent.isStopped = false;
+                        minRunTimer = 0.8f; // Aggressive push: force them to run for 0.8s before stopping to shoot again
+                    }
+                    SetAgentDestination(target.position);
+                    FaceTarget();
+                    IsReadyToShoot = false;
                 }
                 return;
             }

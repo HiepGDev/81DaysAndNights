@@ -163,6 +163,28 @@ public class PlayerHealth : MonoBehaviour
         injuredOverlay.color = new Color(injuredOverlay.color.r, injuredOverlay.color.g, injuredOverlay.color.b, newAlpha);
     }
 
+    private void OnDisable()
+    {
+        // Force the damage flash back to transparent. 
+        // Because the Coroutine is killed when disabled,MUST manually reset the alpha.
+        if (damageFlashImage != null)
+        {
+            Color origColor = damageFlashImage.color;
+            damageFlashImage.color = new Color(origColor.r, origColor.g, origColor.b, 0f);
+        }
+
+        // Kill any DOTween animations so they don't get stuck or throw errors 
+        // while the UI Canvas is turned off during the cutscene.
+        warningPulseTween?.Kill();
+        warningFadeTween?.Kill();
+        
+        if (lowHealthWarningText != null)
+        {
+            lowHealthWarningText.gameObject.SetActive(false);
+        }
+        isWarningActive = false;
+    }
+
     void UpdateHealthUI()
     {
         if (healthBar != null)
