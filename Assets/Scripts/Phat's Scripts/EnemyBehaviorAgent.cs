@@ -220,8 +220,9 @@ public class EnemyBehaviorAgent : MonoBehaviour
 
         if (!agent.isOnNavMesh) return;
 
-        // Pathing Safety Check: Ensure the agent has a path if they have a designated waypoint and are in cover mode
-        if (isInCover && activeCover.found && !agent.hasPath && !agent.pathPending)
+        // Pathing Safety Check: Ensure the agent has a path if they have a designated cover and are in cover mode, and are not there yet
+        float distToCoverCheck = activeCover.found ? Vector3.Distance(transform.position, activeCover.position) : float.MaxValue;
+        if (isInCover && activeCover.found && !agent.hasPath && !agent.pathPending && distToCoverCheck > 0.5f)
         {
             agent.isStopped = false;
             SetAgentDestination(activeCover.position, true);
@@ -344,7 +345,7 @@ public class EnemyBehaviorAgent : MonoBehaviour
             }
 
             if (!isInCover) FindAndGoToCover();
-            else HandleCoverLogic(inShootingRange);
+            else HandleCoverLogic(inShootingRange, distToTarget, rangeThreshold, target);
             return;
         }
 
@@ -368,7 +369,7 @@ public class EnemyBehaviorAgent : MonoBehaviour
             {
                 // Run away to cover
                 if (!isInCover) FindAndGoToCover();
-                else HandleCoverLogic(inShootingRange);
+                else HandleCoverLogic(inShootingRange, distToTarget, rangeThreshold, target);
                 return;
             }
             else
@@ -395,7 +396,7 @@ public class EnemyBehaviorAgent : MonoBehaviour
 
             if (isInCover)
             {
-                HandleCoverLogic(inShootingRange);
+                HandleCoverLogic(inShootingRange, distToTarget, rangeThreshold, target);
             }
             else
             {
@@ -420,7 +421,7 @@ public class EnemyBehaviorAgent : MonoBehaviour
 
         if (isInCover)
         {
-            HandleCoverLogic(inShootingRange);
+            HandleCoverLogic(inShootingRange, distToTarget, rangeThreshold, target);
             return;
         }
 
@@ -649,36 +650,45 @@ public class EnemyBehaviorAgent : MonoBehaviour
         return false;
     }
 
-    private void HandleCoverLogic(bool inShootingRange)
+    private void HandleCoverLogic(bool inShootingRange, float distToTarget, float rangeThreshold, Transform target)
     {
+        bool isReloading = (shooting != null && shooting.IsReloading);
+        bool isOutOfAmmo = (shooting != null && shooting.IsOutOfAmmo);
+        bool isHealthyAmbush = (currentMode == EnemyMode.Ambush && enemyHealth != null && enemyHealth.CurrentHealth > enemyHealth.MaxHealth * 0.3f);
+
+        // HEALTHY AMBUSH EXIT: If healthy and not out of ammo/reloading, exit cover to resume chase!
+        if (isHealthyAmbush && !isReloading && !isOutOfAmmo)
+        {
+            ExitCover();
+            return;
+        }
+
         bool isPeeking = (peek != null && peek.IsPeeking);
         float distToCover = Vector3.Distance(transform.position, activeCover.position);
 
-        if (isPeeking || distToCover <= 0.2f || (!agent.pathPending && agent.remainingDistance <= agent.stoppingDistance))
+        if (isPeeking || distToCover <= 0.5f || (!agent.pathPending && agent.remainingDistance <= 0.5f))
         {
-            bool isReloading = (shooting != null && shooting.IsReloading);
-            bool isOutOfAmmo = (shooting != null && shooting.IsOutOfAmmo);
             bool shouldCrouch = !isPeeking || isOutOfAmmo;
 
             if (isPeeking && !isReloading)
             {
-                // THE RANGE FIX: If the target moved out of reach while peeking, break cover to chase!
-                if (!inShootingRange)
-                {
-                    ExitCover();
-                    return;
-                }
-                // THE PEEK FIX: Only flag ready to shoot if they have stopped moving at the peek edge!
-                if (agent.velocity.sqrMagnitude < 0.1f)
+                // THE PEEK FIX: Only flag ready to shoot if they have stopped moving or are slow-walking/rubbing the peek edge!
+                if (agent.velocity.sqrMagnitude < 1.5f)
                 {
                     IsReadyToShoot = true;
                 }
                 FaceTarget();
             }
-            else if (shouldCrouch || isReloading)
+            else
             {
-                StopAgent();
-                transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(activeCover.lookDirection), Time.deltaTime * 10f);
+                // NOT peeking: cannot shoot!
+                IsReadyToShoot = false;
+
+                if (shouldCrouch || isReloading)
+                {
+                    StopAgent();
+                    transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(activeCover.lookDirection), Time.deltaTime * 10f);
+                }
             }
             if (!isReloading)
             {
@@ -693,14 +703,23 @@ public class EnemyBehaviorAgent : MonoBehaviour
                             animator.CrossFade("Cover_Crouching", 0.1f);
                     }
                 }
-                else if (!isOutOfAmmo && !isPeeking)
+                else
                 {
-                    if (!inShootingRange) ExitCover();
+                    // Not crouching/peeking: disable isCovering to allow standing shoot/aim animations
+                    if (animator != null && HasParameter("isCovering", animator))
+                    {
+                        animator.SetBool("isCovering", false);
+                    }
                 }
             }
 
             if (shooting != null && isOutOfAmmo && !isReloading)
                 shooting.TriggerReload();
+        }
+        else
+        {
+            // Moving back to cover and not arrived yet: cannot shoot!
+            IsReadyToShoot = false;
         }
     }
 
@@ -712,7 +731,10 @@ public class EnemyBehaviorAgent : MonoBehaviour
         agent.isStopped = false;
         if (activeCover.found)
         {
-            Vector3 pushOutDir = (transform.position - activeCover.position).normalized;
+            Vector3 pushOutDir = activeCover.lookDirection;
+            if (pushOutDir == Vector3.zero) pushOutDir = transform.forward;
+            
+            // Warp to push them out of the wall collider
             agent.Warp(transform.position + pushOutDir * 0.5f);
         }
     }
