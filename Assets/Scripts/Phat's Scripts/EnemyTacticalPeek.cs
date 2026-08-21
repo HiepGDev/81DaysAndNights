@@ -22,6 +22,7 @@ public class EnemyTacticalPeek : MonoBehaviour
     private Transform currentTarget;
 
     public bool IsPeeking => isCurrentlyPeeking;
+    public Transform CurrentTarget => currentTarget;
 
     private void Awake()
     {
@@ -51,12 +52,13 @@ public class EnemyTacticalPeek : MonoBehaviour
 
         if (shooting == null || agent == null) return;
 
-        // THE AMBUSH FIX: Determine if we have a target (Sensor OR Ambush)
+        // THE AMBUSH/SNIPER FIX: Determine if we have a target (Sensor, Ambush, or Sniper)
         bool hasTarget = (detection != null && detection.IsTargetDetected) || 
-                         (behaviorAgent.currentMode == EnemyBehaviorAgent.EnemyMode.Ambush && behaviorAgent.CurrentAmbushTarget != null);
+                         (behaviorAgent != null && behaviorAgent.currentMode == EnemyBehaviorAgent.EnemyMode.Ambush && behaviorAgent.CurrentAmbushTarget != null) ||
+                         (behaviorAgent != null && behaviorAgent.currentMode == EnemyBehaviorAgent.EnemyMode.Sniper && behaviorAgent.PlayerTransform != null);
 
-        // Keep target reference to avoid aborting peek while moving behind the wall
-        bool hasPhysicalTarget = (currentTarget != null && currentTarget.gameObject.activeInHierarchy);
+        // Keep target reference to avoid aborting peek while moving behind the wall (check root gameobject to prevent child hitbox toggles from breaking the check)
+        bool hasPhysicalTarget = (currentTarget != null && currentTarget.root.gameObject.activeInHierarchy);
 
         // TRIGGER PEEK: Ammo full and ready and we see someone and cooldown has expired
         if (!shooting.IsOutOfAmmo && !shooting.IsReloading && !isCurrentlyPeeking && hasTarget && Time.time >= nextPeekTime)
@@ -87,22 +89,30 @@ public class EnemyTacticalPeek : MonoBehaviour
                 bool hasLos = (detection != null && detection.IsTargetDetected);
 
                 // Arrive if very close, OR if reasonably close and we already have line of sight to target (e.g. when blocked/crowded)
+                // Restored to 0.6m to prevent physical capsule colliders from getting blocked by wall edges
                 if (distToPeek <= 0.25f || (distToPeek <= 0.6f && hasLos))
                 {
                     hasArrivedAtPeek = true;
+                    if (agent.isOnNavMesh) agent.isStopped = true;
                     Debug.Log($"[Tactical] Arrived at Peek position. Distance left: {distToPeek:F2}m. Has Line-of-Sight: {hasLos}");
                 }
             }
 
             // Check if facing the target before firing to avoid shooting into walls sideways
             bool isFacingTarget = false;
-            Transform target = (detection != null && detection.CurrentTarget != null) ? detection.CurrentTarget : 
-                              (behaviorAgent != null ? behaviorAgent.CurrentAmbushTarget : null);
+            Transform target = currentTarget;
             if (target != null)
             {
                 Vector3 dirToTarget = (target.position - transform.position);
                 dirToTarget.y = 0;
-                float angle = Vector3.Angle(transform.forward, dirToTarget.normalized);
+                
+                // Account for model offset angle (e.g. 65 degrees) in rotation checks
+                float offset = (behaviorAgent != null) ? behaviorAgent.AimingOffsetAngle : 0f;
+                // Subtract offset because FaceTarget rotated the transform by +aimingOffsetAngle
+                Quaternion offsetRot = Quaternion.Euler(0, -offset, 0);
+                Vector3 weaponForward = (transform.rotation * offsetRot) * Vector3.forward;
+                
+                float angle = Vector3.Angle(weaponForward, dirToTarget.normalized);
                 isFacingTarget = (angle <= 30f);
             }
 

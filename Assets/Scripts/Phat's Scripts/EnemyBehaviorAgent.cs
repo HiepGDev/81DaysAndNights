@@ -56,6 +56,7 @@ public class EnemyBehaviorAgent : MonoBehaviour
     public float CurrentEngagementDist { get; private set; } 
     public Transform CurrentAmbushTarget { get; private set; }
     public Transform PlayerTransform => playerTransform;
+    public float AimingOffsetAngle => aimingOffsetAngle;
     public EnemySO EnemyData => enemyData;
 
     private Transform designatedSniperPoint;
@@ -220,9 +221,10 @@ public class EnemyBehaviorAgent : MonoBehaviour
 
         if (!agent.isOnNavMesh) return;
 
-        // Pathing Safety Check: Ensure the agent has a path if they have a designated cover and are in cover mode, and are not there yet
+        // Pathing Safety Check: Ensure the agent has a path if they have a designated cover and are in cover mode, are not there yet, and are not currently peeking
+        bool isPeeking = (peek != null && peek.IsPeeking);
         float distToCoverCheck = activeCover.found ? Vector3.Distance(transform.position, activeCover.position) : float.MaxValue;
-        if (isInCover && activeCover.found && !agent.hasPath && !agent.pathPending && distToCoverCheck > 0.5f)
+        if (isInCover && activeCover.found && !isPeeking && !agent.hasPath && !agent.pathPending && distToCoverCheck > 0.5f)
         {
             agent.isStopped = false;
             SetAgentDestination(activeCover.position, true);
@@ -758,6 +760,15 @@ public class EnemyBehaviorAgent : MonoBehaviour
     {
         bool isAmbushing = (currentMode == EnemyMode.Ambush && CurrentAmbushTarget != null);
         Transform t = isAmbushing ? CurrentAmbushTarget : detection.CurrentTarget;
+        
+        // THE PEEK ROTATION FIX: If we are actively peeking, face the persistent target chosen by the peek system!
+        if (peek != null && peek.IsPeeking && peek.CurrentTarget != null)
+        {
+            t = peek.CurrentTarget;
+        }
+        
+        if (t == null) t = playerTransform; // Fallback to persistent player reference
+
         if (t != null)
         {
             Vector3 dir = (t.position - transform.position);

@@ -254,15 +254,20 @@ public class EnemyShooting : MonoBehaviour
         float spreadY = Random.Range(-totalSpread, totalSpread);
 
         Vector3 targetPoint = target.position + Vector3.up * 0.5f;
-        Vector3 baseDir = (targetPoint - firePoint.position).normalized;
+        
+        // THE PEEK WALL FIX: If the enemy is in cover, start the damage raycast from their eyes (head level) to prevent clipping walls!
+        // Visually, the muzzle flash and tracer will still start at the gun (firePoint.position), but the actual raycast originates from their eyes.
+        EnemyBehaviorAgent behavior = GetComponent<EnemyBehaviorAgent>();
+        Vector3 rayOrigin = (behavior != null && behavior.IsInCover) ? (transform.position + Vector3.up * 1.5f) : firePoint.position;
+        Vector3 baseDir = (targetPoint - rayOrigin).normalized;
 
         Quaternion bloomRot = Quaternion.Euler(spreadY * 20f, spreadX * 20f, 0);
         Vector3 shootDir = (Quaternion.LookRotation(baseDir) * bloomRot) * Vector3.forward;
 
         RaycastHit hit;
-        Vector3 endPoint = firePoint.position + (shootDir * fireDistance);
+        Vector3 endPoint = rayOrigin + (shootDir * fireDistance);
 
-        if (Physics.Raycast(firePoint.position, shootDir, out hit, fireDistance, hitLayers))
+        if (Physics.Raycast(rayOrigin, shootDir, out hit, fireDistance, hitLayers))
         {
             endPoint = hit.point;
             var player = hit.collider.GetComponentInParent<PlayerHealth>();
